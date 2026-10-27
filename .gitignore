@@ -1,0 +1,14 @@
+.gradle/
+.kotlin/
+**/build/
+local.properties
+*.iml
+.idea/
+*.apk
+*.log
+.agents/
+.codex/
+.aws/
+.tilebloom-git/
+*.keystore
+__pycache__/

@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">TileBloom</string>
+    <string name="subtitle">Mahjong Garden Puzzle</string>
+    <string name="level">Level 1</string>
+    <string name="pairs">Remaining Pairs: %1$d</string>
+    <string name="instruction">Select two matching free tiles</string>
+    <string name="restart">Restart</string>
+    <string name="play_again">Play Again</string>
+    <string name="won">Garden Cleared!</string>
+    <string name="won_detail">Beautifully done.</string>
+    <string name="no_moves">No More Matches</string>
+    <string name="no_moves_detail">Try the level again.</string>
+    <string name="board_description">Mahjong garden board</string>
+    <style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#CBB578</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">#102F27</item>
+    </style>
+</resources>
