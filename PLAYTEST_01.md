@@ -7,7 +7,9 @@ Tester: __________  Date: __________
 Device / Android version: __________  Font size: __________
 APK / commit: __________  Session length: __________
 
-Mark each item after trying it; record unexpected behavior below.
+Mark each item after trying it; record unexpected behavior below. Let the player
+try unaided first. The explanations and winning walkthrough are tester aids;
+record any help given so it is not mistaken for immediate understanding.
 
 - [ ] 1. Open TileBloom. It stays open without an error.
 - [ ] 2. Observe the initial board: 24 tiles, two overlapping layers, 12 remaining pairs.
@@ -35,6 +37,8 @@ Repeat on compact, typical and large portrait phones when available. At larger s
 
 ## Human feedback
 
+Objective understood without explanation? __________
+Available versus blocked tiles understood? __________
 Symbols easy to distinguish? __________
 Tiles comfortable to touch? __________
 Selected tile obvious? __________
@@ -43,7 +47,16 @@ Board easy to understand? __________
 First level requires meaningful decisions? __________
 Game feels relaxing? __________
 Would you willingly play another level? __________
+Deadlock message understood? __________
+Restart intuitive? __________
+Help / walkthrough used? __________
+
+## Objective technical observations
 
 Unexpected behavior / reproduction steps: __________
+Screenshots / device logs: __________
+
+## Subjective player impressions
+
 Most confusing moment: __________
 Suggested improvement: __________

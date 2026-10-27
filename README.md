@@ -1,6 +1,6 @@
 # TileBloom — Mahjong Garden Puzzle
 
-CODEX 03 / application version 0.1: an offline, portrait Android Mahjong Solitaire prototype with **one deterministic level**. No accounts, permissions, services, advertising, analytics, or network access.
+CODEX 04 / application version 0.1: an offline, portrait Android Mahjong Solitaire prototype with **one deterministic level**. No accounts, permissions, services, advertising, analytics, or network access.
 
 ## Stack
 
@@ -14,32 +14,25 @@ Kotlin 2.2.10, Java 17, Android Gradle Plugin 8.10.0, Gradle wrapper 8.13, compi
 - `app/src/main/res/values/`: English strings, theme and view IDs.
 - `app/src/test/`: 64 JVM tests: 31 original engine tests, 16 shared-geometry tests, 10 reliability/restoration tests, and 7 gesture tests.
 - `app/src/androidTest/`: eight compiled-only Android tests for launch, coordinate-tapped victory/deadlock, selection/drag, restart during touch, and activity recreation.
+- `tools/host_verify.sh`: standard Linux host verification with logs, exit codes and APK checks.
+- `tools/test_host_verify.py`: isolated workflow checks using fake tools, not Android evidence.
 - `tools/verify_offline.py`: fallback compiler/JUnit/APK pipeline for this restricted environment.
 - `VALIDATION.md`: actual verification outcomes and environment limitations.
 - `HOST_VERIFICATION.md`: exact unrestricted Linux host commands and manual device checklist.
 
-## CODEX 02 changes and actual verification
+## Current verification status
 
-The original engine rules, all 31 original tests, exact 24-tile layout, six symbols and twelve-pair witness are preserved. No dependencies or board balance changed.
+CODEX 04 found no unrestricted host results or completed human playtest. All **64 JVM tests pass** again using the standalone diagnostic compiler. Eight Android methods compile; **zero have executed**. The fallback APK passes alignment/signature checks, but standard Gradle, Lint, installation, launch and real gameplay remain **NOT VERIFIED**. No game code, toolchain version, level or symbols changed in this iteration.
 
-- Shared pure Kotlin `presentation/board/BoardGeometry.kt` supplies face, edge, shadow, scale, centering, padding, coordinate transforms and deterministic stacking order. Rendering and hit testing consume the same geometry. The visible topmost physical tile consumes the tap even when legally unavailable. Decorative shadows do not receive touches.
-- `TileTapGesture.kt` requires the same pointer and visible tile at press/release. Dragging beyond slop (including a move away and back), cancellation, pointer changes, and restart invalidate the gesture. Android also checks MotionEvent historical samples.
-- Selection has a restrained double gold outline inside the tile face. Blocked faces are lighter, retain engraved corner markers, and show a 160 ms border response on tap. Restart, resize and detachment clear transient feedback and pending gestures.
-- Matching removal stays immediate. No disappearance animation or animation-dependent game state was introduced.
-- Saved instance state now records the exact legal move history and selection. Restoration replays production validation atomically on a candidate board instead of guessing pairings from a removed-ID set. Corrupt snapshots do not partially restore the game. The volatile CODEX 01 removed-ID Bundle format is not migrated; this is not durable saving or an upgrade-persistence guarantee.
-- Instruction text is 16 sp; counter and status are polite accessibility live regions. The board exposes a localized remaining/selected summary. Individual screen-reader tile navigation remains unimplemented, and TalkBack behavior is unverified.
+Run this from a normal Linux terminal, with Java 17 and the SDK configured:
 
-**Verification:** 63/63 JVM tests passed. Six Android test methods compiled but **were not executed**. A valid debug APK was built through the standalone fallback; Gradle and ADB remain blocked by sandbox filesystem/socket restrictions. Full Android launch, touch delivery, screenshots and lifecycle behavior remain unverified. See [VALIDATION.md](VALIDATION.md) and [HOST_VERIFICATION.md](HOST_VERIFICATION.md).
+```sh
+bash tools/host_verify.sh
+```
 
-## CODEX 03 result
+The script runs standard Gradle version/JVM/build/Lint checks, verifies the APK, records command exit codes and preserves logs in a unique `app/build/host-verification/run-*` directory. It returns nonzero on failure and never substitutes the diagnostic fallback. It does not run ADB or claim device success. See [HOST_VERIFICATION.md](HOST_VERIFICATION.md) for installation, launch, instrumentation and collecting device evidence. Ten isolated fake-tool workflow tests pass; these are separate from Android/Gradle verification.
 
-64/64 JVM tests passed with the diagnostic compiler; eight Android methods compiled, **zero executed**. Standard Gradle tasks and Android Lint remain blocked before configuration; ADB server socket creation is denied. No Android launch, screenshot, human playtest or responsive device validation is claimed.
-
-Fixed historical movement handling on final touch release. Added regression checks for batched release movement, rapid touches during feedback/after restart, and invalid/removed selections. Gold selection and blocked feedback are preserved. Removal remains immediate until Android runtime evidence supports a safe animation.
-
-Configured Kotlin 2.2.10 supports Gradle through 8.14 and AGP through 8.10.0 according to the [Kotlin compatibility matrix](https://kotlinlang.org/docs/gradle-configure-project.html). [AGP 8.10](https://developer.android.com/build/releases/agp-8-10-0-release-notes) supports API 36, Java 17 and requires Gradle at least 8.11.1. Gradle remains 8.13. This fixes the prior unsupported matrix without changing the engine or SDK. AGP 8.10.0 is not cached here; the host may need to download it. Actual Gradle configuration/compilation remains unverified.
-
-See [PLAYTEST_01.md](PLAYTEST_01.md) for the first human session and [HOST_VERIFICATION.md](HOST_VERIFICATION.md) for build/install commands. Earlier CODEX 02 details below describe that iteration, not new runtime evidence.
+Then complete [PLAYTEST_01.md](PLAYTEST_01.md). Keep human observations empty until a real person plays. Actual results and historical iteration reports are in [VALIDATION.md](VALIDATION.md). CODEX 05 should consume those host logs, Android screenshots and feedback, rather than repeat the diagnosed sandbox startup failures.
 
 ## Activity and process state
 

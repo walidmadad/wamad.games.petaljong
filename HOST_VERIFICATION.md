@@ -1,6 +1,22 @@
-# CODEX 03 — Linux host verification
+# CODEX 04 — Linux host verification
 
 Run from the existing TileBloom directory in a normal Linux terminal outside the Codex sandbox. Do not change operating-system security settings. Java 17, SDK platform 36 and Build Tools 35.0.0 are required. Gradle dependencies must be cached or downloadable. Configured versions: Kotlin 2.2.10, AGP 8.10.0, Gradle 8.13. The standalone diagnostic compiler is separately pinned to 1.9.24.
+
+## Run the host workflow
+
+From a normal Linux terminal in this project:
+
+```sh
+bash tools/host_verify.sh
+```
+
+First configure Java 17 and the SDK as described below. The script finds the project root even when invoked from another directory. It reads the SDK from ordinary Linux `sdk.dir` entries in local.properties (including escaped spaces, colons and backslashes), then ANDROID_HOME or ANDROID_SDK_ROOT. It does not source local.properties or change SDK/JDK/Gradle installations, global configuration or security settings. Use a plain absolute Linux SDK path; Java-properties Unicode escapes and continued lines are not supported by the script's path reader.
+
+Each run writes a unique `app/build/host-verification/run-*` directory containing context, exact commands, `results.tsv` exit codes, individual logs and `summary.txt`. Successful assemble output is checked for size, package/API metadata, alignment and signature, then copied there as `app-debug.apk`. Existing reports are also copied for inspection; copied historical reports do not establish execution in this invocation. Use commands/exit codes and report timestamps together.
+
+Exit 0 means the requested host build/artifact checks passed; it does **not** mean Android launched or a person played. Exit 1 means a check failed; inspect its log. Preflight or wrapper-version failure stops prerequisite-dependent work. Otherwise JVM, build and Lint run independently so failures remain visible. A failed assemble never labels an existing fallback APK as its output. No fallback is automatically invoked. Standard Gradle may download its declared dependencies as usual.
+
+Do not run the script inside the known restricted sandbox to rediscover the same startup errors. No unrestricted host run has been received as of CODEX 04. The script itself was checked with `bash -n` and ten temporary fake-tool tests (`python3 tools/test_host_verify.py`); those tests provide no Android or real Gradle success evidence.
 
 ## Environment and standard build
 
@@ -23,7 +39,7 @@ ls "$ANDROID_HOME/build-tools/35.0.0"
 ./gradlew :app:lintDebug
 ```
 
-Stop and investigate actual configuration/compiler errors. Sandbox startup errors are not source errors. This session failed at wrapper lock creation (read-only ~/.gradle), then at FileLockContentionHandler / usable wildcard IP with writable temporary Gradle home. No Gradle task ran. The host build may need to download AGP 8.10.0; it was not cached in this sandbox.
+Stop and investigate actual configuration/compiler errors. Sandbox startup errors are not source errors. CODEX 03 failed at wrapper lock creation (read-only ~/.gradle), then at FileLockContentionHandler / usable wildcard IP with writable temporary Gradle home. No Gradle task ran. The host build may need to download AGP 8.10.0; it was not cached in this sandbox.
 
 ## Device, installation and launch
 
@@ -37,16 +53,46 @@ If no device has status `device`, connect and authorize a USB-debugging phone or
 
 If several devices exist, set ANDROID_SERIAL to the chosen serial for ADB commands. Gradle connected tests may run on all connected devices; disconnect other targets for a single-device run.
 
+After the host script passes, use its standard Gradle APK for the following commands. Run each step in order; stop and inspect its log if it fails. Replace YOUR_SERIAL with the single selected, booted device. Keep other devices disconnected for the Gradle connected test.
+
 ```sh
+export ANDROID_SERIAL=YOUR_SERIAL
+device_evidence=$(mktemp -d "$PWD/app/build/host-verification/device-XXXXXX")
+adb devices -l > "$device_evidence/devices.txt" 2>&1
+adb shell getprop ro.build.version.sdk > "$device_evidence/android-api.txt"
+adb shell wm size > "$device_evidence/screen-size.txt"
+adb shell wm density > "$device_evidence/screen-density.txt"
+adb shell settings get system font_scale > "$device_evidence/font-scale.txt"
 adb shell getprop sys.boot_completed
-adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb shell am start -W -n com.tilebloom.game/.presentation.MainActivity
-adb shell pidof com.tilebloom.game
-adb exec-out screencap -p > /tmp/tilebloom03-initial.png
-./gradlew :app:connectedDebugAndroidTest
-adb logcat -b crash -d > /tmp/tilebloom03-crashes.txt
-adb logcat -d -s AndroidRuntime > /tmp/tilebloom03-runtime.txt
+sha256sum app/build/outputs/apk/debug/app-debug.apk > "$device_evidence/apk-sha256.txt"
+adb install -r app/build/outputs/apk/debug/app-debug.apk > "$device_evidence/install.log" 2>&1
+install_code=$?
+printf 'install exit code: %s\n' "$install_code" | tee "$device_evidence/install-exit.txt"
+cat "$device_evidence/install.log"
 ```
+
+Continue only after installation prints `Success` and exits 0:
+
+```sh
+adb shell am start -W -n com.tilebloom.game/.presentation.MainActivity > "$device_evidence/launch.log" 2>&1
+launch_code=$?
+printf 'launch exit code: %s\n' "$launch_code" | tee "$device_evidence/launch-exit.txt"
+cat "$device_evidence/launch.log"
+adb shell pidof com.tilebloom.game
+adb exec-out screencap -p > "$device_evidence/initial.png"
+```
+
+Confirm the game is visible and usable. Capture this initial screenshot before running instrumentation, which restarts/changes the board. Then:
+
+```sh
+./gradlew --console=plain :app:connectedDebugAndroidTest > "$device_evidence/instrumentation.log" 2>&1
+instrumentation_code=$?
+printf 'instrumentation exit code: %s\n' "$instrumentation_code" | tee "$device_evidence/instrumentation-exit.txt"
+adb logcat -b crash -d > "$device_evidence/crashes.txt"
+adb logcat -d -s AndroidRuntime > "$device_evidence/runtime.txt"
+```
+
+Collect crash logs even when launch/tests fail. Do not interpret command exit 0 alone as eight passing tests; inspect Gradle output and connected test XML for executed/pass/failure/skipped counts. Preserve `app/build/outputs/androidTest-results/connected` and `app/build/reports/androidTests/connected` with these device logs if generated. If installation or launch fails, record its exit code/log and do not mark subsequent steps as executed.
 
 Installation must print `Success`. Launch should report `Status: ok`, show the game and leave its process running; inspect the screen and crash logs too. A successful am start alone does not prove gameplay. Do not clear existing logs before collecting a failure. If `INSTALL_FAILED_UPDATE_INCOMPATIBLE` occurs, fallback and Gradle debug keys differ. Keep the same key, or intentionally uninstall with `adb uninstall com.tilebloom.game` and install again; uninstall loses task state.
 
@@ -65,3 +111,9 @@ Check recreation on a fresh board, after several moves, with selection, victory 
 For process recreation: make a match and select a tile, press Home, run `adb shell am kill com.tilebloom.game`, then return through Recents. Do not force-stop. Recovery depends on Android retaining saved task state. Force-stop, task dismissal, reboot and fresh launch have no durable-save guarantee. No persistent progression exists.
 
 Individual screen-reader tile actions are not implemented; assess TalkBack announcements separately. Save actual failures and screenshots in VALIDATION.md. Do not claim full Android validation from an APK, source review or a compiled test suite.
+
+## Return evidence for the next iteration
+
+Keep the host run directory, device evidence, connected test XML/reports, screenshots and the completed PLAYTEST_01.md. Record installation and launch exit codes, observed screen behavior, exact APK hash, device/API/font scale, eight-test counts and any reproduction steps in VALIDATION.md. Host scripts and old fallback logs alone are not runtime evidence.
+
+The next external action is to run `bash tools/host_verify.sh` in the regular Linux terminal, then follow the device steps above. Return the resulting logs/screenshots and genuine player feedback for CODEX 05. If no device is available, complete host build verification and explicitly leave Android steps NOT EXECUTED. Do not schedule another identical sandbox build attempt.

@@ -1,3 +1,102 @@
+# CODEX 04 verification — 2026-10-27
+
+## Actual outcome
+
+Prepared a repeatable **unrestricted Linux host** workflow instead of retrying diagnosed sandbox Gradle/ADB failures. No unrestricted host logs, Gradle test/Lint reports, connected test results, Android screenshots or completed human feedback were found in the project, including ignored build output. No standard Gradle or ADB startup was retried in this iteration. Their prior blockers remain documented below as historical findings, not newly executed checks.
+
+Continued commit `a031e1c8857f0688e3de75c0f6703336b03dcdb0`; initial working tree was clean. Reviewed all four project documents, Gradle/wrapper/SDK configuration, manifests/resources, engine and fixed level, renderer, shared geometry, gesture handling, activity/Bundle restoration, all four JVM suites, eight instrumentation methods and offline pipeline. No new confirmed application defect or runtime evidence justified changing game code. All application sources, artwork, rules, solution/deadlock witnesses, exact move-history restoration and existing tests remain unchanged.
+
+## Host workflow implementation and verification
+
+New `tools/host_verify.sh`:
+
+- Resolves the project root; checks the same Java executable as the wrapper, Java 17, wrapper files, SDK platform 36 and Build Tools 35.0.0 tools.
+- Reads ordinary Linux SDK paths from local.properties or SDK environment variables without executing the properties file. Does not install tooling, alter global settings or disable security.
+- Runs these actual standard commands **when the user executes it on the host**:
+
+```sh
+./gradlew --version
+./gradlew --console=plain :app:testDebugUnitTest
+./gradlew --console=plain :app:assembleDebug
+./gradlew --console=plain :app:lintDebug
+```
+
+- Saves context/commit, exact commands, exit codes in results.tsv, individual logs, available reports/JVM XML and a summary under a unique `app/build/host-verification/run-*` directory.
+- Stops before tasks on failed preflight/version startup. Otherwise records independent JVM/build/Lint failures, returns nonzero for failed checks, and never calls the fallback automatically.
+- Checks successful assemble output for existence, size/hash, package/API metadata, alignment and signature. Archives it with the run. A failed build never accepts a pre-existing fallback APK as its output.
+- Explicitly leaves Android installation, launch, instrumentation, visual inspection and human playtest outside its build success status. Archived historical reports do not establish current execution; inspect commands, timestamps and XML together.
+
+`bash -n tools/host_verify.sh` passed. `python3 tools/test_host_verify.py -v` passed **10/10 isolated workflow tests**, using fake Java/Gradle/SDK tools and temporary fixture projects. They protect startup/preflight failures, SDK path precedence/quoting, non-execution of properties text, preservation of per-task failures, stale/missing APK rejection and signature failure reporting. These are workflow tests, **not real Gradle, Android, or additional game JVM tests**. Temporary fixture logs are not supplied as host evidence.
+
+Toolchain unchanged: Java 17 (locally OpenJDK 17.0.20.1), KGP 2.2.10, AGP 8.10.0, Gradle 8.13, compile/target 36, minimum 26, Build Tools 35.0.0. The diagnostic compiler remains 1.9.24. Standard KGP 2.2.10 compilation, dependency resolution and Android Lint remain NOT VERIFIED.
+
+## Regression results — actual execution
+
+`python3 tools/verify_offline.py` exited **0**, `OK (64 tests)`:
+
+| JVM suite | Executed | Passed | Failed | Skipped |
+| --- | ---: | ---: | ---: | ---: |
+| GameTest | 31 | 31 | 0 | 0 |
+| BoardGeometryTest | 16 | 16 | 0 | 0 |
+| GameReliabilityTest | 10 | 10 | 0 | 0 |
+| TileTapGestureTest | 7 | 7 | 0 | 0 |
+| **Game JVM total** | **64** | **64** | **0** | **0** |
+
+The full twelve-pair solution and known deadlock pass. Domain snapshot restoration, legal matches, counts, selection, duplicate protection, gesture cancellation and shared geometry remain protected. These facts do not prove real Android touch delivery, rendering, feedback timing or lifecycle behavior.
+
+**Android instrumentation: NOT EXECUTED.** Eight existing methods compiled against Android APIs; executed **0**, passed **0**, failed **0**, skipped **0**. The existing deprecated platform test API warning remains. No valid assertion was removed or weakened.
+
+**Installation/launch/UI victory/UI restart/visual inspection/human playtest: NOT VERIFIED.** No app launch, screenshot, crash-log inspection or player session occurred. Symbol distinction, touch comfort, visual hierarchy, strategic interest and match satisfaction remain unknown. No animation or speculative redesign was introduced.
+
+## APK — actual diagnostic artifact
+
+Rebuilt through `python3 tools/verify_offline.py`, **not standard Gradle**:
+
+- Path: `/home/walid/Documents/projects/androidGames/TileBloom/app/build/outputs/apk/debug/app-debug.apk`
+- Size: **709011 bytes**.
+- SHA-256: `444188ca459614fc8a8a6fd86a395f5780eaf9e63f05fea6d909747ef0751a87`.
+- AAPT2 metadata confirms `com.tilebloom.game`, code 1/version 0.1, minimum API 26, target API 36, debuggable, expected launch activity and portrait requirement.
+- `zipalign -c 4` passed; `apksigner verify --verbose` passed with v2 and v3 signatures, one signer.
+- Actual fallback log retained at `app/build/offline/verification.log` (ignored build output).
+
+The APK has not been installed or runtime-tested. Its existence and signature do not establish standard Gradle or Android success.
+
+## CODEX 04 acceptance criteria
+
+| # | Criterion | Result | Evidence / limitation |
+| --- | --- | --- | --- |
+| 01 | Existing engine preserved | PASS | No production source changes. |
+| 02 | Existing 64 JVM tests passing | PASS | All 64 executed through diagnostic Kotlin/JUnit pipeline. |
+| 03 | Complete solution witness preserved | PASS | Unchanged; JVM replay passed. |
+| 04 | Deadlock witness preserved | PASS | Unchanged; JVM replay passed. |
+| 05 | Unrestricted standard Gradle verification | NOT VERIFIED | No host run/results received. |
+| 06 | Android Lint completed | NOT VERIFIED | Host execution pending. |
+| 07 | Valid debug APK generated | PASS | Diagnostic fallback, aligned and signature-verified. |
+| 08 | Android installation completed | NOT VERIFIED | No installation evidence. |
+| 09 | Successful application launch | NOT VERIFIED | No launch evidence. |
+| 10 | Actual Android touch interaction | NOT VERIFIED | JVM coverage only. |
+| 11 | Android instrumentation executed | NOT VERIFIED | Eight compiled, zero executed. |
+| 12 | Victory through Android UI | NOT VERIFIED | Engine witness only. |
+| 13 | Restart through Android UI | NOT VERIFIED | Engine/geometry coverage only. |
+| 14 | Visually inspected screen layout | NOT VERIFIED | No Android screenshot. |
+| 15 | Human playtest completed | NOT VERIFIED | Checklist remains blank. |
+| 16 | Confirmed defects corrected | NOT VERIFIED | No new confirmed application defect or runtime failure available to correct. |
+| 17 | Git history preserved | PASS | Existing alternative metadata retained; iteration committed as descendant of a031e1c. |
+| 18 | Accurate documentation | PASS | Host workflow, separate evidence categories and outstanding actions recorded. |
+
+## Exact next external actions
+
+1. In a **regular Linux terminal**, configure JDK 17 and the actual SDK path, then run `bash tools/host_verify.sh`. Inspect its summary/results and retain its run directory. This is the next milestone, not another sandbox attempt.
+2. After successful standard build verification, follow HOST_VERIFICATION.md to select a booted authorized device, install the APK, launch, capture the initial screen, execute `./gradlew --console=plain :app:connectedDebugAndroidTest` and collect XML/crash logs. Record real counts and failures.
+3. Complete PLAYTEST_01.md with a real player. It now distinguishes unaided understanding/help, objective technical observations and subjective impressions. No human answer has been filled in.
+4. Return host logs, device/API/font details, screenshots and real feedback for CODEX 05. Fix the highest-impact observed failures before changing gameplay. Evaluate a subtle match transition only after actual runtime stability is established.
+
+The signed diagnostic artifact and instructions are ready for an exploratory first playtest, conditional on successful host installation/launch. Android readiness is not yet established. No new features, publication, push, Git reinitialization or history rewrite occurred.
+
+---
+
+# Historical CODEX 03 results (current status is above)
+
 # CODEX 03 verification — 2026-10-27
 
 ## Outcome and audit
