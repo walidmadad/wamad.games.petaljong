@@ -29,15 +29,28 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         java.io.File(instrumentation.targetContext.filesDir, "test-smoke-progress.bak").delete()
         com.tilebloom.game.storage.ProgressRepository.useTestStorage(null)
     }
+    fun testPreviousPuzzleVersionUpgradePreservesProgress() {
+        java.io.File(instrumentation.targetContext.filesDir,"test-smoke-progress")
+            .writeText("1\n1,2\n1,0,2\n16,20;0,4")
+        com.tilebloom.game.storage.ProgressRepository.useTestStorage("test-smoke-progress")
+        activity; instrumentation.waitForIdleSync(); assertCount(24)
+        tap(firstA); tap(firstB); assertCount(22)
+        com.tilebloom.game.storage.ProgressRepository.awaitWrites()
+        com.tilebloom.game.storage.ProgressRepository.useTestStorage("test-smoke-progress")
+        val saved = com.tilebloom.game.storage.ProgressRepository.load(instrumentation.targetContext)
+        assertEquals(setOf(1,2),saved.completed)
+        assertEquals(3,saved.active!!.version)
+        assertEquals(listOf(com.tilebloom.game.domain.PairMove(firstA,firstB)),saved.active!!.game.moves)
+    }
     fun testDurableStoreWithoutBundle() {
         activity
-        tap(16); tap(20)
+        tap(firstA); tap(firstB)
         com.tilebloom.game.storage.ProgressRepository.awaitWrites()
         // Drop process memory cache, then read the real AtomicFile without any Bundle.
         com.tilebloom.game.storage.ProgressRepository.useTestStorage("test-smoke-progress")
         val p = com.tilebloom.game.domain.ProgressController(com.tilebloom.game.storage.ProgressRepository.load(instrumentation.targetContext))
         assertEquals(11, p.session.game.remainingPairs)
-        assertEquals(listOf(com.tilebloom.game.domain.PairMove(16,20)), p.session.game.snapshot().moves)
+        assertEquals(listOf(com.tilebloom.game.domain.PairMove(firstA,firstB)), p.session.game.snapshot().moves)
         assertFalse(p.select(2))
     }
     fun testCompletionDurableAndReplayPreservesIt() {
@@ -66,7 +79,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
     }
     fun testFreshActivityLaunchWithoutBundleRestoresMoves() {
         val original = activity
-        tap(16); tap(20)
+        tap(firstA); tap(firstB)
         ui { original.finish() }
         instrumentation.waitForIdleSync()
         com.tilebloom.game.storage.ProgressRepository.awaitWrites()
@@ -79,6 +92,18 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             assertCount(22,relaunched)
             ui { assertEquals(0,board(relaunched).activeMatchEffectCount) }
         } finally { ui { relaunched.finish() } }
+    }
+    private val firstA get() = Levels.get(1).witness[0].first
+    private val firstB get() = Levels.get(1).witness[0].second
+    private val secondA get() = Levels.get(1).witness[1].first
+    private val secondB get() = Levels.get(1).witness[1].second
+    private val deadlockMoves get() = listOf(15 to 23,10 to 22,9 to 20,6 to 16,17 to 18,0 to 14)
+        .map { com.tilebloom.game.domain.PairMove(it.first,it.second) }
+    private val blockedId = 19 // Middle cap: visibly present, blocked on both sides.
+    private val differentId get(): Int {
+        val tiles = Levels.get(1).tiles
+        val symbol = tiles.first { it.id == firstA }.symbol
+        return tiles.first { com.tilebloom.game.domain.Rules.available(it, tiles) && it.symbol != symbol }.id
     }
     private fun <T> ui(action: () -> T): T {
         val result = AtomicReference<T>()
@@ -137,12 +162,12 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             assertEquals(1, countTitles(activity.window.decorView))
             activity.findViewById<Button>(R.id.replay_level).performClick()
         }
-        assertCount(24); tap(16); ui { assertEquals(16,board().selectedTileId) }
+        assertCount(24); tap(firstA); ui { assertEquals(firstA,board().selectedTileId) }
     }
     fun testCoordinateDeadlockAndRestart() {
         activity; instrumentation.waitForIdleSync()
-        for ((a,b) in listOf(16 to 20,0 to 4,8 to 12,17 to 21,1 to 5,9 to 13,15 to 18,19 to 23)) { tap(a); tap(b) }
-        assertCount(8)
+        for (pair in deadlockMoves) { tap(pair.first); tap(pair.second) }
+        assertCount(24-deadlockMoves.size*2)
         ui {
             assertTrue(activity.findViewById<TextView>(R.id.feedback).text.toString().contains(activity.getString(R.string.no_moves)))
             assertFalse(activity.findViewById<Button>(R.id.next_level).isShown)
@@ -154,13 +179,13 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
     }
     fun testSelectionBlockedTapAndDrag() {
         activity; instrumentation.waitForIdleSync()
-        tap(16); tap(17) // 17 is visible but laterally blocked; it must not replace selection.
-        ui { assertEquals(16,board().selectedTileId) }; assertCount(24)
-        tap(16); ui { assertNull(board().selectedTileId) }
-        tap(16); tap(19) // Available but different symbols: move selection.
-        ui { assertEquals(19,board().selectedTileId) }; assertCount(24)
-        tap(19)
-        val p = target(16); val down = SystemClock.uptimeMillis()
+        tap(firstA); tap(blockedId) // Middle cap is visible but laterally blocked; it must not replace selection.
+        ui { assertEquals(firstA,board().selectedTileId) }; assertCount(24)
+        tap(firstA); ui { assertNull(board().selectedTileId) }
+        tap(firstA); tap(differentId) // Available but different symbols: move selection.
+        ui { assertEquals(differentId,board().selectedTileId) }; assertCount(24)
+        tap(differentId)
+        val p = target(firstA); val down = SystemClock.uptimeMillis()
         val distance = ui { ViewConfiguration.get(activity).scaledTouchSlop + 12f }
         send(MotionEvent.ACTION_DOWN,p,down)
         send(MotionEvent.ACTION_MOVE,BoardPoint(p.x+distance,p.y),down)
@@ -169,34 +194,34 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         assertCount(24)
     }
     fun testRestartCancelsPendingTouchAndBlockedFeedback() {
-        activity; instrumentation.waitForIdleSync(); tap(17)
-        val p = target(16); val down = SystemClock.uptimeMillis()
+        activity; instrumentation.waitForIdleSync(); tap(blockedId)
+        val p = target(firstA); val down = SystemClock.uptimeMillis()
         send(MotionEvent.ACTION_DOWN,p,down)
         ui { activity.findViewById<Button>(R.id.restart).performClick() }
         send(MotionEvent.ACTION_UP,p,down)
         SystemClock.sleep(180); instrumentation.waitForIdleSync()
         assertCount(24); ui { assertNull(board().selectedTileId) }
-        tap(16); ui { assertEquals(16,board().selectedTileId) }
+        tap(firstA); ui { assertEquals(firstA,board().selectedTileId) }
     }
     fun testRapidTouchesDuringBlockedFeedbackAndAfterRestart() {
         activity; instrumentation.waitForIdleSync()
-        tap(16); tap(17); tap(20)
+        tap(firstA); tap(blockedId); tap(firstB)
         assertCount(22); ui { assertNull(board().selectedTileId) }
         // Rapidly toggle one available tile; it must never match itself.
-        val p = target(17)
+        val p = target(secondA)
         repeat(12) {
             val now = SystemClock.uptimeMillis()
             send(MotionEvent.ACTION_DOWN,p,now); send(MotionEvent.ACTION_UP,p,now)
         }
         instrumentation.waitForIdleSync(); assertCount(22)
         ui { activity.findViewById<Button>(R.id.restart).performClick() }
-        tap(16); tap(20); assertCount(22)
+        tap(firstA); tap(firstB); assertCount(22)
     }
     fun testBatchedReleaseMovementCancelsTap() {
         activity; instrumentation.waitForIdleSync()
         ui {
             val view = board()
-            val p = view.tileCenter(16)!!
+            val p = view.tileCenter(firstA)!!
             val now = SystemClock.uptimeMillis()
             val press = MotionEvent.obtain(now,now,MotionEvent.ACTION_DOWN,p.x,p.y,0)
             try { view.dispatchTouchEvent(press) } finally { press.recycle() }
@@ -210,7 +235,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             } finally { release.recycle() }
             assertNull(view.selectedTileId)
         }
-        assertCount(24); tap(16); ui { assertEquals(16,board().selectedTileId) }
+        assertCount(24); tap(firstA); ui { assertEquals(firstA,board().selectedTileId) }
     }
     fun testMatchEffectsRestartAndCompletion() {
         activity; instrumentation.waitForIdleSync()
@@ -225,27 +250,27 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
                     try { view.dispatchTouchEvent(event) } finally { event.recycle() }
                 }
             }
-            touch(16); touch(20)
+            touch(firstA); touch(firstB)
             assertEquals(22, view.remainingTileCount)
-            assertNull(view.tileCenter(16))
+            assertNull(view.tileCenter(firstA))
             if (android.animation.ValueAnimator.areAnimatorsEnabled()) {
                 assertEquals(2, view.activeMatchEffectCount)
             } else assertEquals(0, view.activeMatchEffectCount)
-            touch(17); touch(21)
+            touch(secondA); touch(secondB)
             assertEquals(20, view.remainingTileCount)
             activity.findViewById<Button>(R.id.restart).performClick()
             assertEquals(0, view.activeMatchEffectCount)
             assertEquals(24, view.remainingTileCount)
-            touch(16); touch(20)
+            touch(firstA); touch(firstB)
         }
         SystemClock.sleep(220); instrumentation.waitForIdleSync()
         ui { assertEquals(0, board().activeMatchEffectCount) }
         assertCount(22)
-        tap(17); tap(21); assertCount(20)
+        tap(secondA); tap(secondB); assertCount(20)
     }
     fun testActivityRecreationRestoresPlayedState() {
         val original = activity; instrumentation.waitForIdleSync()
-        tap(16); tap(20); tap(17); assertCount(22)
+        tap(firstA); tap(firstB); tap(secondA); assertCount(22)
         val monitor = Instrumentation.ActivityMonitor(MainActivity::class.java.name,null,false)
         instrumentation.addMonitor(monitor)
         var replacement: MainActivity? = null
@@ -256,10 +281,10 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             instrumentation.waitForIdleSync()
             val restored = replacement!!
             assertCount(22,restored); ui {
-                assertEquals(17,board(restored).selectedTileId)
+                assertEquals(secondA,board(restored).selectedTileId)
                 assertEquals(0,board(restored).activeMatchEffectCount)
             }
-            tap(21,restored); assertCount(20,restored)
+            tap(secondB,restored); assertCount(20,restored)
         } finally {
             instrumentation.removeMonitor(monitor)
             replacement?.let { screen -> ui { screen.finish() } }

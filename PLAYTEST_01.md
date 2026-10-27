@@ -1,6 +1,39 @@
-# CODEX 09 — five-level human playtest
+# CODEX 10 — five-level human playtest
 
-No human results have been provided for this iteration. Leave blanks until observed. Automated solver outcomes do not establish enjoyment or fairness. Use the new APK identified in CODEX_09_REPORT.md and record device, Android version, APK hash/build, date and tester alias (no account required).
+No human results have been provided for this iteration. Leave blanks until observed. Automated solver outcomes do not establish enjoyment or fairness. Use the new APK identified in CODEX_10_REPORT.md and record device, Android version, APK hash/build, date and tester alias (no account required).
+
+## CODEX 10 device and upgrade checklist
+
+All items below are pending. Record APK SHA-256 from current VALIDATION.md, device/API/density/font scale and screenshots. Do not inspect the solution witness during the unaided difficulty session.
+
+1. On compact (~320×568 dp), medium (~360×800 dp) and large (~412×915 dp) portrait phones, launch the winding board. Confirm five stepped base rows, two cap rows, no clipping, readable botanical symbols and comfortable taps. Record actual board viewport size; a short board viewport may shrink faces below 48 dp.
+2. Observe the two opening associations. Did the player notice that each releases a different group? Did the middle caps and lateral blocks read clearly? Record blind matching versus deliberate choices, and any concealed information that made a failure feel unfair.
+3. Remove several pairs; note exactly which IDs/positions and count. Press Home, force-stop via the commands below, relaunch. Confirm exact restored board, counter, no stale effects and functional touch targets.
+4. Complete Level 1 through UI taps. Confirm one victory panel and Level 2 unlocked. Exit/force-stop/relaunch; confirm completion retained. Replay/restart Level 1, then select unlocked Level 2 and confirm the correct board. A replay must not revoke completion.
+5. For an actual upgrade, first use CODEX 09 on a development device with the same signing key. Complete Levels 1 and 2, replay Level 1 and remove several pairs. Preserve the save file and app data. Install CODEX 10 with `adb install -r`. Confirm Level 1 starts fresh v3, completed {1,2} and Level 3 unlock survive. Relaunch again; no repeated recovery. Never uninstall or clear data to bypass a defect or signature mismatch.
+6. Repeat update with an unfinished Level 2 attempt. Its exact board/history must survive. Confirm stale v2 Level 1 activity Bundle does not resurrect selection or moves after migration.
+7. Complete all five levels through geometry-derived instrumentation. Check Next, Replay, selector confirmation/cancellation, deadlock Restart, recreation mid-selection, effect positions after matches and effect cancellation on restart/level change. Use current definitions rather than historical coordinate lists below.
+8. Ask the player whether new Level 1 still feels trivial, whether Level 2 is harder, and whether any restart resulted from hidden information. Record the answer even if it contradicts analyzer targets.
+
+```sh
+./gradlew :app:assembleDebug :app:assembleDebugAndroidTest :app:connectedDebugAndroidTest
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb shell am start -W -n com.tilebloom.game/.presentation.MainActivity
+# After several pairs and Home:
+adb shell am force-stop com.tilebloom.game
+adb shell am start -W -n com.tilebloom.game/.presentation.MainActivity
+adb shell run-as com.tilebloom.game cat files/player-progress-v1
+```
+
+| Check | Device/build | Observed result | Screenshot/log |
+|---|---|---|---|
+| Compact / medium / large fit | | | |
+| Several pairs survive process restart | | | |
+| Completion / unlocking survives restart | | | |
+| Actual CODEX 09 Level 1 upgrade | | | |
+| Compatible Level 2 upgrade | | | |
+| Unassisted Level 1 difficulty | | | |
+| Level 1 versus Level 2 | | | |
 
 Play Levels 1–5 in order without following a solution witness. Record a restart when Restart or Replay begins a new attempt; record every deadlock. Time only if measured, noting interruptions. Do not change seeds during this evaluation.
 

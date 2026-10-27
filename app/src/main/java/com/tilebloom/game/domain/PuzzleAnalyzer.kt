@@ -43,7 +43,24 @@ data class PuzzleAnalysis(
     val pairRemovals get() = tileCount / 2
     val complete get() = unknownAlternatives == 0
 }
+data class MoveImpact(val move: PairMove, val newlyAvailable: Set<Int>, val result: SearchResult)
 object PuzzleAnalyzer {
+    /** Every legal association, with a shared budget. Empty unlock sets can be equivalent
+     * immediately without being equivalent for eventual solvability. */
+    fun alternatives(tiles: List<Tile>, budget: Int = 10000): List<MoveImpact> {
+        require(budget >= 0)
+        val game = Game(tiles.filterNot { it.removed })
+        val before = game.remaining.filter { game.isAvailable(it.id) }.map { it.id }.toSet()
+        var nodes = 0
+        return game.matchingPairs().map { move ->
+            val remaining = game.remaining.filter { it.id != move.first && it.id != move.second }
+            val result = PuzzleSolver.solve(remaining, budget - nodes)
+            nodes += result.nodes
+            MoveImpact(move, remaining.filter { Rules.available(it, remaining) && it.id !in before }
+                .map { it.id }.toSet(), result)
+        }
+    }
+
     /** Entire analysis shares a strict node budget, including all witness alternatives. */
     fun analyze(level: LevelDefinition, budget: Int = 10000): PuzzleAnalysis {
         require(budget >= 0)
@@ -64,13 +81,10 @@ object PuzzleAnalyzer {
             val before = game.remaining.filter { game.isAvailable(it.id) }.map { it.id }.toSet()
             val signatures = mutableSetOf<Set<Int>>()
             var stateSafe = false; var stateDead = false
-            for (move in moves) {
-                val remaining = game.remaining.filter { it.id != move.first && it.id != move.second }
-                // Newly available IDs exclude the removed pair: order-independent moves share a signature.
-                signatures.add(remaining.filter { Rules.available(it, remaining) && it.id !in before }.map { it.id }.toSet())
-                val result = PuzzleSolver.solve(remaining, budget - nodes)
-                nodes += result.nodes
-                when (result.outcome) {
+            for (impact in alternatives(game.remaining, budget - nodes)) {
+                signatures.add(impact.newlyAvailable)
+                nodes += impact.result.nodes
+                when (impact.result.outcome) {
                     Solvability.SOLVABLE -> { safe++; stateSafe = true }
                     Solvability.UNSOLVABLE -> { dead++; stateDead = true }
                     else -> unknown++

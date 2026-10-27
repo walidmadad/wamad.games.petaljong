@@ -1,3 +1,25 @@
+# CODEX 10 validation — current evidence
+
+This section supersedes all historical artifact/count claims below.
+
+- Diagnostic Kotlin 1.9.24, Java 17, JUnitCore: **139 PASS** (127 previous purposes retained, 12 new tests). Final suite 6.31 s; 60-candidate portfolio 328 ms; 120-board matrix 3,766 ms. Single desktop timings.
+- Host workflow regression tests: **10 PASS**, fake-tool coverage only.
+- Android instrumentation: **15 compiled, zero executed**. Fourteen prior methods adapted/preserved; one old-version save upgrade launch test added. Gameplay uses real view taps, not direct engine moves.
+- Standard Gradle compilation, Gradle JVM tests and Lint: **NOT EXECUTED**. Previously diagnosed read-only wrapper cache and restricted listener failures were not repeatedly retried in the unchanged sandbox.
+- Android installation, current rendering, connected tests, process restoration, permanent save runtime, real update migration and human difficulty: **NOT VERIFIED / NOT EXECUTED**. No screenshot or device result establishes them.
+- Portfolio: all 60 boards validate and finish WON through production witness replay. All portfolio alternatives resolve within 10,000 nodes per candidate; zero UNKNOWN. Separate existing 16-board/1,000-node analyzer regression records two exhausted analyses and one candidate-quality exhaustion; these are UNKNOWN, not UNSOLVABLE.
+- CODEX 09 schema-1 migration preserves valid completion/unlock records, resets only incompatible old Level 1 history, and round-trips new saves. Compatible Level 2 history remains byte-identical. JVM evidence only.
+
+New debug APK: `/home/walid/Documents/projects/androidGames/TileBloom/app/build/outputs/apk/debug/app-debug.apk`, **745,875 bytes**, built from current source using `tools/verify_offline.py` with Java 17 / cached Kotlin 1.9.24 / SDK 36 / Build Tools 35.0.0. This is a diagnostic build, not Gradle. Size coincides with the previous artifact but SHA-256 differs: **32747acd23b102a57b22afe42b5fda73cd341187e759e4c6573d2f79a403eb6b**. New DEX includes `winding`, `INTRODUCTORY_VERSION` and `newlyAvailable`; stale artifact not reused.
+
+`zipalign -c 4`: PASS. `apksigner verify --verbose`: PASS, one signer, v2/v3 signatures. aapt2 badging: package `com.tilebloom.game`, debug enabled, versionCode 1 / versionName 0.1, min SDK 26 / target SDK 36. Actual Android runtime: **NOT EXECUTED**.
+
+Logs: `/tmp/tilebloom10-build.log`, `/tmp/tilebloom10-tests.log`, `/tmp/tilebloom10-host-tests.log`. Tracked reproducible evidence: [candidate CSV](docs/codex10-candidates.csv), [selected-board analysis](docs/codex10-analysis.txt), [report and acceptance table](CODEX_10_REPORT.md). On an authorized host use the exact commands in report section L and HOST_VERIFICATION.md; complete the CODEX 10 checklist in PLAYTEST_01.md without clearing application data.
+
+---
+
+Historical evidence below does not verify CODEX 10.
+
 # CODEX 09 validation — current evidence
 
 This section supersedes earlier iteration counts and artifact evidence below.

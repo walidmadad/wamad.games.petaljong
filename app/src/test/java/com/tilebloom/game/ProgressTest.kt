@@ -40,7 +40,7 @@ class ProgressTest {
     @Test fun restartKeepsEarlierCompletions() { val c=third(); c.session.restart(); assertEquals(setOf(1,2),reload(c).capture().completed) }
     @Test fun deadlockDoesNotUnlock() {
         val c=ProgressController()
-        listOf(16 to 20,0 to 4,8 to 12,17 to 21,1 to 5,9 to 13,15 to 18,19 to 23).forEach { assertTrue(c.session.game.match(it.first,it.second)) }
+        deadlockPath(c.session.game).forEach { assertTrue(c.session.game.match(it.first,it.second)) }
         assertEquals(Status.NO_MOVES,c.session.game.status); assertEquals(1,reload(c).highestUnlocked)
     }
     @Test fun victoryRestores() { val c=ProgressController(); win(c); assertEquals(Status.WON,reload(c).session.game.status) }

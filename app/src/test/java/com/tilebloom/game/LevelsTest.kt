@@ -12,8 +12,8 @@ class LevelsTest {
     }
     @Test fun introductoryFixtureVersioned() {
         val l = Levels.get(1)
-        assertNotEquals(LevelOne.tiles(), l.tiles); assertEquals(LevelOne.witness, l.witness); assertEquals(2,l.version)
-        assertEquals(24, l.tiles.size); assertEquals(0L, l.seed)
+        assertNotEquals(LevelOne.tiles(), l.tiles); assertNotEquals(LevelOne.witness, l.witness); assertEquals(3,l.version)
+        assertEquals(24, l.tiles.size); assertEquals(123L, l.seed)
     }
     @Test fun reproducible() { assertEquals(Levels.get(3), Levels.get(3)) }
     @Test fun seedsDiffer() {

@@ -1,3 +1,11 @@
+# CODEX 10 supplement
+
+Current evidence and exact APK identity are in VALIDATION.md. Level 1 is now winding v3, seed 123; all historical Level 1 coordinate/ID sequences below are obsolete. Use the current witness from Levels.get(1), or CODEX_10_REPORT.md section F, for verification. Instrumentation now has 15 methods (compiled only here). Actual runtime and save persistence remain unverified. Use the CODEX 10 checklist in PLAYTEST_01.md, including real process restart and a same-signature update from CODEX 09 without clearing data. Schema 1 remains durable; old statements below claiming no persistent progression are historical and no longer apply.
+
+Standard Gradle and ADB failures were already diagnosed in this unchanged sandbox and were not repeatedly retried. Run the host commands below only in an authorized unrestricted environment with Java 17. Do not uninstall a player installation to work around a signing mismatch; preserve its app data.
+
+---
+
 # CODEX 09 persistence verification supplement
 
 This section supersedes historical runtime status below. Current sandbox: wrapper cannot create its cache lock (read-only filesystem); ADB cannot open its server listener (Operation not permitted). Standard Gradle tasks, Lint and connected instrumentation were NOT EXECUTED. Diagnostic builds are separate evidence.

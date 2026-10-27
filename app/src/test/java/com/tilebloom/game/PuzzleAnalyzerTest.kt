@@ -33,8 +33,8 @@ class PuzzleAnalyzerTest {
         }
         println("MATRIX SUMMARY boards=16 candidates=$attempts acceptedProfiles=$accepted fallback=${16-accepted} discardedCandidates=${attempts-16} searchExhausted=$exhausted candidateSearchExhausted=$candidateExhausted generationMs=${generation/1000000} analysisMs=${analysis/1000000}")
     }
-    @Test fun levelOneFixture() {
-        val l=Levels.get(1); val a=PuzzleAnalyzer.analyze(l)
+    @Test fun legacyLevelOneFixture() {
+        val l=Levels.legacyIntroductory; val a=PuzzleAnalyzer.analyze(l)
         assertEquals(2,a.initialPairs); assertEquals(1,a.riskyChoiceStates)
         assertEquals(List(6){4},l.tiles.groupingBy { it.symbol }.eachCount().values.toList())
         val game=Game(l.tiles); listOf(16 to 20,0 to 4,8 to 12,17 to 21,1 to 5,9 to 13,15 to 18,19 to 23).forEach { assertTrue(game.match(it.first,it.second)) }
