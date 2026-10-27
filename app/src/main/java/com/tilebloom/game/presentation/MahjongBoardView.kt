@@ -4,56 +4,90 @@ import android.content.Context
 import android.graphics.*
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import com.tilebloom.game.R
 import com.tilebloom.game.domain.*
+import com.tilebloom.game.presentation.board.*
 import kotlin.math.*
 
 class MahjongBoardView(context: Context, private val game: Game, private val changed: () -> Unit) : View(context) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private var downX = 0f
-    private var downY = 0f
-    init { contentDescription = context.getString(R.string.board_description); isClickable = true }
-    private val scale: Float get() = min(width / 4.85f, height / 5.85f).coerceAtLeast(0f)
-    private fun rect(t: Tile): RectF {
-        val s = scale
-        val ox = (width - 4.5f * s) / 2
-        val oy = (height - 5.4f * s) / 2 + .12f * s
-        return RectF(ox + t.x.toFloat() * s, oy + t.y.toFloat() * s * 1.3f - t.layer * s * .09f,
-            ox + (t.x.toFloat() + 1) * s, oy + (t.y.toFloat() + 1) * s * 1.3f - t.layer * s * .09f)
+    private val gesture = TileTapGesture(ViewConfiguration.get(context).scaledTouchSlop.toFloat())
+    private var blockedTileId: Int? = null
+    private val clearBlocked = Runnable { blockedTileId = null; invalidate() }
+    private fun geometry() = BoardGeometry(width.toFloat(), height.toFloat(),
+        BoardPadding(paddingLeft.toFloat(), paddingTop.toFloat(), paddingRight.toFloat(), paddingBottom.toFloat()))
+    // Read-only presentation queries also allow instrumentation to assert real touch results.
+    val selectedTileId get() = game.selected
+    val remainingTileCount get() = game.remaining.size
+    fun tileCenter(id: Int): BoardPoint? = game.remaining.find { it.id == id }?.let { geometry().face(it).center }
+    init {
+        isClickable = true
+        importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
+        refresh()
     }
-    private fun hit(t: Tile, x: Float, y: Float): Boolean {
-        val r = rect(t).apply { inset(scale * .035f, scale * .035f); bottom += scale * .045f }
-        if (!r.contains(x, y)) return false
-        val radius = scale * .1f
-        val cx = x.coerceIn(r.left + radius, r.right - radius)
-        val cy = y.coerceIn(r.top + radius, r.bottom - radius)
-        return hypot(x - cx, y - cy) <= radius
+    fun refresh() {
+        val selected = game.tiles.find { it.id == game.selected }
+        val selectedText = selected?.let {
+            val symbol = when (it.symbol) {
+                Symbol.LEAF -> R.string.symbol_leaf
+                Symbol.LOTUS -> R.string.symbol_lotus
+                Symbol.FERN -> R.string.symbol_fern
+                Symbol.FLOWER -> R.string.symbol_flower
+                Symbol.BERRIES -> R.string.symbol_berries
+                Symbol.SUNFLOWER -> R.string.symbol_sunflower
+            }
+            context.getString(R.string.board_selected, context.getString(symbol))
+        } ?: context.getString(R.string.board_none_selected)
+        contentDescription = context.getString(R.string.board_state, remainingTileCount, selectedText)
+        invalidate()
     }
-    private fun ordered() = game.remaining.sortedWith(compareBy<Tile> { it.layer }.thenBy { it.y }.thenBy { it.x }.thenBy { it.id })
+    fun clearFeedback() {
+        removeCallbacks(clearBlocked)
+        blockedTileId = null
+        gesture.cancel()
+        invalidate()
+    }
+    private fun BoardRect.android() = RectF(left, top, right, bottom)
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        for (tile in ordered()) {
-            val r = rect(tile)
-            val face = RectF(r).apply { inset(scale * .035f, scale * .035f) }
+        val layout = geometry()
+        val scale = layout.scale
+        if (scale <= 0f) return
+        for (tile in layout.drawOrder(game.tiles)) {
+            val r = layout.footprint(tile).android()
+            val face = layout.face(tile)
+            val available = game.isAvailable(tile.id)
+            val selected = game.selected == tile.id
             paint.style = Paint.Style.FILL
             paint.color = Color.rgb(6, 27, 22)
-            canvas.drawRoundRect(RectF(face).apply { offset(0f, scale * .09f) }, scale * .1f, scale * .1f, paint)
+            canvas.drawRoundRect(layout.shadow(tile).android(), layout.radius, layout.radius, paint)
             paint.color = Color.rgb(187, 173, 139)
-            canvas.drawRoundRect(RectF(face).apply { offset(0f, scale * .045f) }, scale * .1f, scale * .1f, paint)
-            paint.color = if (game.isAvailable(tile.id)) Color.rgb(249, 242, 219) else Color.rgb(191, 192, 170)
-            canvas.drawRoundRect(face, scale * .1f, scale * .1f, paint)
+            canvas.drawRoundRect(layout.edge(tile).android(), layout.radius, layout.radius, paint)
+            paint.color = if (available) Color.rgb(249, 242, 219) else Color.rgb(220, 220, 200)
+            canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
+            // Keep all border strokes inside the physical face so selection never changes hit bounds.
             paint.style = Paint.Style.STROKE
-            paint.strokeWidth = if (game.selected == tile.id) scale * .045f else scale * .014f
-            paint.color = if (game.selected == tile.id) Color.rgb(219, 174, 64) else Color.rgb(151, 145, 112)
-            canvas.drawRoundRect(face, scale * .1f, scale * .1f, paint)
+            paint.strokeWidth = if (selected) scale * .045f else scale * .014f
+            paint.color = when {
+                selected -> Color.rgb(193, 148, 48)
+                blockedTileId == tile.id -> Color.rgb(192, 170, 111)
+                else -> Color.rgb(151, 145, 112)
+            }
+            canvas.drawRoundRect(face.inset(paint.strokeWidth / 2).android(), layout.radius, layout.radius, paint)
+            if (selected) {
+                paint.strokeWidth = scale * .012f
+                paint.color = Color.rgb(227, 201, 135)
+                canvas.drawRoundRect(face.inset(scale * .075f).android(), scale * .06f, scale * .06f, paint)
+            }
             paint.style = Paint.Style.FILL
             canvas.save()
             canvas.translate(r.centerX(), r.centerY())
             canvas.scale(scale * .34f, scale * .34f)
             BotanicalSymbols.draw(canvas, paint, tile.symbol)
             canvas.restore()
-            if (!game.isAvailable(tile.id)) {
-                // Two engraved corner bars supplement the muted unavailable surface.
+            if (!available) {
+                // Engraved corner bars distinguish blocking without relying on color.
                 paint.color = Color.rgb(103, 113, 91); paint.strokeWidth = scale * .025f
                 canvas.drawLine(face.left + scale * .12f, face.top + scale * .12f, face.left + scale * .25f, face.top + scale * .12f, paint)
                 canvas.drawLine(face.right - scale * .25f, face.top + scale * .12f, face.right - scale * .12f, face.top + scale * .12f, paint)
@@ -62,19 +96,45 @@ class MahjongBoardView(context: Context, private val game: Game, private val cha
     }
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> { downX = event.x; downY = event.y; return true }
+            MotionEvent.ACTION_DOWN -> {
+                val tile = geometry().hitTest(game.tiles, event.x, event.y)
+                gesture.down(event.getPointerId(0), tile?.id, event.x, event.y)
+            }
+            MotionEvent.ACTION_MOVE -> {
+                // Check historical points too: a drag that returns to its origin is still a drag.
+                for (i in 0 until event.historySize) {
+                    gesture.move(event.getPointerId(0), event.getHistoricalX(0, i), event.getHistoricalY(0, i))
+                }
+                gesture.move(event.getPointerId(0), event.x, event.y)
+            }
+            MotionEvent.ACTION_POINTER_DOWN, MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_CANCEL -> gesture.cancel()
             MotionEvent.ACTION_UP -> {
-                if (hypot(event.x - downX, event.y - downY) <= android.view.ViewConfiguration.get(context).scaledTouchSlop) {
-                    ordered().asReversed().firstOrNull { hit(it, event.x, event.y) }?.let {
-                        game.select(it.id); changed()
+                val tile = geometry().hitTest(game.tiles, event.x, event.y)
+                val id = gesture.up(event.getPointerId(0), tile?.id, event.x, event.y)
+                if (id != null) {
+                    if (game.isAvailable(id)) {
+                        removeCallbacks(clearBlocked); blockedTileId = null
+                        game.select(id)
+                        changed()
+                    } else {
+                        // The touched upper tile still consumes the tap; never search below it.
+                        removeCallbacks(clearBlocked); blockedTileId = id
+                        postDelayed(clearBlocked, 160L)
+                        invalidate()
                     }
                     performClick()
                 }
-                return true
             }
-            MotionEvent.ACTION_CANCEL -> return true
         }
         return true
+    }
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        clearFeedback()
+    }
+    override fun onDetachedFromWindow() {
+        clearFeedback()
+        super.onDetachedFromWindow()
     }
     override fun performClick(): Boolean { super.performClick(); return true }
 }

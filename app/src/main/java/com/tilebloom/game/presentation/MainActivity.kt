@@ -18,17 +18,12 @@ class MainActivity : Activity() {
     private lateinit var restart: Button
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Replay validated pairs rather than restoring arbitrary mutable domain data.
-        savedInstanceState?.getIntArray("removed")?.toSet()?.let { removed ->
-            var progress: Boolean
-            do {
-                progress = false
-                game.matchingPairs().firstOrNull { it.first in removed && it.second in removed }?.let {
-                    progress = game.match(it.first, it.second)
-                }
-            } while (progress)
+        savedInstanceState?.getIntArray("moves")?.let { moves ->
+            if (moves.size % 2 == 0) {
+                game.restore(GameSnapshot(moves.toList().chunked(2).map { PairMove(it[0], it[1]) },
+                    savedInstanceState.getInt("selected", -1).takeIf { it >= 0 }))
+            }
         }
-        savedInstanceState?.getInt("selected", -1)?.takeIf { it >= 0 }?.let(game::select)
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
@@ -54,16 +49,22 @@ class MainActivity : Activity() {
         label(getString(R.string.app_name), 30f)
         label(getString(R.string.subtitle), 15f)
         label(getString(R.string.level), 16f)
-        counter = label("", 18f)
+        counter = label("", 18f).apply {
+            id = R.id.counter
+            accessibilityLiveRegion = android.view.View.ACCESSIBILITY_LIVE_REGION_POLITE
+        }
         board = MahjongBoardView(this, game) { update() }
         board.id = R.id.board
         root.addView(board, LinearLayout.LayoutParams(-1, 0, 1f))
-        feedback = label("", 18f)
-        label(getString(R.string.instruction), 14f)
+        feedback = label("", 18f).apply {
+            id = R.id.feedback
+            accessibilityLiveRegion = android.view.View.ACCESSIBILITY_LIVE_REGION_POLITE
+        }
+        label(getString(R.string.instruction), 16f)
         restart = Button(this).apply {
             id = R.id.restart
             minimumHeight = dp(48)
-            setOnClickListener { game.restart(); update() }
+            setOnClickListener { game.restart(); board.clearFeedback(); update() }
         }
         root.addView(restart, LinearLayout.LayoutParams(-1, -2))
         setContentView(root)
@@ -79,11 +80,11 @@ class MainActivity : Activity() {
             Status.NO_MOVES -> getString(R.string.no_moves) + "\n" + getString(R.string.no_moves_detail)
         }
         restart.setText(if (game.status == Status.WON) R.string.play_again else R.string.restart)
-        board.invalidate()
+        board.refresh()
     }
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putIntArray("removed", game.tiles.filter { it.removed }.map { it.id }.toIntArray())
+        outState.putIntArray("moves", game.snapshot().moves.flatMap { listOf(it.first, it.second) }.toIntArray())
         outState.putInt("selected", game.selected ?: -1)
     }
 }

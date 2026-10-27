@@ -6,6 +6,7 @@ enum class Symbol { LEAF, LOTUS, FERN, FLOWER, BERRIES, SUNFLOWER }
 enum class Status { PLAYING, WON, NO_MOVES }
 data class Tile(val id: Int, val symbol: Symbol, val x: Double, val y: Double, val layer: Int, val removed: Boolean = false)
 data class PairMove(val first: Int, val second: Int)
+data class GameSnapshot(val moves: List<PairMove>, val selectedId: Int?)
 
 object Rules {
     // Board-space tolerance: contacts within one millionth of a tile are edges.
@@ -30,6 +31,7 @@ class Game(definition: List<Tile>) {
         require(initial.all { it.x.isFinite() && it.y.isFinite() && it.layer >= 0 })
     }
     private var current = initial.toList()
+    private var history = emptyList<PairMove>()
     val tiles: List<Tile> get() = current.toList()
     val remaining: List<Tile> get() = current.filterNot { it.removed }
     var selected: Int? = null
@@ -46,6 +48,7 @@ class Game(definition: List<Tile>) {
         val second = current.find { it.id == b } ?: return false
         if (a == b || first.symbol != second.symbol || !isAvailable(a) || !isAvailable(b)) return false
         current = current.map { if (it.id == a || it.id == b) it.copy(removed = true) else it }
+        history = history + PairMove(a, b)
         selected = null
         return true
     }
@@ -54,7 +57,22 @@ class Game(definition: List<Tile>) {
         val previous = selected
         when { previous == id -> selected = null; previous != null && match(previous, id) -> Unit; else -> selected = id }
     }
-    fun restart() { current = initial.toList(); selected = null }
+    fun snapshot() = GameSnapshot(history.toList(), selected)
+    // Replay exact accepted moves; arbitrary re-pairing of removed IDs can deadlock.
+    // Validate on a candidate first so corrupt state never partially changes this game.
+    fun restore(snapshot: GameSnapshot): Boolean {
+        val candidate = Game(initial)
+        if (!snapshot.moves.all { candidate.match(it.first, it.second) }) return false
+        snapshot.selectedId?.let {
+            if (!candidate.isAvailable(it)) return false
+            candidate.select(it)
+        }
+        current = candidate.current.toList()
+        history = candidate.history.toList()
+        selected = candidate.selected
+        return true
+    }
+    fun restart() { current = initial.toList(); history = emptyList(); selected = null }
 }
 
 object LevelOne {

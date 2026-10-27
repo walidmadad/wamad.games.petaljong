@@ -11,6 +11,15 @@
     <string name="no_moves">No More Matches</string>
     <string name="no_moves_detail">Try the level again.</string>
     <string name="board_description">Mahjong garden board</string>
+    <string name="board_state">Mahjong garden board. %1$d tiles remaining. %2$s</string>
+    <string name="board_selected">Selected: %1$s.</string>
+    <string name="board_none_selected">No tile selected.</string>
+    <string name="symbol_leaf">Leaf</string>
+    <string name="symbol_lotus">Lotus</string>
+    <string name="symbol_fern">Fern</string>
+    <string name="symbol_flower">Five-petal flower</string>
+    <string name="symbol_berries">Berry cluster</string>
+    <string name="symbol_sunflower">Sunflower</string>
     <style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:colorAccent">#CBB578</item>

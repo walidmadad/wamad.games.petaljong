@@ -1,1 +1,1 @@
-<resources><item name="board" type="id"/><item name="restart" type="id"/></resources>
+<resources><item name="board" type="id"/><item name="restart" type="id"/><item name="counter" type="id"/><item name="feedback" type="id"/></resources>

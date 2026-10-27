@@ -1,6 +1,6 @@
 # TileBloom — Mahjong Garden Puzzle
 
-CODEX 01 / version 0.1: an offline, portrait Android Mahjong Solitaire prototype with **one deterministic level**. No accounts, permissions, services, advertising, analytics, or network access.
+CODEX 02 / application version 0.1: an offline, portrait Android Mahjong Solitaire prototype with **one deterministic level**. No accounts, permissions, services, advertising, analytics, or network access.
 
 ## Stack
 
@@ -12,10 +12,30 @@ Kotlin 1.9.24, Java 17, Android Gradle Plugin 8.12.1, Gradle wrapper 8.13, compi
 - `app/src/main/java/com/tilebloom/game/presentation/MainActivity.kt`: screen, counter, terminal feedback, restart, saved-instance restoration.
 - `app/src/main/java/com/tilebloom/game/presentation/MahjongBoardView.kt`: responsive rendering, original symbols, explicit drawing order and reverse-order touch testing.
 - `app/src/main/res/values/`: English strings, theme and view IDs.
-- `app/src/test/`: 31 JVM rule and interaction-state tests.
-- `app/src/androidTest/`: launch/restart smoke test using the platform instrumentation runner.
+- `app/src/test/`: 63 JVM tests: 31 original engine tests, 16 shared-geometry tests, 9 restart/restoration tests, and 7 gesture tests.
+- `app/src/androidTest/`: six compiled-only Android tests for launch, coordinate-tapped victory/deadlock, selection/drag, restart during touch, and activity recreation.
 - `tools/verify_offline.py`: fallback compiler/JUnit/APK pipeline for this restricted environment.
 - `VALIDATION.md`: actual verification outcomes and environment limitations.
+- `HOST_VERIFICATION.md`: exact unrestricted Linux host commands and manual device checklist.
+
+## CODEX 02 changes and actual verification
+
+The original engine rules, all 31 original tests, exact 24-tile layout, six symbols and twelve-pair witness are preserved. No dependencies or board balance changed.
+
+- Shared pure Kotlin `presentation/board/BoardGeometry.kt` supplies face, edge, shadow, scale, centering, padding, coordinate transforms and deterministic stacking order. Rendering and hit testing consume the same geometry. The visible topmost physical tile consumes the tap even when legally unavailable. Decorative shadows do not receive touches.
+- `TileTapGesture.kt` requires the same pointer and visible tile at press/release. Dragging beyond slop (including a move away and back), cancellation, pointer changes, and restart invalidate the gesture. Android also checks MotionEvent historical samples.
+- Selection has a restrained double gold outline inside the tile face. Blocked faces are lighter, retain engraved corner markers, and show a 160 ms border response on tap. Restart, resize and detachment clear transient feedback and pending gestures.
+- Matching removal stays immediate. No disappearance animation or animation-dependent game state was introduced.
+- Saved instance state now records the exact legal move history and selection. Restoration replays production validation atomically on a candidate board instead of guessing pairings from a removed-ID set. Corrupt snapshots do not partially restore the game. The volatile CODEX 01 removed-ID Bundle format is not migrated; this is not durable saving or an upgrade-persistence guarantee.
+- Instruction text is 16 sp; counter and status are polite accessibility live regions. The board exposes a localized remaining/selected summary. Individual screen-reader tile navigation remains unimplemented, and TalkBack behavior is unverified.
+
+**Verification:** 63/63 JVM tests passed. Six Android test methods compiled but **were not executed**. A valid debug APK was built through the standalone fallback; Gradle and ADB remain blocked by sandbox filesystem/socket restrictions. Full Android launch, touch delivery, screenshots and lifecycle behavior remain unverified. See [VALIDATION.md](VALIDATION.md) and [HOST_VERIFICATION.md](HOST_VERIFICATION.md).
+
+The configured AGP/Gradle/JDK/SDK combination matches the [AGP 8.12 compatibility requirements](https://developer.android.com/build/releases/agp-8-12-0-release-notes). Kotlin 1.9.24 is outside the [Kotlin plugin's fully supported Gradle/AGP range](https://kotlinlang.org/docs/gradle-configure-project.html); this is a host-verification caveat, not a demonstrated source error. Versions are unchanged until a real host Gradle result establishes whether adjustment is necessary.
+
+## Activity and process state
+
+Ordinary background/foreground retains the existing activity state when Android keeps it alive. Saved instance state encodes accepted pairs plus selection for activity/task recreation; domain replay is JVM-tested across all witness prefixes, victory and a real Level 1 deadlock. Actual Bundle/OS restoration is only compiled-test coverage, not device-verified. There is no file/database persistence: force-stop, task dismissal or a fresh launch need not restore progress.
 
 ## Play
 
@@ -51,13 +71,13 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb shell am start -n com.tilebloom.game/.presentation.MainActivity
 ```
 
-For this sandbox only, `python3 tools/verify_offline.py` directly invokes cached Kotlin 1.9.24, JUnitCore, AAPT2, javac, D8, zipalign and apksigner. It produces a debug-signed APK at the same path. It does **not** stand in for a passing Gradle build, Lint, device run or instrumentation run. Its SDK default is environment-specific; override with `ANDROID_HOME`.
+For this sandbox only, `python3 tools/verify_offline.py` directly invokes cached Kotlin 1.9.24, JUnitCore, AAPT2, javac, D8, zipalign and apksigner. It produces a debug-signed APK at the same path. It does **not** stand in for a passing Gradle build, Lint, device run or instrumentation run. It resolves the SDK from `ANDROID_HOME`, `ANDROID_SDK_ROOT`, or the conventional `$HOME/Android/Sdk`. It discovers all current JVM test classes and clears stale compiled artifacts before verification, preserving the local debug key.
 
 ## Limitations and next improvements
 
 One fixed level, immediate removal, no sound, hints, undo, shuffle or progression. English resources establish a translation foundation; no additional locales are included. Custom-board screen-reader navigation is not implemented. Basic standard controls, contrast, silhouettes and selection cues are present. Runtime layout, Android lifecycle and touch usability still need device validation; no human playtesting has occurred.
 
-CODEX 02 should prioritize device/emulator validation on compact and large portrait screens, automated actual-touch witness playback, lifecycle restoration tests, clearer blocked-tile feedback, and accessibility exploration before adding levels or boosters.
+CODEX 03 should first execute the compiled Android interaction tests and inspect compact/large-phone screenshots on an unrestricted host, then address confirmed touch, layout, lifecycle or accessibility defects before adding levels or boosters.
 
 ## Git in this managed workspace
 

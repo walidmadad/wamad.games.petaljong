@@ -4,13 +4,19 @@ Builds a genuine debug APK and runs production engine tests using JUnitCore.
 The standard supported build remains ./gradlew; this does not run Android Lint.
 """
 from pathlib import Path
-import glob, os, subprocess, zipfile
+import glob, os, shutil, subprocess, zipfile
 ROOT = Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
-SDK = Path(os.environ.get('ANDROID_HOME', '/home/walid/Android/Sdk'))
+SDK = Path(os.environ.get('ANDROID_HOME') or os.environ.get('ANDROID_SDK_ROOT') or Path.home() / 'Android/Sdk')
 CACHE = Path.home() / '.gradle/caches/modules-2/files-2.1'
 OUT = ROOT / 'app/build/offline'
 OUT.mkdir(parents=True, exist_ok=True)
+# Remove stale compiled artifacts, preserving only the local debug signing identity.
+for item in OUT.iterdir():
+    if item.name != 'debug.keystore':
+        if item.is_dir(): shutil.rmtree(item)
+        else: item.unlink()
+
 def jar(group, artifact, version):
     return glob.glob(str(CACHE / group / artifact / version / '*' / '*.jar'))[0]
 def run(*args):
@@ -28,9 +34,12 @@ def kotlin(sources, destination, cp):
         '-jvm-target','17','-classpath',cp,'-d',destination,*sources)
 classes = OUT / 'classes'; classes.mkdir(exist_ok=True)
 testclasses = OUT / 'test-classes'; testclasses.mkdir(exist_ok=True)
-kotlin(list((ROOT/'app/src/main/java/com/tilebloom/game/domain').glob('*.kt')) + list((ROOT/'app/src/test/java').rglob('*.kt')),
+tests = sorted((ROOT/'app/src/test/java').rglob('*Test.kt'))
+kotlin(list((ROOT/'app/src/main/java/com/tilebloom/game/domain').glob('*.kt')) +
+       list((ROOT/'app/src/main/java/com/tilebloom/game/presentation/board').glob('*.kt')) + tests,
        testclasses, ':'.join([stdlib, annotations, junit, hamcrest]))
-run('java','-cp',':'.join([str(testclasses),stdlib,junit,hamcrest]),'org.junit.runner.JUnitCore','com.tilebloom.game.GameTest')
+run('java','-cp',':'.join([str(testclasses),stdlib,junit,hamcrest]),'org.junit.runner.JUnitCore',
+    *['.'.join(p.relative_to(ROOT/'app/src/test/java').with_suffix('').parts) for p in tests])
 res = OUT / 'resources.zip'
 run(bt/'aapt2','compile','--dir','app/src/main/res','-o',res)
 manifest = OUT / 'AndroidManifest.xml'
@@ -46,7 +55,7 @@ kotlin(list((ROOT/'app/src/androidTest/java').rglob('*.kt')), instrumentation,
        ':'.join([str(android), str(classes), stdlib, annotations,
                  str(SDK/'platforms/android-36/optional/android.test.runner.jar'),
                  str(SDK/'platforms/android-36/optional/android.test.base.jar')]))
-print('Instrumentation smoke test compiled; NOT executed.', flush=True)
+print('Instrumentation test sources compiled; NOT executed.', flush=True)
 bytecode = OUT / 'app.jar'
 run('jar','cf',bytecode,'-C',classes,'.')
 dex = OUT / 'dex'; dex.mkdir(exist_ok=True)
@@ -62,5 +71,6 @@ if not key.exists():
 apk = ROOT / 'app/build/outputs/apk/debug/app-debug.apk'
 apk.parent.mkdir(parents=True,exist_ok=True)
 run(bt/'apksigner','sign','--ks',key,'--ks-pass','pass:android','--out',apk,aligned)
+run(bt/'zipalign','-c','4',apk)
 run(bt/'apksigner','verify','--verbose',apk)
 print(f'APK: {apk} ({apk.stat().st_size} bytes)')
