@@ -16,9 +16,17 @@ import com.tilebloom.game.R
 import com.tilebloom.game.domain.*
 
 class MainActivity : Activity() {
+    companion object {
+        /** Instrumentation injection is ignored by release builds. No fake ships in main sources. */
+        var debugAdProvider: com.tilebloom.game.ads.GameAds? = null
+    }
     private lateinit var progress: ProgressController
     private val session get() = progress.session
-    private var saveOwner = 0L
+    private lateinit var ads: com.tilebloom.game.ads.GameAds
+    private lateinit var watchAd: Button
+    private lateinit var privacy: Button
+    private val adChanged: () -> Unit = { update() }
+    private var displayedBalance = -1
     private val game get() = session.game
     private lateinit var levelLabel: TextView
     private lateinit var victoryScroll: ScrollView
@@ -33,8 +41,9 @@ class MainActivity : Activity() {
     private lateinit var restart: Button
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        saveOwner = com.tilebloom.game.storage.ProgressRepository.acquire()
-        progress = ProgressController(com.tilebloom.game.storage.ProgressRepository.load(this))
+        progress = com.tilebloom.game.storage.GameStore.get(this)
+        ads = (if (com.tilebloom.game.BuildConfig.DEBUG) debugAdProvider else null)
+            ?: com.tilebloom.game.ads.RewardedAdManager.get(this)
         if (progress.recovered) android.util.Log.w("TileBloomSave", "Board snapshot rejected; completion retained")
         // Durable moves always win. Bundle may restore only a selection on that exact board.
         if (savedInstanceState != null) {
@@ -211,8 +220,8 @@ class MainActivity : Activity() {
             setTextColor(ColorStateList(arrayOf(intArrayOf(-android.R.attr.state_enabled), intArrayOf()),
                 intArrayOf(Color.rgb(191, 207, 187), ivory)))
             setOnClickListener {
-                if (game.canUndo) {
-                    if (game.undo()) { board.clearFeedback(); update() }
+                if (game.canUndo && progress.wallet.balance > 0) {
+                    if (progress.undo()) { board.clearFeedback(); update() }
                     else android.util.Log.e("TileBloomUndo", "Validated history reconstruction failed; board retained")
                 }
             }
@@ -220,9 +229,28 @@ class MainActivity : Activity() {
         actions.addView(undo, LinearLayout.LayoutParams(0, -2, 1f).apply { marginEnd = dp(8) })
         actions.addView(restart, LinearLayout.LayoutParams(0, -2, 1f))
         root.addView(actions, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(4) })
+        watchAd = Button(this).apply {
+            id = R.id.watch_ad
+            isAllCaps = false; minimumHeight = dp(48); styleVictory(this, true)
+            setOnClickListener {
+                if (progress.wallet.balance == 0 && game.canUndo && !ads.show(this@MainActivity)) {
+                    Toast.makeText(this@MainActivity, R.string.ad_unavailable, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        root.addView(watchAd)
+        privacy = Button(this).apply {
+            id = R.id.privacy_options
+            setText(R.string.privacy_options); isAllCaps = false; minimumHeight = dp(48)
+            styleVictory(this, false)
+            setOnClickListener { ads.privacy(this@MainActivity) }
+        }
+        root.addView(privacy)
         setContentView(root)
         root.requestApplyInsets()
         update()
+        ads.changed = adChanged
+        ads.consent(this)
     }
     private fun showLevels() {
         val current = session.level.id
@@ -270,7 +298,7 @@ class MainActivity : Activity() {
     }
     private fun dp(n: Int) = (n * resources.displayMetrics.density).toInt()
     private fun update() {
-        com.tilebloom.game.storage.ProgressRepository.save(this, saveOwner, progress.capture())
+        com.tilebloom.game.storage.GameStore.persist(this)
         levelLabel.text = getString(R.string.level_number, session.level.id) + " ▾"
         val presentation = com.tilebloom.game.presentation.board.ScreenPresentation.forStatus(game.status, session.canAdvance)
         val won = presentation.victory
@@ -296,10 +324,29 @@ class MainActivity : Activity() {
         }
         feedback.setTextColor(if (game.status == Status.PLAYING) Color.rgb(191, 207, 187) else Color.rgb(184, 163, 107))
         undo.visibility = if (presentation.footer) View.VISIBLE else View.GONE
-        undo.isEnabled = game.canUndo
-        undo.setText(if (game.status == Status.NO_MOVES) R.string.undo_last_move else R.string.undo)
+        undo.isEnabled = game.canUndo && progress.wallet.balance > 0
+        undo.text = getString(if (game.status == Status.NO_MOVES) R.string.undo_last_credits else R.string.undo_credits, progress.wallet.balance)
+        watchAd.visibility = if (game.canUndo && progress.wallet.balance == 0) View.VISIBLE else View.GONE
+        watchAd.setText(if (ads.loading) R.string.ad_loading else R.string.watch_ad)
+        watchAd.isEnabled = !ads.loading
+        privacy.visibility = if (ads.privacyRequired) View.VISIBLE else View.GONE
         restart.setText(if (game.status == Status.NO_MOVES) R.string.restart_level else R.string.restart)
+        if (ads.failed && progress.wallet.balance == 0 && game.canUndo) {
+            feedback.append("\n" + getString(R.string.ad_unavailable))
+        }
+        if (displayedBalance >= 0 && progress.wallet.balance > displayedBalance) {
+            Toast.makeText(this, R.string.reward_earned, Toast.LENGTH_SHORT).show()
+        }
+        displayedBalance = progress.wallet.balance
         board.refresh()
+    }
+    override fun onResume() {
+        super.onResume()
+        if (::ads.isInitialized && ::watchAd.isInitialized) { ads.changed = adChanged; update() }
+    }
+    override fun onDestroy() {
+        if (ads.changed === adChanged) ads.changed = null
+        super.onDestroy()
     }
     override fun onStop() {
         super.onStop()

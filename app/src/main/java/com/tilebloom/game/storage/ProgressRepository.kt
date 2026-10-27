@@ -18,13 +18,21 @@ object ProgressRepository {
     fun awaitWrites() { writer.submit {}.get() }
     @Synchronized fun useTestStorage(name: String?) {
         require(name == null || name.startsWith("test-"))
+        GameStore.resetForTestStorage()
         storageName = name ?: "player-progress-v1"; latest = null; owner++; lastWriteFailed = false
     }
     @Synchronized fun acquire(): Long = ++owner
     @Synchronized fun load(context: Context): PlayerProgress {
         val raw = latest ?: runCatching { file(context).openRead().bufferedReader().use { it.readTextBounded() } }.onFailure { if (it !is java.io.FileNotFoundException) Log.w("TileBloomSave", "Cannot read save", it) }.getOrNull()
         return raw?.let { runCatching { ProgressCodec.decode(it).also { p -> if (p.active == null) Log.w("TileBloomSave", "Missing or malformed board; safe board loaded") } }.getOrElse {
-            Log.w("TileBloomSave", "Invalid save envelope; using fresh progress", it); PlayerProgress()
+            Log.w("TileBloomSave", "Invalid save envelope; attempting conservative credit recovery", it)
+            // A malformed schema-2 balance is never interpreted as a new introductory allocation.
+            val lines = raw.split('\n').toMutableList()
+            if (lines.firstOrNull() == "2" && raw.length <= 8192) {
+                while (lines.size < 5) lines.add("")
+                lines[4] = "0"
+                runCatching { ProgressCodec.decode(lines.joinToString("\n")) }.getOrElse { PlayerProgress(undoCredits = 0) }
+            } else PlayerProgress()
         } } ?: PlayerProgress()
     }
     @Synchronized fun save(context: Context, token: Long, progress: PlayerProgress) {

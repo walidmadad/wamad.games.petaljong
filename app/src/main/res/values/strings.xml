@@ -10,6 +10,13 @@
     <string name="level">Level 1</string>
     <string name="pairs">Pairs left: %1$d</string>
     <string name="instruction">Select two matching free tiles</string>
+    <string name="undo_credits">Undo (%1$d)</string>
+    <string name="undo_last_credits">Undo Last Move (%1$d)</string>
+    <string name="watch_ad">Watch Ad +1 Undo</string>
+    <string name="ad_loading">Ad loading…</string>
+    <string name="ad_unavailable">Ad unavailable. Please try again later.</string>
+    <string name="reward_earned">One Undo credit earned</string>
+    <string name="privacy_options">Privacy options</string>
     <string name="undo">Undo</string>
     <string name="undo_last_move">Undo Last Move</string>
     <string name="restart_level">Restart Level</string>

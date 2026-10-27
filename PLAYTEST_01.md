@@ -1,3 +1,22 @@
+# CODEX 12 — Current status
+
+Status: **NOT PERFORMED for CODEX 12**. ADB could not create its socket listener; no emulator observations are invented. Use a new standard Gradle APK with the same signing identity as the installed build. Record device/API, build commit, consent state, network, observed balance and save/board outcome for each step.
+
+1. Upgrade with `adb install -r` without clearing data; confirm previous completed/unlocked levels and unfinished board survive.
+2. Confirm three initial credits after schema-1 migration. Match and Undo three times; verify 3→2→1→0 and exact pair restoration each time.
+3. Match once more; verify disabled Undo and Watch Ad +1 Undo. Restart must remain free.
+4. Tap Watch Ad once, confirm a Google **test advertisement** appears. Earn its reward; verify exactly one credit and no automatic Undo. Spend it; verify zero.
+5. Close/relaunch and recreate Activity; verify balance and board. Repeat load/reward around Activity recreation and backgrounding.
+6. Dismiss an unearned ad; verify no credit. Repeatedly tap before/during display; verify one presentation and at most one reward. Earn then dismiss; verify reward remains.
+7. Enable airplane mode; test loading and display failures, nonintrusive unavailable feedback, unchanged board and free Restart. Restore network and retry after cooldown.
+8. Reach NO_MOVES with and without credits. Verify credited Undo; at zero earn a test reward then Undo. Test ad unavailable plus Restart without regeneration before requesting Restart.
+9. Restart, replay and move to another unlocked level; verify no credit refill. Repeat legitimate matches/Undo, ads and relaunches; verify no tile/history corruption.
+10. Test required consent form, consent choices and Privacy options with configured UMP debug devices/geography. Verify no ad request when `canRequestAds()` is false and no gameplay block.
+
+Record actual outcomes before declaring PASS. Automated fake-provider tests are separate from this real Google test-ad procedure. Nothing should be published. See [report](CODEX_12_REPORT.md).
+
+---
+
 # CODEX 11 playtest additions (pending human/device execution)
 
 Install the updated APK with `adb install -r` without clearing real application data. Use a compatible signing identity; stop on signature mismatch rather than uninstalling and losing saves. Record device, API, screen dp, font scale and APK hash.

@@ -1,3 +1,9 @@
+# CODEX 12 — Current status
+
+Latest evidence: **159 JVM tests PASS; 10 host-workflow tests PASS**. Android Gradle was attempted twice and blocked by sandbox filesystem/network-interface restrictions. **26 instrumentation methods present, not compiled or executed** in this iteration. No new APK or real Google ad test is claimed. Logs are in `docs/codex12/`; [CODEX_12_REPORT.md](CODEX_12_REPORT.md) contains the full acceptance matrix. Previous iteration APK/instrumentation results below are historical.
+
+---
+
 # CODEX 11 — current verification (2026-10-27)
 
 - JVM: 149 executed / 149 passed / 0 failed, including all 139 prior tests and 10 Undo methods. Five complete witnesses and deterministic Level 1 v3 remain valid.

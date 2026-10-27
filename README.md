@@ -1,3 +1,9 @@
+# CODEX 12 — Current status
+
+CODEX 12 replaces unlimited free Undo with three global initial credits. Each successful Undo costs one; zero-credit players can voluntarily watch a Google test rewarded ad for one credit. Restart stays free. Credits migrate with schema 2 and remain across levels and relaunch. Ads 25.5.0 and UMP 4.0.0 are integrated in source with test IDs only. **159 JVM tests and 10 host tests pass; SDK compilation, new APK, instrumentation and real ads are NOT VERIFIED.** See [CODEX_12_REPORT.md](CODEX_12_REPORT.md) for implementation, migration, consent and release requirements. Older unlimited-Undo/build statements below describe previous iterations.
+
+---
+
 # TileBloom — Mahjong Garden Puzzle
 
 CODEX 11: unlimited Undo and deadlock recovery; redesigned Level 1 and five deterministic introductory Mahjong Solitaire levels with local progression, automatic continue, and a minimal level selector. Offline native Kotlin Android; no accounts, network permissions, advertising, or analytics.

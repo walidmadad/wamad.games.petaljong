@@ -1,3 +1,20 @@
+# CODEX 12 — Current status
+
+CODEX 12 needs an unrestricted Linux host with JDK 17, Android SDK 36, Google Maven access and a working ADB server. Run:
+
+```bash
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+export PATH="$JAVA_HOME/bin:$PATH"
+./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:assembleDebugAndroidTest
+./gradlew :app:connectedDebugAndroidTest
+```
+
+Alternatively use `./tools/host_verify.sh` for logged build verification, then run connected tests separately. Install only the newly verified Gradle APK using `adb install -r app/build/outputs/apk/debug/app-debug.apk`; preserve installed data and signing identity. Instrumentation uses a deterministic androidTest-only fake. Separately launch the normal application (without test injection) and earn one **Google test** reward. Test IDs: app `ca-app-pub-3940256099942544~3347511713`, rewarded `ca-app-pub-3940256099942544/5224354917`. Verify consent and required Privacy options under a properly configured UMP test account/device. The sample app may not have a required form configured; do not interpret that as consent validation.
+
+Current attempts: wrapper lock is read-only; direct installed Gradle with temporary home fails on unavailable wildcard IP. ADB listener creation is prohibited. No new APK is verified. The standalone fallback supports JVM tests only and explicitly refuses to build an ads APK. Do not install or label stale artifacts as CODEX 12. See [report](CODEX_12_REPORT.md).
+
+---
+
 # CODEX 11 verification addendum
 
 Use JDK 17 for the cached Kotlin 1.9.24 diagnostic pipeline; default Java 25 is incompatible. Run `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:$PATH python3 tools/verify_offline.py` if standard Gradle is unavailable. This fallback does not run Gradle or Lint.

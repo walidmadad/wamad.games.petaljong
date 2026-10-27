@@ -111,12 +111,12 @@ class RedesignTest {
         val reload=ProgressController(ProgressCodec.decode(ProgressCodec.encode(controller.capture())))
         assertFalse(reload.recovered); assertEquals(controller.capture(),reload.capture())
     }
-    @Test fun codexNineOtherLevelsRemainByteCompatible() {
+    @Test fun codexNineOtherLevelsRetainIdentityAndMovesDuringSchemaMigration() {
         val l=Levels.get(2)
         val move=l.witness.first()
         val raw="1\n1\n2,202,2\n${move.first},${move.second}"
         val controller=ProgressController(ProgressCodec.decode(raw))
-        assertFalse(controller.recovered); assertEquals(raw,ProgressCodec.encode(controller.capture()))
+        assertFalse(controller.recovered); assertEquals("2" + raw.drop(1) + "\n3",ProgressCodec.encode(controller.capture()))
     }
     @Test fun legacyHistoryIsNeverAppliedToNewGeometry() {
         val session=GardenSession(); val before=session.snapshot()

@@ -1,0 +1,124 @@
+JUnit version 4.13.2
+..........................................................................Level 1: 24 tiles, 6 initially free, 2 initial matching choices
+Level 2: 24 tiles, 11 initially free, 7 initial matching choices
+Level 3: 28 tiles, 10 initially free, 8 initial matching choices
+Level 4: 30 tiles, 9 initially free, 7 initial matching choices
+Level 5: 28 tiles, 10 initially free, 6 initial matching choices
+120-board matrix: 2107 ms; max attempts=1
+..................................MATRIX original/0 choices=9 risk=2 target=true candidates=3 unknown=0
+MATRIX original/1 choices=10 risk=1 target=true candidates=2 unknown=0
+MATRIX original/2 choices=8 risk=2 target=true candidates=4 unknown=0
+MATRIX original/3 choices=9 risk=1 target=true candidates=3 unknown=0
+MATRIX terrace/0 choices=9 risk=1 target=true candidates=3 unknown=0
+MATRIX terrace/1 choices=9 risk=2 target=true candidates=3 unknown=0
+MATRIX terrace/2 choices=7 risk=2 target=true candidates=2 unknown=0
+MATRIX terrace/3 choices=9 risk=0 target=false candidates=6 unknown=0
+MATRIX woodland/0 choices=10 risk=1 target=true candidates=6 unknown=0
+MATRIX woodland/1 choices=10 risk=1 target=true candidates=2 unknown=0
+MATRIX woodland/2 choices=11 risk=1 target=true candidates=4 unknown=48
+MATRIX woodland/3 choices=11 risk=1 target=true candidates=2 unknown=0
+MATRIX courtyard/0 choices=10 risk=1 target=true candidates=4 unknown=0
+MATRIX courtyard/1 choices=12 risk=0 target=true candidates=4 unknown=28
+MATRIX courtyard/2 choices=11 risk=2 target=true candidates=4 unknown=0
+MATRIX courtyard/3 choices=12 risk=0 target=false candidates=6 unknown=0
+MATRIX SUMMARY boards=16 candidates=58 acceptedProfiles=14 fallback=2 discardedCandidates=42 searchExhausted=2 candidateSearchExhausted=1 generationMs=334 analysisMs=64
+....ORIGINAL 1 PuzzleAnalysis(tileCount=24, layers=2, symbols=6, initialFree=6, initialPairs=3, initialMatchingSymbols=3, branching=[3, 6, 6, 5, 12, 8, 4, 4, 4, 3, 2, 1], forced=1, multiple=11, upperUnlockMoves=2, consequenceChoiceStates=8, riskyChoiceStates=0, solvableAlternatives=58, unsolvableAlternatives=0, unknownAlternatives=0, searchNodes=457, layout=original, seed=0) randomWins=20/32
+UPDATED 1 PuzzleAnalysis(tileCount=24, layers=2, symbols=6, initialFree=6, initialPairs=2, initialMatchingSymbols=2, branching=[2, 3, 4, 5, 4, 4, 3, 1, 2, 1, 2, 1], forced=3, multiple=9, upperUnlockMoves=5, consequenceChoiceStates=8, riskyChoiceStates=1, solvableAlternatives=31, unsolvableAlternatives=1, unknownAlternatives=0, searchNodes=270, layout=winding, seed=123) randomWins=29/32 candidates=60 target=true
+ORIGINAL 2 PuzzleAnalysis(tileCount=24, layers=2, symbols=6, initialFree=11, initialPairs=6, initialMatchingSymbols=4, branching=[6, 5, 5, 6, 8, 3, 4, 2, 2, 2, 2, 1], forced=1, multiple=11, upperUnlockMoves=3, consequenceChoiceStates=9, riskyChoiceStates=0, solvableAlternatives=46, unsolvableAlternatives=0, unknownAlternatives=0, searchNodes=376, layout=terrace, seed=202) randomWins=29/32
+UPDATED 2 PuzzleAnalysis(tileCount=24, layers=2, symbols=6, initialFree=11, initialPairs=7, initialMatchingSymbols=5, branching=[7, 9, 8, 8, 8, 4, 5, 3, 3, 2, 1, 1], forced=2, multiple=10, upperUnlockMoves=2, consequenceChoiceStates=10, riskyChoiceStates=1, solvableAlternatives=58, unsolvableAlternatives=1, unknownAlternatives=0, searchNodes=768, layout=terrace, seed=202) randomWins=21/32 candidates=2 target=true
+ORIGINAL 3 PuzzleAnalysis(tileCount=28, layers=2, symbols=6, initialFree=10, initialPairs=5, initialMatchingSymbols=5, branching=[5, 4, 9, 8, 3, 5, 6, 8, 4, 5, 3, 2, 2, 1], forced=1, multiple=13, upperUnlockMoves=6, consequenceChoiceStates=11, riskyChoiceStates=2, solvableAlternatives=63, unsolvableAlternatives=2, unknownAlternatives=0, searchNodes=2031, layout=woodland, seed=303) randomWins=23/32
+UPDATED 3 PuzzleAnalysis(tileCount=28, layers=2, symbols=6, initialFree=10, initialPairs=8, initialMatchingSymbols=3, branching=[8, 3, 3, 5, 4, 6, 2, 2, 4, 3, 3, 2, 2, 1], forced=1, multiple=13, upperUnlockMoves=5, consequenceChoiceStates=11, riskyChoiceStates=1, solvableAlternatives=47, unsolvableAlternatives=1, unknownAlternatives=0, searchNodes=1090, layout=woodland, seed=303) randomWins=22/32 candidates=3 target=true
+ORIGINAL 4 PuzzleAnalysis(tileCount=30, layers=2, symbols=6, initialFree=9, initialPairs=5, initialMatchingSymbols=3, branching=[5, 4, 7, 3, 5, 9, 4, 3, 2, 3, 2, 2, 1, 2, 1], forced=2, multiple=13, upperUnlockMoves=6, consequenceChoiceStates=12, riskyChoiceStates=0, solvableAlternatives=53, unsolvableAlternatives=0, unknownAlternatives=0, searchNodes=1372, layout=courtyard, seed=404) randomWins=24/32
+UPDATED 4 PuzzleAnalysis(tileCount=30, layers=2, symbols=6, initialFree=9, initialPairs=7, initialMatchingSymbols=3, branching=[7, 7, 9, 4, 2, 2, 5, 4, 3, 2, 1, 3, 3, 2, 1], forced=2, multiple=13, upperUnlockMoves=6, consequenceChoiceStates=11, riskyChoiceStates=1, solvableAlternatives=54, unsolvableAlternatives=1, unknownAlternatives=0, searchNodes=950, layout=courtyard, seed=404) randomWins=18/32 candidates=2 target=true
+ORIGINAL 5 PuzzleAnalysis(tileCount=28, layers=2, symbols=6, initialFree=10, initialPairs=6, initialMatchingSymbols=4, branching=[6, 8, 3, 8, 8, 7, 7, 9, 5, 4, 3, 1, 1, 1], forced=3, multiple=11, upperUnlockMoves=5, consequenceChoiceStates=11, riskyChoiceStates=0, solvableAlternatives=71, unsolvableAlternatives=0, unknownAlternatives=0, searchNodes=800, layout=woodland, seed=505) randomWins=21/32
+UPDATED 5 PuzzleAnalysis(tileCount=28, layers=2, symbols=6, initialFree=10, initialPairs=6, initialMatchingSymbols=4, branching=[6, 5, 6, 4, 10, 10, 11, 4, 2, 2, 1, 3, 2, 1], forced=2, multiple=12, upperUnlockMoves=6, consequenceChoiceStates=11, riskyChoiceStates=4, solvableAlternatives=62, unsolvableAlternatives=5, unknownAlternatives=0, searchNodes=1887, layout=woodland, seed=511) randomWins=18/32 candidates=5 target=true
+DEADLOCK [PairMove(first=15, second=23), PairMove(first=10, second=22), PairMove(first=9, second=20), PairMove(first=6, second=16), PairMove(first=17, second=18), PairMove(first=0, second=14)]
+........PORTFOLIO sprout,100,7,9,1,2,4,55,1,0,413,51.79856
+PORTFOLIO sprout,101,10,8,0,2,5,63,0,0,554,51.79856
+PORTFOLIO sprout,102,10,8,0,1,5,63,0,0,450,51.79856
+PORTFOLIO sprout,103,10,10,0,1,6,75,0,0,514,51.79856
+PORTFOLIO sprout,104,8,10,0,2,5,81,0,0,567,51.79856
+PORTFOLIO sprout,105,9,6,0,4,4,47,0,0,329,51.79856
+PORTFOLIO sprout,106,6,10,0,2,4,51,0,0,385,51.79856
+PORTFOLIO sprout,107,6,8,0,2,3,49,0,0,872,51.79856
+PORTFOLIO sprout,108,8,9,2,2,4,43,2,0,445,51.79856
+PORTFOLIO sprout,109,9,10,0,2,3,61,0,0,444,51.79856
+PORTFOLIO sprout,110,11,10,0,2,5,75,0,0,518,51.79856
+PORTFOLIO sprout,111,7,8,3,1,5,57,3,0,1155,51.79856
+PORTFOLIO steps,100,7,10,1,1,4,66,1,0,607,51.79856
+PORTFOLIO steps,101,7,8,0,1,6,54,0,0,377,51.79856
+PORTFOLIO steps,102,7,9,4,1,5,35,4,0,390,51.79856
+PORTFOLIO steps,103,8,7,3,2,4,58,3,0,957,51.79856
+PORTFOLIO steps,104,4,10,0,1,5,67,0,0,395,51.79856
+PORTFOLIO steps,105,5,7,1,5,4,33,1,0,539,51.79856
+PORTFOLIO steps,106,6,9,0,1,5,50,0,0,333,51.79856
+PORTFOLIO steps,107,7,8,3,2,4,51,3,0,1022,51.79856
+PORTFOLIO steps,108,4,10,0,2,4,50,0,0,369,51.79856
+PORTFOLIO steps,109,8,9,2,2,4,46,2,0,352,51.79856
+PORTFOLIO steps,110,8,8,0,2,6,50,0,0,342,51.79856
+PORTFOLIO steps,111,5,9,4,1,5,49,4,0,446,51.79856
+PORTFOLIO crescent,100,8,10,1,1,3,49,1,0,325,44.72441
+PORTFOLIO crescent,101,7,8,1,2,4,45,1,0,534,44.72441
+PORTFOLIO crescent,102,8,8,0,1,4,47,0,0,305,44.72441
+PORTFOLIO crescent,103,7,8,0,1,5,62,0,0,389,44.72441
+PORTFOLIO crescent,104,6,10,1,1,4,63,1,0,438,44.72441
+PORTFOLIO crescent,105,5,10,1,2,3,39,1,0,654,44.72441
+PORTFOLIO crescent,106,6,8,1,1,4,54,1,0,754,44.72441
+PORTFOLIO crescent,107,4,8,0,3,6,41,0,0,293,44.72441
+PORTFOLIO crescent,108,6,9,0,2,4,41,0,0,325,44.72441
+PORTFOLIO crescent,109,7,9,1,2,5,49,1,0,458,44.72441
+PORTFOLIO crescent,110,7,9,3,3,6,37,3,0,331,44.72441
+PORTFOLIO crescent,111,5,9,6,1,5,42,6,0,503,44.72441
+PORTFOLIO winding,100,1,9,2,2,4,48,2,0,413,51.79856
+PORTFOLIO winding,101,6,7,0,2,4,44,0,0,348,51.79856
+PORTFOLIO winding,102,2,9,3,2,4,36,3,0,969,51.79856
+PORTFOLIO winding,103,7,10,1,1,5,57,1,0,584,51.79856
+PORTFOLIO winding,104,1,8,2,2,5,57,2,0,440,51.79856
+PORTFOLIO winding,105,3,6,2,4,5,40,2,0,389,51.79856
+PORTFOLIO winding,106,1,9,0,3,5,42,0,0,270,51.79856
+PORTFOLIO winding,107,2,7,0,3,5,41,0,0,342,51.79856
+PORTFOLIO winding,108,1,7,1,2,5,41,1,0,351,51.79856
+PORTFOLIO winding,109,2,9,0,1,5,68,0,0,448,51.79856
+PORTFOLIO winding,110,2,9,0,3,4,48,0,0,280,51.79856
+PORTFOLIO winding,111,2,9,5,1,4,42,5,0,503,51.79856
+PORTFOLIO winding,112,1,8,0,2,4,46,0,0,281,51.79856
+PORTFOLIO winding,113,4,9,2,2,5,48,2,0,590,51.79856
+PORTFOLIO winding,114,2,9,2,1,3,40,2,0,647,51.79856
+PORTFOLIO winding,115,2,9,0,1,6,48,0,0,282,51.79856
+PORTFOLIO winding,116,3,9,1,3,4,34,1,0,308,51.79856
+PORTFOLIO winding,117,3,10,0,1,4,51,0,0,319,51.79856
+PORTFOLIO winding,118,3,9,1,2,6,41,1,0,290,51.79856
+PORTFOLIO winding,119,2,9,0,2,5,66,0,0,469,51.79856
+PORTFOLIO winding,120,1,8,0,2,6,45,0,0,257,51.79856
+PORTFOLIO winding,121,2,10,4,1,6,38,4,0,271,51.79856
+PORTFOLIO winding,122,3,10,2,1,5,53,2,0,435,51.79856
+PORTFOLIO winding,123,2,8,1,3,5,31,1,0,270,51.79856
+PORTFOLIO_MS 211
+......IMPACTS step=0 [MoveImpact(move=PairMove(first=15, second=23), newlyAvailable=[10, 14, 16, 22], result=SearchResult(outcome=SOLVABLE, nodes=24)), MoveImpact(move=PairMove(first=17, second=18), newlyAvailable=[0, 3, 16, 19], result=SearchResult(outcome=SOLVABLE, nodes=11))]
+IMPACTS step=1 [MoveImpact(move=PairMove(first=10, second=22), newlyAvailable=[9], result=SearchResult(outcome=SOLVABLE, nodes=23)), MoveImpact(move=PairMove(first=16, second=21), newlyAvailable=[7, 11], result=SearchResult(outcome=SOLVABLE, nodes=22)), MoveImpact(move=PairMove(first=17, second=18), newlyAvailable=[0, 3, 19], result=SearchResult(outcome=SOLVABLE, nodes=10))]
+IMPACTS step=2 [MoveImpact(move=PairMove(first=7, second=17), newlyAvailable=[], result=SearchResult(outcome=UNSOLVABLE, nodes=12)), MoveImpact(move=PairMove(first=7, second=18), newlyAvailable=[0, 3, 19], result=SearchResult(outcome=SOLVABLE, nodes=9)), MoveImpact(move=PairMove(first=10, second=22), newlyAvailable=[9], result=SearchResult(outcome=SOLVABLE, nodes=20)), MoveImpact(move=PairMove(first=17, second=18), newlyAvailable=[0, 3, 19], result=SearchResult(outcome=SOLVABLE, nodes=9))]
+IMPACTS step=3 [MoveImpact(move=PairMove(first=0, second=14), newlyAvailable=[], result=SearchResult(outcome=SOLVABLE, nodes=8)), MoveImpact(move=PairMove(first=3, second=10), newlyAvailable=[], result=SearchResult(outcome=SOLVABLE, nodes=8)), MoveImpact(move=PairMove(first=3, second=22), newlyAvailable=[], result=SearchResult(outcome=SOLVABLE, nodes=8)), MoveImpact(move=PairMove(first=10, second=22), newlyAvailable=[9], result=SearchResult(outcome=SOLVABLE, nodes=14)), MoveImpact(move=PairMove(first=11, second=19), newlyAvailable=[], result=SearchResult(outcome=SOLVABLE, nodes=8))]
+IMPACTS step=4 [MoveImpact(move=PairMove(first=0, second=14), newlyAvailable=[1], result=SearchResult(outcome=SOLVABLE, nodes=7)), MoveImpact(move=PairMove(first=3, second=10), newlyAvailable=[4], result=SearchResult(outcome=SOLVABLE, nodes=7)), MoveImpact(move=PairMove(first=3, second=22), newlyAvailable=[4, 12], result=SearchResult(outcome=SOLVABLE, nodes=7)), MoveImpact(move=PairMove(first=10, second=22), newlyAvailable=[9, 12], result=SearchResult(outcome=SOLVABLE, nodes=8))]
+IMPACTS step=5 [MoveImpact(move=PairMove(first=1, second=7), newlyAvailable=[], result=SearchResult(outcome=SOLVABLE, nodes=6)), MoveImpact(move=PairMove(first=3, second=10), newlyAvailable=[4], result=SearchResult(outcome=SOLVABLE, nodes=6)), MoveImpact(move=PairMove(first=3, second=22), newlyAvailable=[4, 12, 13], result=SearchResult(outcome=SOLVABLE, nodes=6)), MoveImpact(move=PairMove(first=10, second=22), newlyAvailable=[9, 12, 13], result=SearchResult(outcome=SOLVABLE, nodes=7))]
+IMPACTS step=6 [MoveImpact(move=PairMove(first=3, second=10), newlyAvailable=[4], result=SearchResult(outcome=SOLVABLE, nodes=5)), MoveImpact(move=PairMove(first=3, second=22), newlyAvailable=[4, 8, 12, 13], result=SearchResult(outcome=SOLVABLE, nodes=5)), MoveImpact(move=PairMove(first=10, second=22), newlyAvailable=[8, 9, 12, 13], result=SearchResult(outcome=SOLVABLE, nodes=6))]
+IMPACTS step=7 [MoveImpact(move=PairMove(first=4, second=20), newlyAvailable=[2, 5, 6], result=SearchResult(outcome=SOLVABLE, nodes=4))]
+IMPACTS step=8 [MoveImpact(move=PairMove(first=2, second=22), newlyAvailable=[8, 9, 12, 13], result=SearchResult(outcome=SOLVABLE, nodes=3)), MoveImpact(move=PairMove(first=5, second=6), newlyAvailable=[], result=SearchResult(outcome=SOLVABLE, nodes=3))]
+IMPACTS step=9 [MoveImpact(move=PairMove(first=2, second=22), newlyAvailable=[8, 9, 12, 13], result=SearchResult(outcome=SOLVABLE, nodes=2))]
+IMPACTS step=10 [MoveImpact(move=PairMove(first=8, second=12), newlyAvailable=[], result=SearchResult(outcome=SOLVABLE, nodes=1)), MoveImpact(move=PairMove(first=9, second=13), newlyAvailable=[], result=SearchResult(outcome=SOLVABLE, nodes=1))]
+IMPACTS step=11 [MoveImpact(move=PairMove(first=8, second=12), newlyAvailable=[], result=SearchResult(outcome=SOLVABLE, nodes=0))]
+EQUIVALENT_EXTRA_ASSOCIATIONS 5
+...DESIGN_AUDIT version=2 PuzzleAnalysis(tileCount=24, layers=2, symbols=6, initialFree=6, initialPairs=2, initialMatchingSymbols=2, branching=[2, 8, 10, 7, 8, 4, 8, 4, 4, 3, 2, 1], forced=1, multiple=11, upperUnlockMoves=2, consequenceChoiceStates=8, riskyChoiceStates=1, solvableAlternatives=60, unsolvableAlternatives=1, unknownAlternatives=0, searchNodes=555, layout=original, seed=0) randomWins=19/32
+DESIGN_AUDIT version=3 PuzzleAnalysis(tileCount=24, layers=2, symbols=6, initialFree=6, initialPairs=2, initialMatchingSymbols=2, branching=[2, 3, 4, 5, 4, 4, 3, 1, 2, 1, 2, 1], forced=3, multiple=9, upperUnlockMoves=5, consequenceChoiceStates=8, riskyChoiceStates=1, solvableAlternatives=31, unsolvableAlternatives=1, unknownAlternatives=0, searchNodes=270, layout=winding, seed=123) randomWins=29/32
+DESIGN_AUDIT version=2 PuzzleAnalysis(tileCount=24, layers=2, symbols=6, initialFree=11, initialPairs=7, initialMatchingSymbols=5, branching=[7, 9, 8, 8, 8, 4, 5, 3, 3, 2, 1, 1], forced=2, multiple=10, upperUnlockMoves=2, consequenceChoiceStates=10, riskyChoiceStates=1, solvableAlternatives=58, unsolvableAlternatives=1, unknownAlternatives=0, searchNodes=768, layout=terrace, seed=202) randomWins=21/32
+DESIGN_AUDIT version=2 PuzzleAnalysis(tileCount=28, layers=2, symbols=6, initialFree=10, initialPairs=8, initialMatchingSymbols=3, branching=[8, 3, 3, 5, 4, 6, 2, 2, 4, 3, 3, 2, 2, 1], forced=1, multiple=13, upperUnlockMoves=5, consequenceChoiceStates=11, riskyChoiceStates=1, solvableAlternatives=47, unsolvableAlternatives=1, unknownAlternatives=0, searchNodes=1090, layout=woodland, seed=303) randomWins=22/32
+DESIGN_AUDIT version=2 PuzzleAnalysis(tileCount=30, layers=2, symbols=6, initialFree=9, initialPairs=7, initialMatchingSymbols=3, branching=[7, 7, 9, 4, 2, 2, 5, 4, 3, 2, 1, 3, 3, 2, 1], forced=2, multiple=13, upperUnlockMoves=6, consequenceChoiceStates=11, riskyChoiceStates=1, solvableAlternatives=54, unsolvableAlternatives=1, unknownAlternatives=0, searchNodes=950, layout=courtyard, seed=404) randomWins=18/32
+DESIGN_AUDIT version=2 PuzzleAnalysis(tileCount=28, layers=2, symbols=6, initialFree=10, initialPairs=6, initialMatchingSymbols=4, branching=[6, 5, 6, 4, 10, 10, 11, 4, 2, 2, 1, 3, 2, 1], forced=2, multiple=12, upperUnlockMoves=6, consequenceChoiceStates=11, riskyChoiceStates=4, solvableAlternatives=62, unsolvableAlternatives=5, unknownAlternatives=0, searchNodes=1887, layout=woodland, seed=511) randomWins=18/32
+SELECTED_TILES [Tile(id=0, symbol=FERN, x=0.0, y=0.0, layer=0, removed=false), Tile(id=1, symbol=LEAF, x=1.0, y=0.0, layer=0, removed=false), Tile(id=2, symbol=LOTUS, x=2.0, y=0.0, layer=0, removed=false), Tile(id=3, symbol=LOTUS, x=0.0, y=1.0, layer=0, removed=false), Tile(id=4, symbol=SUNFLOWER, x=1.0, y=1.0, layer=0, removed=false), Tile(id=5, symbol=BERRIES, x=2.0, y=1.0, layer=0, removed=false), Tile(id=6, symbol=BERRIES, x=3.0, y=1.0, layer=0, removed=false), Tile(id=7, symbol=LEAF, x=1.0, y=2.0, layer=0, removed=false), Tile(id=8, symbol=FERN, x=2.0, y=2.0, layer=0, removed=false), Tile(id=9, symbol=SUNFLOWER, x=3.0, y=2.0, layer=0, removed=false), Tile(id=10, symbol=LOTUS, x=4.0, y=2.0, layer=0, removed=false), Tile(id=11, symbol=FLOWER, x=1.0, y=3.0, layer=0, removed=false), Tile(id=12, symbol=FERN, x=2.0, y=3.0, layer=0, removed=false), Tile(id=13, symbol=SUNFLOWER, x=3.0, y=3.0, layer=0, removed=false), Tile(id=14, symbol=FERN, x=4.0, y=3.0, layer=0, removed=false), Tile(id=15, symbol=FLOWER, x=2.0, y=4.0, layer=0, removed=false), Tile(id=16, symbol=BERRIES, x=3.0, y=4.0, layer=0, removed=false), Tile(id=17, symbol=LEAF, x=4.0, y=4.0, layer=0, removed=false), Tile(id=18, symbol=LEAF, x=0.5, y=0.5, layer=1, removed=false), Tile(id=19, symbol=FLOWER, x=1.5, y=0.5, layer=1, removed=false), Tile(id=20, symbol=SUNFLOWER, x=2.5, y=0.5, layer=1, removed=false), Tile(id=21, symbol=BERRIES, x=1.5, y=2.5, layer=1, removed=false), Tile(id=22, symbol=LOTUS, x=2.5, y=2.5, layer=1, removed=false), Tile(id=23, symbol=FLOWER, x=3.5, y=2.5, layer=1, removed=false)]
+SELECTED_WITNESS [PairMove(first=23, second=15), PairMove(first=21, second=16), PairMove(first=18, second=17), PairMove(first=11, second=19), PairMove(first=14, second=0), PairMove(first=7, second=1), PairMove(first=3, second=10), PairMove(first=20, second=4), PairMove(first=6, second=5), PairMove(first=22, second=2), PairMove(first=13, second=9), PairMove(first=12, second=8)]
+SELECTED_DEADLOCK [PairMove(first=15, second=23), PairMove(first=10, second=22), PairMove(first=9, second=20), PairMove(first=6, second=16), PairMove(first=17, second=18), PairMove(first=0, second=14)]
+.......................UNDO benchmark: 1000 restore+undo cycles, ms=34.049948
+.......
+Time: 3.561
+
+OK (159 tests)
+
