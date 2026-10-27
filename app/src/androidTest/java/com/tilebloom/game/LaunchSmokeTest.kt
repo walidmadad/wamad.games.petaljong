@@ -136,6 +136,37 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         }
         assertCount(24); tap(16); ui { assertEquals(16,board().selectedTileId) }
     }
+    fun testMatchEffectsRestartAndCompletion() {
+        activity; instrumentation.waitForIdleSync()
+        // Dispatch through the real view in one UI turn so no frame can expire copies early.
+        ui {
+            val view = board()
+            fun touch(id: Int) {
+                val p = view.tileCenter(id)!!
+                val now = SystemClock.uptimeMillis()
+                for (action in listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP)) {
+                    val event = MotionEvent.obtain(now, now, action, p.x, p.y, 0)
+                    try { view.dispatchTouchEvent(event) } finally { event.recycle() }
+                }
+            }
+            touch(16); touch(20)
+            assertEquals(22, view.remainingTileCount)
+            assertNull(view.tileCenter(16))
+            if (android.animation.ValueAnimator.areAnimatorsEnabled()) {
+                assertEquals(2, view.activeMatchEffectCount)
+            } else assertEquals(0, view.activeMatchEffectCount)
+            touch(17); touch(21)
+            assertEquals(20, view.remainingTileCount)
+            activity.findViewById<Button>(R.id.restart).performClick()
+            assertEquals(0, view.activeMatchEffectCount)
+            assertEquals(24, view.remainingTileCount)
+            touch(16); touch(20)
+        }
+        SystemClock.sleep(220); instrumentation.waitForIdleSync()
+        ui { assertEquals(0, board().activeMatchEffectCount) }
+        assertCount(22)
+        tap(17); tap(21); assertCount(20)
+    }
     fun testActivityRecreationRestoresPlayedState() {
         val original = activity; instrumentation.waitForIdleSync()
         tap(16); tap(20); tap(17); assertCount(22)
@@ -148,7 +179,10 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             assertNotNull("Recreated activity did not launch",replacement)
             instrumentation.waitForIdleSync()
             val restored = replacement!!
-            assertCount(22,restored); ui { assertEquals(17,board(restored).selectedTileId) }
+            assertCount(22,restored); ui {
+                assertEquals(17,board(restored).selectedTileId)
+                assertEquals(0,board(restored).activeMatchEffectCount)
+            }
             tap(21,restored); assertCount(20,restored)
         } finally {
             instrumentation.removeMonitor(monitor)

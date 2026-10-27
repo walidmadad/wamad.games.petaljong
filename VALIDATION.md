@@ -1,3 +1,95 @@
+# CODEX 06 verification — 2026-10-27
+
+## Outcome and evidence
+
+Continued `48c9098b20d914c74dd594b1bdb91e2ae5cd5a40`; CODEX 05 made no changes. Preserved existing history, engine, Level 1 positions/symbol assignments, solution and deadlock witnesses, shared hit geometry, gesture behavior, restart and saved-state replay. No dependency changes or publication.
+
+New external evidence: the user describes three emulator screenshots, approximately 382 × 898 pixels, showing TileBloom's green/ivory screen, layered tiles, gold selection, counters at 10 then 7 pairs, and upper tiles disappearing. **No screenshot files were accessible or directly inspected.** These concrete user-supplied observations establish earlier-build Android rendering/progression. They do not establish standard Gradle success, instrumentation, terminal states, persistence or reliability of this iteration's APK. No unrestricted-host verification logs were received. No completed human playtest or enjoyment/retention feedback was supplied.
+
+## Screen and artwork changes
+
+Platform-serif title (36 sp; 30 sp on compact screens or increased font scale), understated subtitle and a rounded muted-green level/pair strip replace the tightly grouped header. The board retains the flexible central area, original transform and insets. Margins reduce below 640 dp screen height or above 1.3 font scale. Text uses sp and can wrap; there are no fixed text heights. Footer reserves two text lines for instruction or terminal feedback, avoiding a normal-size board jump on victory/deadlock. Existing positive victory text and clear replay/restart actions remain.
+
+Restart remains an accessible native Button, now content-width, at least 48 dp tall, with green surface, ivory text, rounded gold border and masked ripple. Tile faces gain an inset ivory rim, warmer face/side colors and lower-opacity shadows. Symbols, gold selection and engraved blocked markers remain; leaf Path and fixed symbol coordinate lists are cached without changing shapes. Decorative shadows remain excluded from hit targets.
+
+No updated Android screenshots were captured. Readability, composition, shadow quality, contrast on real displays and compact/font-scale usability require direct inspection; implementation alone is not visual acceptance.
+
+## Match feedback and code review
+
+After `Game.select` validates a match, authoritative tiles/history/counter update immediately. `MatchEffects` records only newly removed visual copies. Canvas merges these with remaining tiles in original layer order and fades 100% to 0% while shrinking 100% to 90% over 150 ms. Tile-bounded alpha layers avoid full-screen buffers. No particles, external framework, delayed engine mutation or animation-completion callback is used.
+
+Touch uses only original `game.tiles` through unchanged BoardGeometry; removed copies cannot receive touch or change legality. Rapid successive pairs have independent timestamps. Restart, size change and detachment clear copies and pending gesture/blocked feedback. Copies are not saved, so recreation restores only accepted game state. Disabled Android animators skip/clear the effect. `postInvalidateOnAnimation` runs only while live copies remain; expiry uses monotonic uptime. Smoothness and real lifecycle integration remain runtime-unverified.
+
+Reviewed ordering, save/restore balance, original hit bounds, snapshot ownership, duplicate input, effect lifetime and resource cleanup. No engine or gameplay defect is claimed from screenshots. First fallback compile exposed an integer/Float mismatch in the new surface helper; corrected to integer dp before the successful final build.
+
+## Automated verification
+
+`python3 tools/verify_offline.py` — exit **0**, `OK (67 tests)`; all production and instrumentation Kotlin compiled; D8/APK packaging completed.
+
+| JVM suite | Executed | Passed | Failed | Skipped |
+| --- | ---: | ---: | ---: | ---: |
+| GameTest (unchanged) | 31 | 31 | 0 | 0 |
+| BoardGeometryTest (unchanged) | 16 | 16 | 0 | 0 |
+| GameReliabilityTest (unchanged) | 10 | 10 | 0 | 0 |
+| TileTapGestureTest (unchanged) | 7 | 7 | 0 | 0 |
+| MatchEffectsTest | 3 | 3 | 0 | 0 |
+| **Total** | **67** | **67** | **0** | **0** |
+
+New JVM coverage exercises immediate single engine removal, removed-ID hit exclusion, independent rapid matches, timed expiry, restart clearing, disabled effects and restored game state. Existing solution/deadlock and all shared-geometry/gesture tests pass. JVM geometry is not an Android layout test.
+
+`python3 tools/test_host_verify.py -v`: **10 executed, 10 passed, 0 failed** using isolated fake tools; these are workflow tests, not Gradle or Android verification. Diff whitespace check passed.
+
+All eight existing instrumentation methods are preserved. One new method dispatches real view touches to check immediate removal, rapid pairs, restart during effects, expiry and later matching. The recreation test also checks no stale effects. **Nine methods compiled; 0 executed, 0 passed, 0 failed, 9 unexecuted.** Existing deprecated platform test API warning remains. No assertion was weakened.
+
+Standard Gradle/Kotlin 2.2.10 tasks, Lint and connected tests were not retried inside the previously diagnosed restricted environment. No Gradle success is claimed. Actual screen sizes tested for the updated APK: **none**; original mathematical geometry tests ran. The externally reported ~382 × 898 pixels do not determine dp, density, font scale or API.
+
+## New APK
+
+- Path: `/home/walid/Documents/projects/androidGames/TileBloom/app/build/outputs/apk/debug/app-debug.apk`.
+- Size: **713107 bytes**.
+- SHA-256: `d91c182931af7297bf3a2dc4e39ea2a71c595d97101f010e7b663971d8353ea9`.
+- Method: `python3 tools/verify_offline.py`, cached Kotlin **1.9.24**, Java 17, SDK 36 / Build Tools 35.0.0, AAPT2, javac, D8, zipalign and local debug signing. This does not verify configured Gradle/Kotlin 2.2.10.
+- `zipalign -c 4`: passed. `apksigner verify --verbose`: passed, v2/v3, one signer.
+- AAPT2 metadata checked: `com.tilebloom.game`, version 0.1/code 1, min API 26, target 36, debuggable, portrait and expected MainActivity.
+- Final log: `app/build/offline/verification.log` (ignored build artifact).
+
+This is a fresh diagnostic build of CODEX 06 sources, not an old APK and not standard Gradle output. New-APK installation, launch, crash inspection, UI victory/deadlock, animation smoothness and real lifecycle restoration are **NOT VERIFIED**.
+
+## Acceptance criteria for the updated APK
+
+| # | Criterion | Result | Evidence / limit |
+| --- | --- | --- | --- |
+| 1 | Engine preserved | PASS | No domain changes. |
+| 2 | All previous JVM tests preserved | PASS | All 64 plus three new tests pass. |
+| 3 | Level solution valid | PASS | Existing complete witness replay. |
+| 4 | Known deadlock valid | PASS | Existing deterministic regression. |
+| 5 | Readable updated header | NOT VERIFIED | Implemented; device review pending. |
+| 6 | Visually organized status | NOT VERIFIED | Separate status strip; device review pending. |
+| 7 | Restart matches identity | NOT VERIFIED | Custom styling implemented; device review pending. |
+| 8 | Board remains focal point | NOT VERIFIED | Flexible central board retained; visual review pending. |
+| 9 | Six distinct symbols | NOT VERIFIED | Original shapes preserved; updated display review pending. |
+| 10 | Better depth, same hit testing | NOT VERIFIED | Geometry unchanged and passing; visual improvement pending. |
+| 11 | Clear selection | NOT VERIFIED | Gold outlines preserved; new-APK review pending. |
+| 12 | Recognizable blocked tiles, legally unavailable | NOT VERIFIED | Rules pass and markers preserved; recognizability pending. |
+| 13 | Smooth, safe match feedback | NOT VERIFIED | JVM state protection passes; Android smoothness/integration pending. |
+| 14 | Restart handles effects safely | NOT VERIFIED | Model cleanup passes; Android regression compiled, unexecuted. |
+| 15 | Usable compact portrait layout | NOT VERIFIED | Responsive implementation; no new-APK layout run. |
+| 16 | Shared touch geometry tests | PASS | All 16 unchanged geometry tests pass. |
+| 17 | Fresh debug APK | PASS | Final fallback build. |
+| 18 | Accurate build/validation reporting | PASS | Fallback and runtime limits explicitly separated. |
+| 19 | Honest instrumentation results | PASS | Nine compiled; zero executed. |
+| 20 | Git history preserved | PASS | Descendant of 48c9098; no rewrite/push. |
+
+## Remaining actions and CODEX 07
+
+On an unrestricted Linux host, run `bash tools/host_verify.sh` (standard version, testDebugUnitTest, assembleDebug and lintDebug checks). After success select a booted authorized device, follow HOST_VERIFICATION.md for install/launch/crash logs/screenshots, and run `./gradlew --console=plain :app:connectedDebugAndroidTest`. Retain commands, exit codes and actual nine-test XML counts.
+
+Test compact (~320 × 568 dp), typical (~360 × 800 dp) and larger (~412 × 915 dp) portrait layouts at normal/increased font scale, system insets, enabled/disabled animations, rapid matches, restart and recreation mid-fade. Complete PLAYTEST_01.md with a real player; no reactions are invented. Verify title/strip wrapping, tile readability, terminal messages and bottom controls on the new build.
+
+CODEX 07 should first verify the polished APK and resolve observed failures. If stable, use actual player feedback to plan handcrafted puzzle variety and more meaningful strategic choices. No procedural generation, ads, online systems or monetization is proposed. Existing accessibility limitations (no individual screen-reader tile navigation), one fixed level and lack of durable progression remain.
+
+---
+
 # CODEX 04 verification — 2026-10-27
 
 ## Actual outcome

@@ -1,6 +1,6 @@
 # TileBloom — first Android playtest
 
-Status: NOT PERFORMED. Leave feedback empty until a person plays on Android.
+Status: NO COMPLETED HUMAN PLAYTEST RECEIVED. User-reported emulator screenshots establish earlier-build rendering and progression (10 then 7 pairs), not a completed playtest or validation of the CODEX 06 APK. Leave feedback empty until a person plays on Android.
 Install and launch using HOST_VERIFICATION.md. This is a debug prototype with one fixed level; choices can lead to no more matches. No hints, undo or shuffle are available.
 
 Tester: __________  Date: __________
@@ -18,7 +18,7 @@ record any help given so it is not mistaken for immediate understanding.
 - [ ] 5. Tap it again. The outline disappears.
 - [ ] 6. Tap two available tiles with different symbols. Selection moves to the second; neither disappears.
 - [ ] 7. Tap two available identical symbols.
-- [ ] 8. Observe both tiles disappear immediately. Check that no other tile disappears.
+- [ ] 8. Observe both tiles fade and shrink briefly (150 ms); with system animations disabled they disappear immediately. Check that no other tile disappears and the counter updates immediately.
 - [ ] 9. Check Remaining Pairs decreased by one.
 - [ ] 10. Tap a blocked tile. Brief border feedback appears; selection and count remain unchanged.
 - [ ] 11. Continue playing. Try tile centers, edges, overlap regions and adjacent boundaries. A visible upper tile should receive the touch.
@@ -60,3 +60,12 @@ Screenshots / device logs: __________
 
 Most confusing moment: __________
 Suggested improvement: __________
+
+## CODEX 06 targeted checks (not yet performed)
+
+- [ ] Inspect the larger serif title, separate status strip, ivory tile rims and gold-bordered Restart on the newly built APK.
+- [ ] Check compact portrait, typical and large screens at normal and increased font scale; record actual dp, density, API and font scale. Check terminal messages too.
+- [ ] Make rapid successive matches during fading; check legal new selections and correct counts. Restart during a fade, then match again.
+- [ ] Recreate/background during a fade; no old visual copies should reappear.
+- [ ] Disable system animator duration in developer settings, match again and confirm immediate disappearance; restore the previous setting.
+- [ ] Capture initial, selected, victory and deadlock screens; record animation smoothness and player impressions separately from engineering checks.

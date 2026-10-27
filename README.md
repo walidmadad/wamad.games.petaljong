@@ -1,6 +1,6 @@
 # TileBloom — Mahjong Garden Puzzle
 
-CODEX 04 / application version 0.1: an offline, portrait Android Mahjong Solitaire prototype with **one deterministic level**. No accounts, permissions, services, advertising, analytics, or network access.
+CODEX 06 / application version 0.1: an offline, portrait Android Mahjong Solitaire prototype with **one deterministic level**. No accounts, permissions, services, advertising, analytics, or network access.
 
 ## Stack
 
@@ -12,8 +12,8 @@ Kotlin 2.2.10, Java 17, Android Gradle Plugin 8.10.0, Gradle wrapper 8.13, compi
 - `app/src/main/java/com/tilebloom/game/presentation/MainActivity.kt`: screen, counter, terminal feedback, restart, saved-instance restoration.
 - `app/src/main/java/com/tilebloom/game/presentation/MahjongBoardView.kt`: responsive rendering, original symbols, explicit drawing order and reverse-order touch testing.
 - `app/src/main/res/values/`: English strings, theme and view IDs.
-- `app/src/test/`: 64 JVM tests: 31 original engine tests, 16 shared-geometry tests, 10 reliability/restoration tests, and 7 gesture tests.
-- `app/src/androidTest/`: eight compiled-only Android tests for launch, coordinate-tapped victory/deadlock, selection/drag, restart during touch, and activity recreation.
+- `app/src/test/`: 67 JVM tests: all original 64 plus three focused match-effect regressions.
+- `app/src/androidTest/`: nine compiled-only Android tests for launch, coordinate-tapped victory/deadlock, selection/drag, restart during touch, and activity recreation.
 - `tools/host_verify.sh`: standard Linux host verification with logs, exit codes and APK checks.
 - `tools/test_host_verify.py`: isolated workflow checks using fake tools, not Android evidence.
 - `tools/verify_offline.py`: fallback compiler/JUnit/APK pipeline for this restricted environment.
@@ -22,7 +22,11 @@ Kotlin 2.2.10, Java 17, Android Gradle Plugin 8.10.0, Gradle wrapper 8.13, compi
 
 ## Current verification status
 
-CODEX 04 found no unrestricted host results or completed human playtest. All **64 JVM tests pass** again using the standalone diagnostic compiler. Eight Android methods compile; **zero have executed**. The fallback APK passes alignment/signature checks, but standard Gradle, Lint, installation, launch and real gameplay remain **NOT VERIFIED**. No game code, toolchain version, level or symbols changed in this iteration.
+CODEX 06 uses **user-supplied observations of three emulator screenshots** (approximately 382 × 898 pixels): running screen, gold selection, changing board, counters at 10 and 7 pairs, and removed upper tiles. No screenshot files were available for direct inspection. This establishes externally observed execution/progression of an earlier build, not verification of the newly polished APK.
+
+The UI now has a platform-serif title, separate level/pair strip, responsive compact spacing, ivory ceramic rims and quieter shadows, and a rounded forest-green/gold Restart button with ripple feedback. A 150 ms fade/shrink uses visual-only copies after immediate engine removal. Restart, resize and detachment clear effects; recreation restores only game state. Disabled system animators skip the effect. Frame requests stop when copies expire.
+
+All **67 JVM tests pass** using the standalone diagnostic compiler. Nine Android methods compile; **zero have executed here**. The new fallback APK passes alignment/signature checks. Standard Gradle/Kotlin 2.2.10, Lint, new-APK installation, visual review, animation smoothness and compact/font-scale usability remain **NOT VERIFIED**. See VALIDATION.md for exact artifact details and acceptance results. No engine, level, symbol shape or touch geometry changed.
 
 Run this from a normal Linux terminal, with Java 17 and the SDK configured:
 
@@ -40,7 +44,7 @@ Ordinary background/foreground retains the existing activity state when Android 
 
 ## Play
 
-Tap an available tile, then another with the same symbol. Tap the selected tile again to deselect; tap a different available symbol to move selection. Unavailable tiles have muted faces and two engraved corner bars. Selection has a gold outline. Tiles disappear immediately after a validated match. The counter tracks remaining tile pairs, not currently legal moves. Clear all tiles to see Garden Cleared. A board without legal matching pairs shows No More Matches. Restart / Play Again restores all 24 original tiles and clears selection.
+Tap an available tile, then another with the same symbol. Tap the selected tile again to deselect; tap a different available symbol to move selection. Unavailable tiles have muted faces and two engraved corner bars. Selection has a gold outline. Matched tiles leave logical state immediately, then fade and shrink visually for 150 ms when system animators are enabled. The counter tracks remaining tile pairs, not currently legal moves. Clear all tiles to see Garden Cleared. A board without legal matching pairs shows No More Matches. Restart / Play Again restores all 24 original tiles and clears selection.
 
 ## Authentic availability rules
 
@@ -76,7 +80,7 @@ For this sandbox only, `python3 tools/verify_offline.py` directly invokes cached
 
 ## Limitations and next improvements
 
-One fixed level, immediate removal, no sound, hints, undo, shuffle or progression. English resources establish a translation foundation; no additional locales are included. Custom-board screen-reader navigation is not implemented. Basic standard controls, contrast, silhouettes and selection cues are present. Runtime layout, Android lifecycle and touch usability still need device validation; no human playtesting has occurred.
+One fixed level, no sound, hints, undo, shuffle or progression. English resources establish a translation foundation; no additional locales are included. Custom-board screen-reader navigation is not implemented. Basic standard controls, contrast, silhouettes and selection cues are present. The updated layout, Android lifecycle and animation smoothness still need device validation; no completed human playtest has been received.
 
 The next iteration should first execute the compiled Android interaction tests and inspect compact/large-phone screenshots on an unrestricted host, then address confirmed touch, layout, lifecycle or accessibility defects before adding levels or boosters.
 

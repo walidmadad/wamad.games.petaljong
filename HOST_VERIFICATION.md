@@ -1,4 +1,4 @@
-# CODEX 04 — Linux host verification
+# TileBloom — Linux host verification
 
 Run from the existing TileBloom directory in a normal Linux terminal outside the Codex sandbox. Do not change operating-system security settings. Java 17, SDK platform 36 and Build Tools 35.0.0 are required. Gradle dependencies must be cached or downloadable. Configured versions: Kotlin 2.2.10, AGP 8.10.0, Gradle 8.13. The standalone diagnostic compiler is separately pinned to 1.9.24.
 
@@ -92,13 +92,13 @@ adb logcat -b crash -d > "$device_evidence/crashes.txt"
 adb logcat -d -s AndroidRuntime > "$device_evidence/runtime.txt"
 ```
 
-Collect crash logs even when launch/tests fail. Do not interpret command exit 0 alone as eight passing tests; inspect Gradle output and connected test XML for executed/pass/failure/skipped counts. Preserve `app/build/outputs/androidTest-results/connected` and `app/build/reports/androidTests/connected` with these device logs if generated. If installation or launch fails, record its exit code/log and do not mark subsequent steps as executed.
+Collect crash logs even when launch/tests fail. Do not interpret command exit 0 alone as nine passing tests; inspect Gradle output and connected test XML for executed/pass/failure/skipped counts. Preserve `app/build/outputs/androidTest-results/connected` and `app/build/reports/androidTests/connected` with these device logs if generated. If installation or launch fails, record its exit code/log and do not mark subsequent steps as executed.
 
 Installation must print `Success`. Launch should report `Status: ok`, show the game and leave its process running; inspect the screen and crash logs too. A successful am start alone does not prove gameplay. Do not clear existing logs before collecting a failure. If `INSTALL_FAILED_UPDATE_INCOMPATIBLE` occurs, fallback and Gradle debug keys differ. Keep the same key, or intentionally uninstall with `adb uninstall com.tilebloom.game` and install again; uninstall loses task state.
 
 Reports: JVM `app/build/reports/tests/testDebugUnitTest/index.html`, Lint `app/build/reports/lint-results-debug.html`, Android `app/build/reports/androidTests/connected/debug/index.html`. Read XML/results for actual executed, passed, failed and ignored counts.
 
-Eight instrumentation methods cover launch, coordinate-tapped victory and deadlock, selection/blocked/drag behavior, restart during touch/feedback, activity recreation, repeated taps during feedback/after restart, and batched release movement. The last test dispatches a constructed historical MotionEvent through the real view; other gameplay tests inject screen coordinates. None invoke engine select/match directly. They are compiled only in this sandbox.
+Nine instrumentation methods cover launch, coordinate-tapped victory and deadlock, selection/blocked/drag behavior, restart during touch/feedback, activity recreation, repeated taps during feedback/after restart, batched release movement, and match-effect completion/restart. The batched release test dispatches a constructed historical MotionEvent through the real view; gameplay tests inject screen coordinates or dispatch local MotionEvents through the real view. None invoke engine select/match directly. They are compiled only in this sandbox.
 
 ## Screen and state checks
 
@@ -114,6 +114,6 @@ Individual screen-reader tile actions are not implemented; assess TalkBack annou
 
 ## Return evidence for the next iteration
 
-Keep the host run directory, device evidence, connected test XML/reports, screenshots and the completed PLAYTEST_01.md. Record installation and launch exit codes, observed screen behavior, exact APK hash, device/API/font scale, eight-test counts and any reproduction steps in VALIDATION.md. Host scripts and old fallback logs alone are not runtime evidence.
+Keep the host run directory, device evidence, connected test XML/reports, screenshots and the completed PLAYTEST_01.md. Record installation and launch exit codes, observed screen behavior, exact APK hash, device/API/font scale, nine-test counts and any reproduction steps in VALIDATION.md. Host scripts and old fallback logs alone are not runtime evidence.
 
-The next external action is to run `bash tools/host_verify.sh` in the regular Linux terminal, then follow the device steps above. Return the resulting logs/screenshots and genuine player feedback for CODEX 05. If no device is available, complete host build verification and explicitly leave Android steps NOT EXECUTED. Do not schedule another identical sandbox build attempt.
+The next external action is to run `bash tools/host_verify.sh` in the regular Linux terminal, then follow the device steps above. Return the resulting logs/screenshots and genuine player feedback for the next iteration. CODEX 06 added visual polish and a new diagnostic APK; prior user-reported emulator screenshots do not verify that updated APK. If no device is available, complete host build verification and explicitly leave Android steps NOT EXECUTED. Do not schedule another identical sandbox build attempt.

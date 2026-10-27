@@ -2,7 +2,7 @@
     <string name="app_name">TileBloom</string>
     <string name="subtitle">Mahjong Garden Puzzle</string>
     <string name="level">Level 1</string>
-    <string name="pairs">Remaining Pairs: %1$d</string>
+    <string name="pairs">Pairs left: %1$d</string>
     <string name="instruction">Select two matching free tiles</string>
     <string name="restart">Restart</string>
     <string name="play_again">Play Again</string>

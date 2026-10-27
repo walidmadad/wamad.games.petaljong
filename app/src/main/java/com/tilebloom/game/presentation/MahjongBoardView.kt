@@ -1,5 +1,7 @@
 package com.tilebloom.game.presentation
 
+import android.animation.ValueAnimator
+import android.os.SystemClock
 import android.content.Context
 import android.graphics.*
 import android.view.MotionEvent
@@ -12,6 +14,8 @@ import kotlin.math.*
 
 class MahjongBoardView(context: Context, private val game: Game, private val changed: () -> Unit) : View(context) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val effects = MatchEffects()
+    val activeMatchEffectCount get() = effects.active.size
     private val gesture = TileTapGesture(ViewConfiguration.get(context).scaledTouchSlop.toFloat())
     private var blockedTileId: Int? = null
     private val clearBlocked = Runnable { blockedTileId = null; invalidate() }
@@ -46,6 +50,7 @@ class MahjongBoardView(context: Context, private val game: Game, private val cha
         removeCallbacks(clearBlocked)
         blockedTileId = null
         gesture.cancel()
+        effects.clear()
         invalidate()
     }
     private fun BoardRect.android() = RectF(left, top, right, bottom)
@@ -54,18 +59,38 @@ class MahjongBoardView(context: Context, private val game: Game, private val cha
         val layout = geometry()
         val scale = layout.scale
         if (scale <= 0f) return
-        for (tile in layout.drawOrder(game.tiles)) {
+        val now = SystemClock.uptimeMillis()
+        if (!ValueAnimator.areAnimatorsEnabled()) effects.clear()
+        effects.expire(now)
+        // Merge ghosts into the original draw order; they never enter touch geometry.
+        val ghosts = effects.active.associateBy { it.tile.id }
+        for (tile in layout.drawOrder(game.remaining + effects.active.map { it.tile })) {
+            val ghost = ghosts[tile.id]
+            val progress = ghost?.let { effects.progress(it, now) } ?: 0f
             val r = layout.footprint(tile).android()
             val face = layout.face(tile)
-            val available = game.isAvailable(tile.id)
+            val available = ghost != null || game.isAvailable(tile.id)
+            val saved = if (ghost != null) {
+                canvas.saveLayerAlpha(RectF(r.left, r.top, r.right, r.bottom + scale * .1f),
+                    ((1f - progress) * 255).toInt())
+            } else canvas.save()
+            if (ghost != null) {
+                val shrink = 1f - .1f * progress
+                canvas.scale(shrink, shrink, r.centerX(), r.centerY())
+            }
             val selected = game.selected == tile.id
             paint.style = Paint.Style.FILL
-            paint.color = Color.rgb(6, 27, 22)
+            paint.color = Color.argb(95, 3, 20, 15)
             canvas.drawRoundRect(layout.shadow(tile).android(), layout.radius, layout.radius, paint)
-            paint.color = Color.rgb(187, 173, 139)
+            paint.color = Color.rgb(183, 170, 135)
             canvas.drawRoundRect(layout.edge(tile).android(), layout.radius, layout.radius, paint)
-            paint.color = if (available) Color.rgb(249, 242, 219) else Color.rgb(220, 220, 200)
+            paint.color = if (available) Color.rgb(250, 244, 224) else Color.rgb(222, 224, 204)
             canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
+            // Inset ceramic rim and top highlight stay inside the established face.
+            paint.style = Paint.Style.STROKE
+            paint.strokeWidth = scale * .018f
+            paint.color = if (available) Color.rgb(255, 253, 240) else Color.rgb(235, 237, 218)
+            canvas.drawRoundRect(face.inset(scale * .035f).android(), layout.radius * .8f, layout.radius * .8f, paint)
             // Keep all border strokes inside the physical face so selection never changes hit bounds.
             paint.style = Paint.Style.STROKE
             paint.strokeWidth = if (selected) scale * .045f else scale * .014f
@@ -92,7 +117,9 @@ class MahjongBoardView(context: Context, private val game: Game, private val cha
                 canvas.drawLine(face.left + scale * .12f, face.top + scale * .12f, face.left + scale * .25f, face.top + scale * .12f, paint)
                 canvas.drawLine(face.right - scale * .25f, face.top + scale * .12f, face.right - scale * .12f, face.top + scale * .12f, paint)
             }
+            canvas.restoreToCount(saved)
         }
+        if (effects.active.isNotEmpty()) postInvalidateOnAnimation()
     }
     override fun onTouchEvent(event: MotionEvent): Boolean {
         // Batched movement can accompany the final UP as well as MOVE.
@@ -117,7 +144,9 @@ class MahjongBoardView(context: Context, private val game: Game, private val cha
                 if (id != null) {
                     if (game.isAvailable(id)) {
                         removeCallbacks(clearBlocked); blockedTileId = null
+                        val before = game.tiles
                         game.select(id)
+                        effects.record(before, game.tiles, SystemClock.uptimeMillis(), ValueAnimator.areAnimatorsEnabled())
                         changed()
                     } else {
                         // The touched upper tile still consumes the tap; never search below it.
@@ -144,18 +173,24 @@ class MahjongBoardView(context: Context, private val game: Game, private val cha
 
 private object BotanicalSymbols {
     private val green = Color.rgb(43, 100, 69)
+    private val leafPath = Path().apply {
+        moveTo(-.7f, .85f)
+        cubicTo(-1.2f, -.4f, -.2f, -1.1f, .8f, -.9f)
+        cubicTo(1.1f, .2f, .3f, .9f, -.7f, .85f)
+    }
+    private val lotusAngles = floatArrayOf(-55f, -28f, 0f, 28f, 55f)
+    private val berryCenters = listOf(-.43f to -.25f, .35f to -.1f, -.4f to .45f, .32f to .6f)
     fun draw(c: Canvas, p: Paint, symbol: Symbol) {
         p.color = green; p.style = Paint.Style.FILL
         when (symbol) {
             Symbol.LEAF -> {
-                val path = Path().apply { moveTo(-.7f, .85f); cubicTo(-1.2f, -.4f, -.2f, -1.1f, .8f, -.9f); cubicTo(1.1f, .2f, .3f, .9f, -.7f, .85f) }
-                c.drawPath(path, p)
+                c.drawPath(leafPath, p)
                 p.color = Color.rgb(210, 220, 166); p.strokeWidth = .07f
                 c.drawLine(-.65f, .8f, .6f, -.65f, p)
             }
             Symbol.LOTUS -> {
                 p.color = Color.rgb(161, 92, 119)
-                for (angle in listOf(-55f, -28f, 0f, 28f, 55f)) {
+                for (angle in lotusAngles) {
                     c.save(); c.rotate(angle, 0f, .6f)
                     c.drawOval(-.27f, -.95f, .27f, .65f, p); c.restore()
                 }
@@ -178,7 +213,7 @@ private object BotanicalSymbols {
                 p.strokeWidth = .09f; c.drawLine(0f, -.85f, 0f, .65f, p)
                 c.drawOval(0f, -.95f, .75f, -.55f, p)
                 p.color = Color.rgb(128, 71, 111)
-                listOf(-.43f to -.25f, .35f to -.1f, -.4f to .45f, .32f to .6f).forEach { (x, y) -> c.drawCircle(x, y, .32f, p) }
+                berryCenters.forEach { (x, y) -> c.drawCircle(x, y, .32f, p) }
             }
             Symbol.SUNFLOWER -> {
                 p.color = Color.rgb(193, 147, 40)
