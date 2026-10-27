@@ -29,6 +29,7 @@ class MainActivity : Activity() {
     private lateinit var board: MahjongBoardView
     private lateinit var counter: TextView
     private lateinit var feedback: TextView
+    private lateinit var undo: Button
     private lateinit var restart: Button
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -203,7 +204,22 @@ class MainActivity : Activity() {
             setPadding(dp(28), dp(10), dp(28), dp(10))
             setOnClickListener { game.restart(); board.clearFeedback(); update() }
         }
-        root.addView(restart, LinearLayout.LayoutParams(-2, -2).apply { bottomMargin = dp(4) })
+        val actions = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        undo = Button(this).apply {
+            id = R.id.undo; isAllCaps = false; textSize = 16f; minimumHeight = dp(48)
+            styleVictory(this, true)
+            setTextColor(ColorStateList(arrayOf(intArrayOf(-android.R.attr.state_enabled), intArrayOf()),
+                intArrayOf(Color.rgb(191, 207, 187), ivory)))
+            setOnClickListener {
+                if (game.canUndo) {
+                    if (game.undo()) { board.clearFeedback(); update() }
+                    else android.util.Log.e("TileBloomUndo", "Validated history reconstruction failed; board retained")
+                }
+            }
+        }
+        actions.addView(undo, LinearLayout.LayoutParams(0, -2, 1f).apply { marginEnd = dp(8) })
+        actions.addView(restart, LinearLayout.LayoutParams(0, -2, 1f))
+        root.addView(actions, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(4) })
         setContentView(root)
         root.requestApplyInsets()
         update()
@@ -279,7 +295,10 @@ class MainActivity : Activity() {
             Status.NO_MOVES -> getString(R.string.no_moves) + "\n" + getString(R.string.no_moves_detail)
         }
         feedback.setTextColor(if (game.status == Status.PLAYING) Color.rgb(191, 207, 187) else Color.rgb(184, 163, 107))
-        restart.setText(R.string.restart)
+        undo.visibility = if (presentation.footer) View.VISIBLE else View.GONE
+        undo.isEnabled = game.canUndo
+        undo.setText(if (game.status == Status.NO_MOVES) R.string.undo_last_move else R.string.undo)
+        restart.setText(if (game.status == Status.NO_MOVES) R.string.restart_level else R.string.restart)
         board.refresh()
     }
     override fun onStop() {

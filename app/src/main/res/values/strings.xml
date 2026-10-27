@@ -10,12 +10,15 @@
     <string name="level">Level 1</string>
     <string name="pairs">Pairs left: %1$d</string>
     <string name="instruction">Select two matching free tiles</string>
+    <string name="undo">Undo</string>
+    <string name="undo_last_move">Undo Last Move</string>
+    <string name="restart_level">Restart Level</string>
     <string name="restart">Restart</string>
     <string name="play_again">Play Again</string>
     <string name="won">Garden Cleared!</string>
     <string name="won_detail">Beautifully done.</string>
     <string name="no_moves">No More Matches</string>
-    <string name="no_moves_detail">No legal matching pairs remain. Restart this garden.</string>
+    <string name="no_moves_detail">Try another approach.</string>
     <string name="board_description">Mahjong garden board</string>
     <string name="board_state">Mahjong garden board. %1$d tiles remaining. %2$s</string>
     <string name="board_selected">Selected: %1$s.</string>

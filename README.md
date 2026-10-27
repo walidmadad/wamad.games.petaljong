@@ -1,6 +1,6 @@
 # TileBloom — Mahjong Garden Puzzle
 
-CODEX 10: redesigned Level 1 and five deterministic introductory Mahjong Solitaire levels with local progression, automatic continue, and a minimal level selector. Offline native Kotlin Android; no accounts, network permissions, advertising, or analytics.
+CODEX 11: unlimited Undo and deadlock recovery; redesigned Level 1 and five deterministic introductory Mahjong Solitaire levels with local progression, automatic continue, and a minimal level selector. Offline native Kotlin Android; no accounts, network permissions, advertising, or analytics.
 
 Tap the level number to select a level. Current level continues unchanged. Another unlocked level starts fresh after confirmation and replaces the sole active attempt. Completion records remain saved. Locked levels cannot be selected.
 
@@ -12,7 +12,7 @@ Level 1 is now a 24-tile winding terrace over five stepped rows, with six caps. 
 
 The engine, artwork, renderer and match animations are unchanged. Sixty deterministic candidates were audited; see [CODEX_10_REPORT.md](CODEX_10_REPORT.md), [geometry comparison](docs/level1-layout.svg) and [candidate measurements](docs/codex10-candidates.csv). Human difficulty is unverified. See [PLAYTEST_01.md](PLAYTEST_01.md) for human testing, and [HOST_VERIFICATION.md](HOST_VERIFICATION.md) for host commands.
 
-Validation: 139 JVM tests (127 previous + 12 redesign regressions) and 10 host-workflow tests pass using diagnostic tools. 15 Android instrumentation methods are compiled only, never executed here. Standard Gradle and Lint are blocked by sandbox restrictions. No current APK has been visually validated here. See [VALIDATION.md](VALIDATION.md) for artifact evidence.
+Validation: 149 JVM tests (139 existing + 10 Undo regressions) and 10 host-workflow tests pass using diagnostic tools. 18 Android instrumentation methods (15 existing + 3 Undo) are compiled only, not executed here. Standard Gradle and Lint are blocked by sandbox restrictions. No current APK has been visually validated here. See [CODEX_11_REPORT.md](CODEX_11_REPORT.md) and [VALIDATION.md](VALIDATION.md).
 
 ```sh
 bash tools/host_verify.sh
@@ -22,3 +22,7 @@ JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 PATH=/usr/lib/jvm/java-17-openjdk-a
 ```
 
 Stack: Kotlin 2.2.10 / AGP 8.10.0 / Gradle 8.13 / Java 17 / SDK 36, min SDK 26, Build Tools 35.0.0. Diagnostic builds use cached Kotlin 1.9.24. Source: domain engine and PlayerProgress; storage/ProgressRepository; presentation/MainActivity and MahjongBoardView. No new external dependencies. Historical iteration reports remain in the repository.
+
+Undo replays the accepted history minus its final pair through validated engine restoration, then saves the shorter history. Selection and transient match effects are cleared. Repeated Undo returns to the initial board; rejected matches never count. The existing save schema also supports Undo after relaunch. No Undo action is exposed after victory; Replay starts fresh while completion and unlock records remain saved. Switching levels starts the selected puzzle fresh, as before.
+
+See [CODEX_11_REPORT.md](CODEX_11_REPORT.md) for current verification and the full acceptance assessment. Android runtime and human difficulty feedback remain pending.

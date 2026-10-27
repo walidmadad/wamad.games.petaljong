@@ -72,6 +72,12 @@ class Game(definition: List<Tile>) {
         selected = candidate.selected
         return true
     }
+    /** Accepted matches only; replay validates the entire shorter history before commit. */
+    val canUndo: Boolean get() = history.isNotEmpty() && status != Status.WON
+    fun undo(): Boolean {
+        if (!canUndo) return false
+        return restore(GameSnapshot(history.dropLast(1), null))
+    }
     fun restart() { current = initial.toList(); history = emptyList(); selected = null }
 }
 

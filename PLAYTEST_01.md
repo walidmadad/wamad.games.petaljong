@@ -1,3 +1,20 @@
+# CODEX 11 playtest additions (pending human/device execution)
+
+Install the updated APK with `adb install -r` without clearing real application data. Use a compatible signing identity; stop on signature mismatch rather than uninstalling and losing saves. Record device, API, screen dp, font scale and APK hash.
+
+- Confirm the winding terrace looks visibly different from the old Level 1. Are free tiles understandable? Does matching require observation and anticipating future unlocks? Is it fair, and do you want Level 2? Record player comments verbatim; no feedback has yet been collected.
+- Match three pairs, select another tile, then Undo repeatedly. Confirm exact pairs return in reverse order, selection clears, counters increase, blocking returns and Undo disables at the initial board.
+- Press Undo during the 150 ms match fade and rapidly repeat. Look for duplicate tiles, stale disappearing copies, broken hit testing or delayed removals.
+- Reach No More Matches. Confirm “Try another approach.”, Undo Last Move and Restart Level. Undo until playable; check no puzzle or seed change. Does experimentation feel safe and mistakes recoverable?
+- On compact portrait and enlarged font settings, verify both footer buttons have at least 48 dp touch height, readable disabled labels and no board obstruction.
+- On Level 3 remove five pairs, close/relaunch, verify the exact board, Undo once, then close/relaunch again. Exactly four accepted pairs must remain removed. Check real storage, not only activity recreation.
+- Complete a level; confirm Undo is hidden, Next Level/Replay Level work, and completion/unlocks survive Replay, Restart and relaunch. Switch layouts and confirm no previous-level Undo history appears.
+- With suitable backed-up old Level 1 data, check v2-to-v3 migration resets only the attempt and retains completions. Do not overwrite a player's only save for this test.
+
+Instrumentation uses isolated storage and cannot replace a human enjoyment assessment. All these device observations remain NOT VERIFIED in this environment.
+
+---
+
 # CODEX 10 — five-level human playtest
 
 No human results have been provided for this iteration. Leave blanks until observed. Automated solver outcomes do not establish enjoyment or fairness. Use the new APK identified in CODEX_10_REPORT.md and record device, Android version, APK hash/build, date and tester alias (no account required).

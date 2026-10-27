@@ -29,6 +29,58 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         java.io.File(instrumentation.targetContext.filesDir, "test-smoke-progress.bak").delete()
         com.tilebloom.game.storage.ProgressRepository.useTestStorage(null)
     }
+    fun testUndoRestoresPairSelectionAndRestartState() {
+        activity; instrumentation.waitForIdleSync()
+        ui { assertFalse(activity.findViewById<Button>(R.id.undo).isEnabled) }
+        tap(firstA); tap(firstB); assertCount(22)
+        ui { activity.findViewById<Button>(R.id.undo).performClick() }
+        assertCount(24)
+        ui {
+            assertEquals("Pairs left: 12", activity.findViewById<TextView>(R.id.counter).text.toString())
+            assertEquals(0, activity.findViewById<MahjongBoardView>(R.id.board).activeMatchEffectCount)
+            assertFalse(activity.findViewById<Button>(R.id.undo).isEnabled)
+        }
+        tap(firstA)
+        ui { assertEquals(firstA, activity.findViewById<MahjongBoardView>(R.id.board).selectedTileId) }
+        tap(firstB); assertCount(22)
+        ui { activity.findViewById<Button>(R.id.restart).performClick() }
+        assertCount(24)
+        ui { assertFalse(activity.findViewById<Button>(R.id.undo).isEnabled) }
+    }
+    fun testDeadlockUndoRecoversThroughPresentation() {
+        activity; instrumentation.waitForIdleSync()
+        deadlockMoves.forEach { tap(it.first); tap(it.second) }
+        ui {
+            val undo = activity.findViewById<Button>(R.id.undo)
+            assertTrue(undo.isShown); assertTrue(undo.isEnabled)
+            assertEquals("Undo Last Move", undo.text.toString()); undo.performClick()
+        }
+        assertCount(24-deadlockMoves.size*2+2)
+        ui {
+            assertEquals(activity.getString(R.string.instruction), activity.findViewById<TextView>(R.id.feedback).text.toString())
+            assertEquals("Undo", activity.findViewById<Button>(R.id.undo).text.toString())
+        }
+        tap(deadlockMoves.last().first)
+        ui { assertEquals(deadlockMoves.last().first, board().selectedTileId) }
+    }
+    fun testUndoAfterFreshLaunchPersistsShorterHistory() {
+        val original = activity
+        tap(firstA); tap(firstB); tap(secondA); tap(secondB)
+        ui { original.finish() }; instrumentation.waitForIdleSync()
+        val repository = com.tilebloom.game.storage.ProgressRepository
+        repository.awaitWrites(); repository.useTestStorage("test-smoke-progress")
+        val intent = android.content.Intent(instrumentation.targetContext, MainActivity::class.java)
+            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+        val relaunched = instrumentation.startActivitySync(intent) as MainActivity
+        try {
+            instrumentation.waitForIdleSync(); assertCount(20, relaunched)
+            ui { relaunched.findViewById<Button>(R.id.undo).performClick() }
+            assertCount(22, relaunched)
+            repository.awaitWrites(); repository.useTestStorage("test-smoke-progress")
+            val saved = repository.load(instrumentation.targetContext)
+            assertEquals(listOf(com.tilebloom.game.domain.PairMove(firstA, firstB)), saved.active!!.game.moves)
+        } finally { ui { relaunched.finish() } }
+    }
     fun testPreviousPuzzleVersionUpgradePreservesProgress() {
         java.io.File(instrumentation.targetContext.filesDir,"test-smoke-progress")
             .writeText("1\n1,2\n1,0,2\n16,20;0,4")

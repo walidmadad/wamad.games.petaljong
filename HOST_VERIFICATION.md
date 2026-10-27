@@ -1,3 +1,11 @@
+# CODEX 11 verification addendum
+
+Use JDK 17 for the cached Kotlin 1.9.24 diagnostic pipeline; default Java 25 is incompatible. Run `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:$PATH python3 tools/verify_offline.py` if standard Gradle is unavailable. This fallback does not run Gradle or Lint.
+
+The CODEX 11 sandbox standard build stops at a read-only wrapper lock. ADB cannot install its socket listener (Operation not permitted). Do not repeat these unchanged failures. Run the established host script and connected tests outside this restriction, then the CODEX 11 checklist in PLAYTEST_01.md. Save-schema 1 has durable restoration; older statements below denying persistent progress are historical and superseded by CODEX 09–11.
+
+---
+
 # CODEX 10 supplement
 
 Current evidence and exact APK identity are in VALIDATION.md. Level 1 is now winding v3, seed 123; all historical Level 1 coordinate/ID sequences below are obsolete. Use the current witness from Levels.get(1), or CODEX_10_REPORT.md section F, for verification. Instrumentation now has 15 methods (compiled only here). Actual runtime and save persistence remain unverified. Use the CODEX 10 checklist in PLAYTEST_01.md, including real process restart and a same-signature update from CODEX 09 without clearing data. Schema 1 remains durable; old statements below claiming no persistent progression are historical and no longer apply.

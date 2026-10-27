@@ -1,3 +1,20 @@
+# CODEX 11 — current verification (2026-10-27)
+
+- JVM: 149 executed / 149 passed / 0 failed, including all 139 prior tests and 10 Undo methods. Five complete witnesses and deterministic Level 1 v3 remain valid.
+- Host workflows: 10 executed / 10 passed / 0 failed.
+- Instrumentation: 18 methods COMPILED BUT NOT EXECUTED (15 retained, 3 added); 0 executed. No device runtime claim.
+- Standard Gradle unit/build/Lint invocation: blocked at read-only wrapper lock before task execution. Lint NOT EXECUTED.
+- Diagnostic pipeline: PASS with JDK 17; default Java 25 was incompatible with cached Kotlin compiler. APK: `app/build/outputs/apk/debug/app-debug.apk`, 745,875 bytes.
+- APK SHA-256: `f246a09c203308e1e900f2e48a92ec00f061183f144c65133701d68895a7205b`.
+- Alignment PASS (`zipalign -c 4`); signature PASS (v2/v3, one debug signer). Packaged Undo resources confirmed.
+- ADB: sandbox socket listener denied; no installation, launch, connected tests or visual inspection executed. Persistence across actual app relaunch and compact-screen usability NOT VERIFIED.
+- Host performance: 1,000 combined late-Level-5 restore+Undo cycles in 104.747208 ms. No Android latency measurement.
+- Evidence: `app/build/codex11/diagnostic.log`, `host-tests.log`, `gradle.log`, `adb.log`. Full architecture and all 28 criteria: [CODEX_11_REPORT.md](CODEX_11_REPORT.md).
+
+Undo uses accepted-history candidate replay, clears selection/effects and saves the shorter history through the existing ordered writer. Schema, puzzle identity and completed records are preserved. No Undo after victory; Replay/Restart start fresh attempts. Human Level 1 assessment and real durable storage checks remain pending; see current PLAYTEST_01.md additions. Historical verification entries below remain evidence for earlier iterations, not current runtime results.
+
+---
+
 # CODEX 10 validation — current evidence
 
 This section supersedes all historical artifact/count claims below.
