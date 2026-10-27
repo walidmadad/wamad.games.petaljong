@@ -1,3 +1,118 @@
+# CODEX 03 verification — 2026-10-27
+
+## Outcome and audit
+
+Continued commit `855673d4c0cb35205d450beb2ac37b323b8180b6` with a clean initial working tree. Reviewed README, prior validation/host instructions, all production Kotlin, manifests/resources, Gradle/wrapper configuration, standalone build pipeline, all 63 JVM tests and six original instrumentation tests before changes. Original engine, symbols, board geometry, level witness and history remain intact.
+
+Confirmed weaknesses: Kotlin 1.9.24 was outside its fully supported Gradle/AGP range; final ACTION_UP ignored historical movement while ACTION_MOVE checked it. The latter allowed a constructed batched release containing an out-and-back movement to complete selection. No Android-observed visual defect is claimed.
+
+Fixed release handling to consume historical samples before completing a tap. Added an Android regression that dispatches a historical release through the actual view, and another for repeated screen touches during feedback/after restart. Added one JVM regression checking repeated removed/invalid selections preserve accepted move history and selection, then a match after restart. Original tests were retained. No second legality system, animation dependency, new symbol or level was added. Gold selection and 160 ms blocked feedback are unchanged. Pair removal stays immediate because Android animation/cancellation reliability cannot be verified here.
+
+## Toolchain and compatibility
+
+- Runtime Java: OpenJDK 17.0.20.1+1-1-24.04-Ubuntu.
+- Configured Kotlin Gradle plugin: **2.2.10** (was 1.9.24).
+- Configured Android Gradle Plugin: **8.10.0** (was 8.12.1).
+- Gradle wrapper/distribution: **8.13**, verified with writable temporary Gradle home. Its embedded Kotlin 2.0.21 is Gradle's DSL compiler, not the app plugin.
+- Compile/target API **36** (installed platform revision 2, extension 17), minimum **26**, Build Tools **35.0.0**, JVM target **17**.
+- Diagnostic fallback compiler/stdlib remain cached Kotlin **1.9.24**, JUnit **4.13.2**. This does not test KGP 2.2.10.
+
+Official [Kotlin matrix](https://kotlinlang.org/docs/gradle-configure-project.html) lists KGP 2.2.0–2.2.10 with Gradle 7.6.3–8.14 and AGP 7.3.1–8.10.0. [AGP 8.10 requirements](https://developer.android.com/build/releases/agp-8-10-0-release-notes) cover API 36, Java 17, Build Tools 35.0.0 and Gradle minimum 8.11.1. Thus the configured versions fall within the published ranges. Two plugin pins changed; wrapper/SDK/engine remain unchanged. AGP 8.10.0 is not cached locally and may require host download. Actual dependency resolution and Gradle compilation are NOT VERIFIED.
+
+## Gradle results
+
+Each initial command exited 1 before configuration:
+
+```sh
+./gradlew --version
+./gradlew :app:testDebugUnitTest
+./gradlew :app:assembleDebug
+./gradlew :app:lintDebug
+./gradlew :app:connectedDebugAndroidTest
+```
+
+Exact blocker: wrapper cannot create `/home/walid/.gradle/wrapper/dists/gradle-8.13-bin/5xuhj0ry160q40clulazy9h7d/gradle-8.13-bin.zip.lck` (Read-only file system).
+
+Changed the relevant filesystem condition using the existing cached distribution in writable `/tmp/tilebloom-gradle`:
+
+```sh
+GRADLE_USER_HOME=/tmp/tilebloom-gradle ./gradlew --version
+GRADLE_USER_HOME=/tmp/tilebloom-gradle ./gradlew --offline --no-daemon \
+  :app:testDebugUnitTest :app:assembleDebug :app:lintDebug :app:connectedDebugAndroidTest
+```
+
+Version command succeeded (Gradle 8.13). Task command exited 1: `Could not create service of type FileLockContentionHandler` / `Could not determine a usable wildcard IP for this machine.` The task attempt was performed before and after final toolchain/source changes; both failed before configuration. No source compilation error or successful Gradle build is inferred. Lint: NOT EXECUTED. Session policy automatically rejects sandbox approvals; no supported execution escalation is available. No security restriction was bypassed.
+
+## Android runtime and instrumentation
+
+`/home/walid/Android/Sdk/platform-tools/adb devices -l` exited 1. ADB 1.0.41 / 37.0.1-15733141 could not install its smartsocket listener: `Operation not permitted`; it could not connect to its daemon. Device availability cannot be established. Emulator profiles listed: `11.0`, `Medium_Phone`, `Medium_Tablet_2`. `/dev/kvm` is absent. Starting an emulator cannot supply a usable ADB connection under this socket restriction, so no emulator launch/install was attempted through the blocked connection.
+
+**INSTRUMENTATION TESTS: NOT EXECUTED.** Eight methods compiled; executed 0, passed 0, failed 0, skipped 0. Compilation is not execution. All original six tests remain. Instrumentation compilation emits the existing deprecated platform test API warning.
+
+Actual application installation, Android launch, complete UI witness/deadlock, crash inspection, screenshot review, compact/typical/large phone usability, font scaling, background return and Bundle/process recreation: **NOT VERIFIED**. No screenshot was captured; no visual observations or human feedback are invented.
+
+## Regression and artifact results
+
+Command: `python3 tools/verify_offline.py` — exit 0, `OK (64 tests)`.
+
+| Suite | Executed | Passed | Failed | Skipped |
+| --- | ---: | ---: | ---: | ---: |
+| Original GameTest | 31 | 31 | 0 | 0 |
+| BoardGeometryTest | 16 | 16 | 0 | 0 |
+| GameReliabilityTest | 10 | 10 | 0 | 0 |
+| TileTapGestureTest | 7 | 7 | 0 | 0 |
+| Total JVM | 64 | 64 | 0 | 0 |
+
+Twelve-pair Level 1 solution and known five-pair deadlock continue passing. Geometry proves topmost hit ownership, no blocked-upper tap-through, edges/boundaries, removal/restart and coordinate replay. Gesture tests prove slop, cancellation, pointer and target consistency. Engine tests prove legal-only removal, exact history, invalid state rejection, duplicate protection and restoration at all witness prefixes, victory and deadlock. These are JVM facts; actual Android delivery, feedback timing and OS restoration remain unverified.
+
+Final debug APK:
+
+- `/home/walid/Documents/projects/androidGames/TileBloom/app/build/outputs/apk/debug/app-debug.apk`
+- **709011 bytes**, fallback build (not Gradle).
+- SHA-256 `5df5cbb551d37d48956570d7c44f72991cb03a5f2710b95357f17f69eecc64d2`.
+- `zipalign -c 4` passed; `apksigner verify --verbose` passed v2/v3, one signer. v1/v4 absent; minimum API 26 supports v2.
+- AAPT2 badging confirms package `com.tilebloom.game`, version code 1/name 0.1, minimum 26, target 36, debuggable, portrait, launch activity `com.tilebloom.game.presentation.MainActivity`, no requested permissions.
+
+## CODEX 03 acceptance criteria
+
+Device-dependent behavior is deliberately NOT VERIFIED even where JVM coverage passes.
+
+| # | Criterion | Result | Evidence / limitation |
+| --- | --- | --- | --- |
+| 01 | Original JVM tests | PASS | All 63 retained and passing. |
+| 02 | Complete Level 1 solution | PASS | Engine and geometry witness. |
+| 03 | Known deadlock | PASS | Exact fixed-level sequence. |
+| 04 | Touch geometry | PASS | 16 shared geometry JVM tests; Android delivery unverified. |
+| 05 | No visible-upper tap-through | NOT VERIFIED | Shared production hit testing JVM coverage; actual UI unverified. |
+| 06 | Selection/deselection | NOT VERIFIED | Engine/gesture JVM coverage; actual UI unverified. |
+| 07 | Rapid input cannot corrupt game | NOT VERIFIED | Repeated engine selections/duplicate protection; Android delivery unverified. |
+| 08 | Restart restores board | NOT VERIFIED | Exact engine/geometry tests; button execution unverified. |
+| 09 | Activity state restoration | NOT VERIFIED | Domain replay passes; actual Bundle/OS unexecuted. |
+| 10 | Standard Gradle or exact blocker | PASS | Both filesystem and startup/socket blockers recorded; Gradle did not build. |
+| 11 | Valid debug APK | PASS | Fallback artifact aligned/signature checked. |
+| 12 | Instrumentation execution | NOT VERIFIED | Eight compiled; zero executed. |
+| 13 | Android launch | NOT VERIFIED | ADB socket denied. |
+| 14 | Android visual inspection | NOT VERIFIED | No screenshot. |
+| 15 | Compact-screen usability | NOT VERIFIED | Mathematical viewport coverage only. |
+| 16 | Gameplay feedback reliability | NOT VERIFIED | Timer/real touch runtime unexecuted. |
+| 17 | Existing Git history | PASS | Alternative metadata preserved; new commit descends from 855673d. |
+| 18 | Accurate documentation | PASS | Current results, host steps and blank human checklist recorded. |
+
+## Remaining priorities and playtest readiness
+
+1. Run standard Gradle tests/build/Lint on host, then install/launch and execute eight instrumentation tests. Resolve actual failures before extending scope.
+2. Inspect compact/typical/large Android screenshots and large fonts; verify activity/process restoration and real feedback timing. No device-dependent acceptance is claimed.
+3. Conduct PLAYTEST_01.md with a person; evaluate symbol distinction, touch comfort, selection clarity and meaningful decisions. The signed APK and instructions are ready for a first exploratory human playtest, conditional on successful host installation/launch. The application is not fully Android-validated.
+4. Individual screen-reader tile actions remain absent; no durable save, animation or progression exists.
+
+CODEX 04 should close Android runtime evidence gaps first and make focused changes driven by observed usability and human feedback. Add a short removal transition only after runtime cancellation/restart behavior can be verified. No new levels or boosters are recommended yet.
+
+Updated README.md, HOST_VERIFICATION.md and PLAYTEST_01.md. Git continues using `.tilebloom-git`; no reinitialization, rewrite, push or publication. This report is committed with the implementation; see `git --git-dir=.tilebloom-git --work-tree=. log -1` for the resulting hash.
+
+---
+
+# Historical results (superseded by CODEX 03 above)
+
 # CODEX 02 verification — 2026-10-27
 
 ## Summary

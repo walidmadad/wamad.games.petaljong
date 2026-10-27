@@ -1,67 +1,67 @@
-# CODEX 02 — unrestricted Linux host verification
+# CODEX 03 — Linux host verification
 
-Run these commands **outside the restricted Codex sandbox**, from the existing TileBloom directory. They require Java 17, Android SDK platform 36 / Build Tools 35.0.0, and access to cached dependencies or Google's/Maven repositories. Do not change host security settings.
+Run from the existing TileBloom directory in a normal Linux terminal outside the Codex sandbox. Do not change operating-system security settings. Java 17, SDK platform 36 and Build Tools 35.0.0 are required. Gradle dependencies must be cached or downloadable. Configured versions: Kotlin 2.2.10, AGP 8.10.0, Gradle 8.13. The standalone diagnostic compiler is separately pinned to 1.9.24.
 
-Set `ANDROID_HOME` to your actual SDK path if not already configured. For example, the conventional per-user SDK directory is `$HOME/Android/Sdk`. Then:
+## Environment and standard build
 
 ```sh
-export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
 java -version
+printf 'JAVA_HOME=%s\nANDROID_HOME=%s\nANDROID_SDK_ROOT=%s\n' "$JAVA_HOME" "$ANDROID_HOME" "$ANDROID_SDK_ROOT"
+cat local.properties
+```
+
+Find the SDK path in Android Studio's SDK Manager. Set ANDROID_HOME to that actual path, or keep an untracked local.properties containing sdk.dir=/actual/sdk/path. Do not assume another machine has the same SDK path. For the commands below set ANDROID_HOME to the path even when local.properties is used.
+
+```sh
+export ANDROID_HOME=/actual/sdk/path
+export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
+ls "$ANDROID_HOME/platforms/android-36/android.jar"
+ls "$ANDROID_HOME/build-tools/35.0.0"
+./gradlew --version
 ./gradlew :app:testDebugUnitTest
-./gradlew :app:lintDebug
 ./gradlew :app:assembleDebug
+./gradlew :app:lintDebug
+```
+
+Stop and investigate actual configuration/compiler errors. Sandbox startup errors are not source errors. This session failed at wrapper lock creation (read-only ~/.gradle), then at FileLockContentionHandler / usable wildcard IP with writable temporary Gradle home. No Gradle task ran. The host build may need to download AGP 8.10.0; it was not cached in this sandbox.
+
+## Device, installation and launch
+
+```sh
+adb version
 adb devices -l
 emulator -list-avds
 ```
 
-Launch an installed compact phone AVD through Android Studio or `emulator -avd YOUR_AVD_NAME` if no device is connected. Unlock its screen and leave it foregrounded. If multiple devices are connected, set `ANDROID_SERIAL` to the chosen serial from `adb devices -l` for ADB commands. The Gradle connected task runs on connected devices; disconnect extra devices if you want one target.
+If no device has status `device`, connect and authorize a USB-debugging phone or start an installed AVD in Android Studio. Alternatively, run `emulator -avd YOUR_AVD_NAME` in another terminal, using a name actually listed above. Previously listed here: 11.0, Medium_Phone, Medium_Tablet_2. Wait for boot, unlock the screen and rerun adb devices. `unauthorized` requires accepting the phone's prompt; `offline` is not a usable device. If no device/AVD is available, stop device checks and record NOT EXECUTED; install a system image/AVD through SDK Manager first.
+
+If several devices exist, set ANDROID_SERIAL to the chosen serial for ADB commands. Gradle connected tests may run on all connected devices; disconnect other targets for a single-device run.
 
 ```sh
+adb shell getprop sys.boot_completed
 adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb logcat -c
 adb shell am start -W -n com.tilebloom.game/.presentation.MainActivity
-adb exec-out screencap -p > /tmp/tilebloom02-initial.png
+adb shell pidof com.tilebloom.game
+adb exec-out screencap -p > /tmp/tilebloom03-initial.png
 ./gradlew :app:connectedDebugAndroidTest
-adb logcat -b crash -d > /tmp/tilebloom02-crashes.txt
-adb logcat -d -s AndroidRuntime > /tmp/tilebloom02-runtime.txt
+adb logcat -b crash -d > /tmp/tilebloom03-crashes.txt
+adb logcat -d -s AndroidRuntime > /tmp/tilebloom03-runtime.txt
 ```
 
-If signing identities differ between a fallback APK and a later Gradle APK, installation can return `INSTALL_FAILED_UPDATE_INCOMPATIBLE`. Keep one signing identity, or explicitly uninstall this prototype with `adb uninstall com.tilebloom.game` before installing again. Uninstall clears its task state; no durable saves are implemented.
+Installation must print `Success`. Launch should report `Status: ok`, show the game and leave its process running; inspect the screen and crash logs too. A successful am start alone does not prove gameplay. Do not clear existing logs before collecting a failure. If `INSTALL_FAILED_UPDATE_INCOMPATIBLE` occurs, fallback and Gradle debug keys differ. Keep the same key, or intentionally uninstall with `adb uninstall com.tilebloom.game` and install again; uninstall loses task state.
 
-Reports:
+Reports: JVM `app/build/reports/tests/testDebugUnitTest/index.html`, Lint `app/build/reports/lint-results-debug.html`, Android `app/build/reports/androidTests/connected/debug/index.html`. Read XML/results for actual executed, passed, failed and ignored counts.
 
-- JVM: `app/build/reports/tests/testDebugUnitTest/index.html`
-- Lint: `app/build/reports/lint-results-debug.html`
-- Instrumentation: `app/build/reports/androidTests/connected/debug/index.html`
+Eight instrumentation methods cover launch, coordinate-tapped victory and deadlock, selection/blocked/drag behavior, restart during touch/feedback, activity recreation, repeated taps during feedback/after restart, and batched release movement. The last test dispatches a constructed historical MotionEvent through the real view; other gameplay tests inject screen coordinates. None invoke engine select/match directly. They are compiled only in this sandbox.
 
-## Automated Android checks
+## Screen and state checks
 
-Six instrumentation test methods use the platform test runner:
+Use PLAYTEST_01.md for the human session. Capture initial, selected, victory and deadlock screens on compact (~320×568 dp), typical (~360×800 dp), and larger (~412×915 dp) portrait phones. Record actual dimensions, density, API and font scale. Repeat at increased system font size. Inspect all controls, system bars, symbol readability and overlap order. Geometry-only JVM tests do not establish phone usability.
 
-1. Launch and Restart smoke check.
-2. All twelve witness pairs via injected **screen-coordinate** DOWN/UP events, selection assertions, tile/counter assertions, victory, Play Again.
-3. A reproducible coordinate-tapped no-moves sequence and Restart.
-4. Selection, deselection, replacement, blocked upper-tile taps, and drag-out-and-back cancellation.
-5. Restart while a touch is pending and blocked feedback is scheduled.
-6. Activity recreation after one match and a selection, followed by another coordinate-tapped match.
+For a reproducible deadlock from Restart, match IDs (12,15), (14,23), (16,20), (13,21), (0,4). Lower IDs = row*4+column; upper IDs = 16+row*4+column, using zero-based rows/columns. Expect fourteen tiles, seven pairs, No More Matches and working Restart.
 
-Coordinates come from the view's shared tile geometry plus its actual screen location. Tests do not invoke `Game.match` or `Game.select`. Read-only presentation queries support assertions. These tests have only been compiled in the sandbox; run them here to establish actual Android results.
+Check recreation on a fresh board, after several moves, with selection, victory and deadlock. The automated recreation test covers one move plus selection. For other states, use the developer option Don't keep activities, leave and return, then restore the previous option setting. Check exact board, selection, counts, terminal status and working Restart.
 
-## Manual screen and lifecycle checks
+For process recreation: make a match and select a tile, press Home, run `adb shell am kill com.tilebloom.game`, then return through Recents. Do not force-stop. Recovery depends on Android retaining saved task state. Force-stop, task dismissal, reboot and fresh launch have no durable-save guarantee. No persistent progression exists.
 
-Repeat on a compact phone (approximately 320 × 568 dp) and a larger phone (approximately 412 × 915 dp). Verify the complete screen, including system bars, rather than assuming the JVM board-viewport tests cover text layout.
-
-- Initial board: 24 tiles, 12 remaining pairs, two clearly stacked layers, visible Restart.
-- Tap upper left tile, then tap it again: select, deselect. Its matching partner is directly below it on the upper layer.
-- Tap an inner upper tile while a free tile is selected: no selection replacement, removal or tap-through; brief restrained border feedback.
-- Tap a different free symbol: selection moves. Tap empty space: board remains intact.
-- Drag away from a pressed tile and return, cancel a touch, and try two fingers: no unintended selection/match.
-- Remove upper pairs from left to right; then lower columns left to right, pairing rows 0/1 and 2/3 in each column. Expect exactly twelve matches and Garden Cleared.
-- Play Again and repeated Restart restore 24 tiles, twelve pairs and no selection, including immediately after a blocked tap.
-- For a repeatable no-moves state, use tile IDs `(12,15), (14,23), (16,20), (13,21), (0,4)`. Lower IDs are `row*4+column`; upper IDs are `16+row*4+column`. Expect fourteen tiles, seven remaining pairs, No More Matches, and working Restart. This sequence is JVM-engine verified; manually check the Android feedback.
-- Background via Home and return: board/selection should remain intact.
-- Enable the developer option “Don't keep activities,” leave and return, then disable it: inspect activity restoration. Also use the compiled recreation instrumentation check.
-- To check process recreation: make a match and select a tile; press Home; run `adb shell am kill com.tilebloom.game`; return using Recents (do not force-stop). Inspect board, selection and counter. State recovery depends on Android retaining the task's saved instance state.
-- A force-stop, task dismissal, reboot or fresh launch is **not** guaranteed to restore progress. There is no durable storage.
-- Inspect large font settings, TalkBack status announcements, symbol legibility, rounded borders and tile thickness. The board still lacks individual accessible tile navigation/actions.
-- Capture screenshots at initial, selected, victory and no-moves states. Record device/API/density/font scale and actual failures in `VALIDATION.md` before calling runtime verification complete.
+Individual screen-reader tile actions are not implemented; assess TalkBack announcements separately. Save actual failures and screenshots in VALIDATION.md. Do not claim full Android validation from an APK, source review or a compiled test suite.

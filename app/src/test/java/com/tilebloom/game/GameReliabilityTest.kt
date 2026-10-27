@@ -67,4 +67,15 @@ class GameReliabilityTest {
         val g = Game(LevelOne.tiles()); g.select(16); g.select(17)
         assertEquals(16,g.selected); assertEquals(24,g.remaining.size)
     }
+    @Test fun repeatedRemovedAndInvalidSelectionsCannotReplayMatch() {
+        val g = Game(LevelOne.tiles())
+        g.select(16); g.select(20)
+        g.select(17)
+        val expected = g.snapshot()
+        repeat(100) { g.select(16); g.select(20); g.select(-1) }
+        assertEquals(expected,g.snapshot()); assertEquals(22,g.remaining.size)
+        g.restart(); g.select(16); g.select(20)
+        assertEquals(listOf(PairMove(16,20)),g.snapshot().moves)
+        assertEquals(22,g.remaining.size); assertNull(g.selected)
+    }
 }

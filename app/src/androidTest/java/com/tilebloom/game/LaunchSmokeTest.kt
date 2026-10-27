@@ -102,6 +102,40 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         assertCount(24); ui { assertNull(board().selectedTileId) }
         tap(16); ui { assertEquals(16,board().selectedTileId) }
     }
+    fun testRapidTouchesDuringBlockedFeedbackAndAfterRestart() {
+        activity; instrumentation.waitForIdleSync()
+        tap(16); tap(17); tap(20)
+        assertCount(22); ui { assertNull(board().selectedTileId) }
+        // Rapidly toggle one available tile; it must never match itself.
+        val p = target(17)
+        repeat(12) {
+            val now = SystemClock.uptimeMillis()
+            send(MotionEvent.ACTION_DOWN,p,now); send(MotionEvent.ACTION_UP,p,now)
+        }
+        instrumentation.waitForIdleSync(); assertCount(22)
+        ui { activity.findViewById<Button>(R.id.restart).performClick() }
+        tap(16); tap(20); assertCount(22)
+    }
+    fun testBatchedReleaseMovementCancelsTap() {
+        activity; instrumentation.waitForIdleSync()
+        ui {
+            val view = board()
+            val p = view.tileCenter(16)!!
+            val now = SystemClock.uptimeMillis()
+            val press = MotionEvent.obtain(now,now,MotionEvent.ACTION_DOWN,p.x,p.y,0)
+            try { view.dispatchTouchEvent(press) } finally { press.recycle() }
+            val distance = ViewConfiguration.get(activity).scaledTouchSlop + 12f
+            val release = MotionEvent.obtain(now,now+1,MotionEvent.ACTION_MOVE,p.x+distance,p.y,0)
+            release.addBatch(now+2,p.x,p.y,1f,1f,0)
+            release.action = MotionEvent.ACTION_UP
+            try {
+                assertEquals(1,release.historySize)
+                view.dispatchTouchEvent(release)
+            } finally { release.recycle() }
+            assertNull(view.selectedTileId)
+        }
+        assertCount(24); tap(16); ui { assertEquals(16,board().selectedTileId) }
+    }
     fun testActivityRecreationRestoresPlayedState() {
         val original = activity; instrumentation.waitForIdleSync()
         tap(16); tap(20); tap(17); assertCount(22)

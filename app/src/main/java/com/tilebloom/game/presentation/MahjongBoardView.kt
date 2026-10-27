@@ -95,16 +95,19 @@ class MahjongBoardView(context: Context, private val game: Game, private val cha
         }
     }
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        // Batched movement can accompany the final UP as well as MOVE.
+        // Check every sample before completing a tap, including an out-and-back drag.
+        if (event.actionMasked == MotionEvent.ACTION_MOVE || event.actionMasked == MotionEvent.ACTION_UP) {
+            for (i in 0 until event.historySize) {
+                gesture.move(event.getPointerId(0), event.getHistoricalX(0, i), event.getHistoricalY(0, i))
+            }
+        }
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 val tile = geometry().hitTest(game.tiles, event.x, event.y)
                 gesture.down(event.getPointerId(0), tile?.id, event.x, event.y)
             }
             MotionEvent.ACTION_MOVE -> {
-                // Check historical points too: a drag that returns to its origin is still a drag.
-                for (i in 0 until event.historySize) {
-                    gesture.move(event.getPointerId(0), event.getHistoricalX(0, i), event.getHistoricalY(0, i))
-                }
                 gesture.move(event.getPointerId(0), event.x, event.y)
             }
             MotionEvent.ACTION_POINTER_DOWN, MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_CANCEL -> gesture.cancel()

@@ -1,10 +1,10 @@
 # TileBloom — Mahjong Garden Puzzle
 
-CODEX 02 / application version 0.1: an offline, portrait Android Mahjong Solitaire prototype with **one deterministic level**. No accounts, permissions, services, advertising, analytics, or network access.
+CODEX 03 / application version 0.1: an offline, portrait Android Mahjong Solitaire prototype with **one deterministic level**. No accounts, permissions, services, advertising, analytics, or network access.
 
 ## Stack
 
-Kotlin 1.9.24, Java 17, Android Gradle Plugin 8.12.1, Gradle wrapper 8.13, compile/target SDK 36, minimum SDK 26, Build Tools 35.0.0. Kotlin 1.9.24 was selected to match the locally available standalone compiler as well as the Gradle plugin. Surrounding controls use platform Android Views; the board uses Canvas/Path and six original botanical silhouettes. JUnit 4.13.2 tests require no Android runtime. No production third-party dependencies beyond Kotlin.
+Kotlin 2.2.10, Java 17, Android Gradle Plugin 8.10.0, Gradle wrapper 8.13, compile/target SDK 36, minimum SDK 26, Build Tools 35.0.0. The diagnostic fallback intentionally retains its cached Kotlin 1.9.24 compiler; it does not verify the configured Gradle compiler. Surrounding controls use platform Android Views; the board uses Canvas/Path and six original botanical silhouettes. JUnit 4.13.2 tests require no Android runtime. No production third-party dependencies beyond Kotlin.
 
 ## Structure
 
@@ -12,8 +12,8 @@ Kotlin 1.9.24, Java 17, Android Gradle Plugin 8.12.1, Gradle wrapper 8.13, compi
 - `app/src/main/java/com/tilebloom/game/presentation/MainActivity.kt`: screen, counter, terminal feedback, restart, saved-instance restoration.
 - `app/src/main/java/com/tilebloom/game/presentation/MahjongBoardView.kt`: responsive rendering, original symbols, explicit drawing order and reverse-order touch testing.
 - `app/src/main/res/values/`: English strings, theme and view IDs.
-- `app/src/test/`: 63 JVM tests: 31 original engine tests, 16 shared-geometry tests, 9 restart/restoration tests, and 7 gesture tests.
-- `app/src/androidTest/`: six compiled-only Android tests for launch, coordinate-tapped victory/deadlock, selection/drag, restart during touch, and activity recreation.
+- `app/src/test/`: 64 JVM tests: 31 original engine tests, 16 shared-geometry tests, 10 reliability/restoration tests, and 7 gesture tests.
+- `app/src/androidTest/`: eight compiled-only Android tests for launch, coordinate-tapped victory/deadlock, selection/drag, restart during touch, and activity recreation.
 - `tools/verify_offline.py`: fallback compiler/JUnit/APK pipeline for this restricted environment.
 - `VALIDATION.md`: actual verification outcomes and environment limitations.
 - `HOST_VERIFICATION.md`: exact unrestricted Linux host commands and manual device checklist.
@@ -31,7 +31,15 @@ The original engine rules, all 31 original tests, exact 24-tile layout, six symb
 
 **Verification:** 63/63 JVM tests passed. Six Android test methods compiled but **were not executed**. A valid debug APK was built through the standalone fallback; Gradle and ADB remain blocked by sandbox filesystem/socket restrictions. Full Android launch, touch delivery, screenshots and lifecycle behavior remain unverified. See [VALIDATION.md](VALIDATION.md) and [HOST_VERIFICATION.md](HOST_VERIFICATION.md).
 
-The configured AGP/Gradle/JDK/SDK combination matches the [AGP 8.12 compatibility requirements](https://developer.android.com/build/releases/agp-8-12-0-release-notes). Kotlin 1.9.24 is outside the [Kotlin plugin's fully supported Gradle/AGP range](https://kotlinlang.org/docs/gradle-configure-project.html); this is a host-verification caveat, not a demonstrated source error. Versions are unchanged until a real host Gradle result establishes whether adjustment is necessary.
+## CODEX 03 result
+
+64/64 JVM tests passed with the diagnostic compiler; eight Android methods compiled, **zero executed**. Standard Gradle tasks and Android Lint remain blocked before configuration; ADB server socket creation is denied. No Android launch, screenshot, human playtest or responsive device validation is claimed.
+
+Fixed historical movement handling on final touch release. Added regression checks for batched release movement, rapid touches during feedback/after restart, and invalid/removed selections. Gold selection and blocked feedback are preserved. Removal remains immediate until Android runtime evidence supports a safe animation.
+
+Configured Kotlin 2.2.10 supports Gradle through 8.14 and AGP through 8.10.0 according to the [Kotlin compatibility matrix](https://kotlinlang.org/docs/gradle-configure-project.html). [AGP 8.10](https://developer.android.com/build/releases/agp-8-10-0-release-notes) supports API 36, Java 17 and requires Gradle at least 8.11.1. Gradle remains 8.13. This fixes the prior unsupported matrix without changing the engine or SDK. AGP 8.10.0 is not cached here; the host may need to download it. Actual Gradle configuration/compilation remains unverified.
+
+See [PLAYTEST_01.md](PLAYTEST_01.md) for the first human session and [HOST_VERIFICATION.md](HOST_VERIFICATION.md) for build/install commands. Earlier CODEX 02 details below describe that iteration, not new runtime evidence.
 
 ## Activity and process state
 
@@ -77,7 +85,7 @@ For this sandbox only, `python3 tools/verify_offline.py` directly invokes cached
 
 One fixed level, immediate removal, no sound, hints, undo, shuffle or progression. English resources establish a translation foundation; no additional locales are included. Custom-board screen-reader navigation is not implemented. Basic standard controls, contrast, silhouettes and selection cues are present. Runtime layout, Android lifecycle and touch usability still need device validation; no human playtesting has occurred.
 
-CODEX 03 should first execute the compiled Android interaction tests and inspect compact/large-phone screenshots on an unrestricted host, then address confirmed touch, layout, lifecycle or accessibility defects before adding levels or boosters.
+The next iteration should first execute the compiled Android interaction tests and inspect compact/large-phone screenshots on an unrestricted host, then address confirmed touch, layout, lifecycle or accessibility defects before adding levels or boosters.
 
 ## Git in this managed workspace
 
