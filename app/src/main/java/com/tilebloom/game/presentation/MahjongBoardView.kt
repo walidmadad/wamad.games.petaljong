@@ -12,7 +12,7 @@ import com.tilebloom.game.domain.*
 import com.tilebloom.game.presentation.board.*
 import kotlin.math.*
 
-class MahjongBoardView(context: Context, private val game: Game, private val changed: () -> Unit) : View(context) {
+class MahjongBoardView(context: Context, private var game: Game, private val changed: () -> Unit) : View(context) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val effects = MatchEffects()
     val activeMatchEffectCount get() = effects.active.size
@@ -20,7 +20,7 @@ class MahjongBoardView(context: Context, private val game: Game, private val cha
     private var blockedTileId: Int? = null
     private val clearBlocked = Runnable { blockedTileId = null; invalidate() }
     private fun geometry() = BoardGeometry(width.toFloat(), height.toFloat(),
-        BoardPadding(paddingLeft.toFloat(), paddingTop.toFloat(), paddingRight.toFloat(), paddingBottom.toFloat()))
+        BoardPadding(paddingLeft.toFloat(), paddingTop.toFloat(), paddingRight.toFloat(), paddingBottom.toFloat()), game.tiles)
     // Read-only presentation queries also allow instrumentation to assert real touch results.
     val selectedTileId get() = game.selected
     val remainingTileCount get() = game.remaining.size
@@ -30,6 +30,7 @@ class MahjongBoardView(context: Context, private val game: Game, private val cha
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
         refresh()
     }
+    fun load(next: Game) { clearFeedback(); game = next; refresh() }
     fun refresh() {
         val selected = game.tiles.find { it.id == game.selected }
         val selectedText = selected?.let {
@@ -171,7 +172,7 @@ class MahjongBoardView(context: Context, private val game: Game, private val cha
     override fun performClick(): Boolean { super.performClick(); return true }
 }
 
-private object BotanicalSymbols {
+internal object BotanicalSymbols {
     private val green = Color.rgb(43, 100, 69)
     private val leafPath = Path().apply {
         moveTo(-.7f, .85f)

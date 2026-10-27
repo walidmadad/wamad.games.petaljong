@@ -16,7 +16,14 @@ import com.tilebloom.game.R
 import com.tilebloom.game.domain.*
 
 class MainActivity : Activity() {
-    private val game = Game(LevelOne.tiles())
+    private val session = GardenSession()
+    private val game get() = session.game
+    private lateinit var levelLabel: TextView
+    private lateinit var victoryScroll: ScrollView
+    private lateinit var victory: LinearLayout
+    private lateinit var victoryTitle: TextView
+    private lateinit var victoryDetail: TextView
+    private lateinit var next: Button
     private lateinit var board: MahjongBoardView
     private lateinit var counter: TextView
     private lateinit var feedback: TextView
@@ -25,8 +32,10 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         savedInstanceState?.getIntArray("moves")?.let { moves ->
             if (moves.size % 2 == 0) {
-                game.restore(GameSnapshot(moves.toList().chunked(2).map { PairMove(it[0], it[1]) },
-                    savedInstanceState.getInt("selected", -1).takeIf { it >= 0 }))
+                session.restore(SessionSnapshot(savedInstanceState.getInt("level_id", 1),
+                    savedInstanceState.getLong("level_seed", 0), savedInstanceState.getInt("level_version", 0),
+                    GameSnapshot(moves.toList().chunked(2).map { PairMove(it[0], it[1]) },
+                    savedInstanceState.getInt("selected", -1).takeIf { it >= 0 })))
             }
         }
         val root = LinearLayout(this).apply {
@@ -78,12 +87,13 @@ class MainActivity : Activity() {
             topMargin = dp(if (compact) 10 else 22)
             bottomMargin = dp(if (compact) 4 else 10)
         })
-        status.addView(TextView(this).apply {
+        levelLabel = TextView(this).apply {
             text = getString(R.string.level)
             textSize = 14f
             setTextColor(gold)
             setPadding(0, 0, dp(8), 0)
-        }, LinearLayout.LayoutParams(0, -2, 1f))
+        }
+        status.addView(levelLabel, LinearLayout.LayoutParams(0, -2, 1f))
         counter = TextView(this).apply {
             id = R.id.counter
             textSize = 15f
@@ -94,7 +104,60 @@ class MainActivity : Activity() {
         status.addView(counter, LinearLayout.LayoutParams(0, -2, 2f))
         board = MahjongBoardView(this, game) { update() }
         board.id = R.id.board
-        root.addView(board, LinearLayout.LayoutParams(-1, 0, 1f))
+        val playArea = FrameLayout(this)
+        root.addView(playArea, LinearLayout.LayoutParams(-1, 0, 1f))
+        playArea.addView(board, FrameLayout.LayoutParams(-1, -1))
+        victory = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            setPadding(dp(20), dp(20), dp(20), dp(20))
+            background = surface(Color.rgb(27, 65, 51), 24, true)
+            visibility = View.GONE
+        }
+        victoryScroll = ScrollView(this).apply { isFillViewport = true; visibility = View.GONE }
+        val victoryCenter = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
+        }
+        victoryCenter.addView(victory, LinearLayout.LayoutParams(-1, -2))
+        victoryScroll.addView(victoryCenter, FrameLayout.LayoutParams(-1, -2))
+        playArea.addView(victoryScroll, FrameLayout.LayoutParams(-1, -1))
+        // Original leaf motif, drawn with the same botanical artwork as the tiles.
+        victory.addView(object : View(this) {
+            private val ink = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+            override fun onDraw(canvas: android.graphics.Canvas) {
+                canvas.save()
+                canvas.translate(width / 2f, height / 2f)
+                canvas.scale(dp(20).toFloat(), dp(20).toFloat())
+                BotanicalSymbols.draw(canvas, ink, Symbol.LEAF)
+                canvas.restore()
+            }
+        }, LinearLayout.LayoutParams(-1, dp(52)))
+        victoryTitle = TextView(this).apply {
+            textSize = if (compact) 24f else 28f; gravity = Gravity.CENTER
+            setTextColor(ivory); typeface = Typeface.create("serif", Typeface.NORMAL)
+        }
+        victory.addView(victoryTitle)
+        victoryDetail = TextView(this).apply {
+            textSize = 15f; gravity = Gravity.CENTER; setTextColor(ivory)
+            setPadding(0, dp(8), 0, dp(12))
+        }
+        victory.addView(victoryDetail)
+        next = Button(this).apply {
+            id = R.id.next_level; text = getString(R.string.next_level); isAllCaps = false
+            minimumHeight = dp(48)
+            setOnClickListener {
+                try {
+                    if (session.advance()) { board.load(game); update() }
+                } catch (_: IllegalStateException) {
+                    Toast.makeText(this@MainActivity, R.string.generation_error, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+        victory.addView(next)
+        victory.addView(Button(this).apply {
+            text = getString(R.string.replay_level); isAllCaps = false; minimumHeight = dp(48)
+            setOnClickListener { session.restart(); board.clearFeedback(); update() }
+        })
         feedback = label("", 16f).apply {
             id = R.id.feedback
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
@@ -123,6 +186,20 @@ class MainActivity : Activity() {
     }
     private fun dp(n: Int) = (n * resources.displayMetrics.density).toInt()
     private fun update() {
+        levelLabel.text = getString(R.string.level_number, session.level.id)
+        val won = game.status == Status.WON
+        victory.animate().cancel()
+        victory.alpha = 1f
+        val enteringVictory = won && victory.visibility != View.VISIBLE
+        victory.visibility = if (won) View.VISIBLE else View.GONE
+        victoryScroll.visibility = victory.visibility
+        if (enteringVictory && android.animation.ValueAnimator.areAnimatorsEnabled()) {
+            victory.alpha = 0f
+            victory.animate().alpha(1f).setDuration(200L).start()
+        }
+        victoryTitle.text = getString(if (session.level.id == Levels.COUNT) R.string.journey_complete else R.string.won)
+        victoryDetail.text = getString(if (session.level.id == Levels.COUNT) R.string.journey_detail else R.string.won_detail)
+        next.visibility = if (session.canAdvance) View.VISIBLE else View.GONE
         counter.text = getString(R.string.pairs, game.remainingPairs)
         feedback.text = when (game.status) {
             Status.PLAYING -> getString(R.string.instruction)
@@ -135,6 +212,9 @@ class MainActivity : Activity() {
     }
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
+        outState.putInt("level_id", session.level.id)
+        outState.putLong("level_seed", session.level.seed)
+        outState.putInt("level_version", session.level.version)
         outState.putIntArray("moves", game.snapshot().moves.flatMap { listOf(it.first, it.second) }.toIntArray())
         outState.putInt("selected", game.selected ?: -1)
     }

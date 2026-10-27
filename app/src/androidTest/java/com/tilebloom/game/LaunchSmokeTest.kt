@@ -189,4 +189,33 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             replacement?.let { screen -> ui { screen.finish() } }
         }
     }
+    fun testCoordinateProgressionThroughFiveGardens() {
+        activity; instrumentation.waitForIdleSync()
+        for (id in 1..5) {
+            val definition = com.tilebloom.game.domain.Levels.get(id)
+            assertCount(definition.tiles.size)
+            definition.witness.forEach { tap(it.first); tap(it.second) }
+            assertCount(0)
+            ui {
+                val next = activity.findViewById<Button>(R.id.next_level)
+                assertEquals(if (id < 5) android.view.View.VISIBLE else android.view.View.GONE, next.visibility)
+                assertEquals(0, board().remainingTileCount)
+                if (id < 5) {
+                    next.performClick()
+                    assertEquals(0, board().activeMatchEffectCount)
+                    assertNull(board().selectedTileId)
+                }
+            }
+            if (id < 5) {
+                val nextDefinition = com.tilebloom.game.domain.Levels.get(id + 1)
+                assertFalse(definition.layout == nextDefinition.layout)
+                val pair = nextDefinition.witness.first()
+                tap(pair.first); tap(pair.second)
+                assertCount(nextDefinition.tiles.size - 2)
+                ui { activity.findViewById<Button>(R.id.restart).performClick() }
+                assertCount(nextDefinition.tiles.size)
+            }
+        }
+    }
+
 }

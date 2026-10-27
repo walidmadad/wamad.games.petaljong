@@ -17,16 +17,20 @@ data class BoardRect(val left: Float, val top: Float, val right: Float, val bott
     }
 }
 
-/** Level 1 layout in view-local pixels. Logical footprints remain 1 × 1 in the engine.
+/** Active initial layout in view-local pixels (legacy Level 1 bounds when omitted). Logical footprints remain 1 × 1 in the engine.
  * Face, solid edge and shadow use the same transform. Shadows are intentionally not targets.
  * Hit testing sees all remaining tiles, regardless of their legal availability.
  */
-class BoardGeometry(width: Float, height: Float, padding: BoardPadding = BoardPadding()) {
-    val scale = min((width - padding.left - padding.right).coerceAtLeast(0f) / 4.85f,
-        (height - padding.top - padding.bottom).coerceAtLeast(0f) / 5.85f)
+class BoardGeometry(width: Float, height: Float, padding: BoardPadding = BoardPadding(), tiles: List<Tile>? = null) {
+    private val minX = tiles?.minOf { it.x.toFloat() } ?: 0f
+    private val minY = tiles?.minOf { it.y.toFloat() * 1.3f - it.layer * .09f } ?: 0f
+    private val spanX = tiles?.maxOf { it.x.toFloat() + 1f }?.minus(minX) ?: 4.5f
+    private val spanY = tiles?.maxOf { (it.y.toFloat() + 1f) * 1.3f - it.layer * .09f }?.minus(minY) ?: 5.4f
+    val scale = min((width - padding.left - padding.right).coerceAtLeast(0f) / (spanX + .35f),
+        (height - padding.top - padding.bottom).coerceAtLeast(0f) / (spanY + .45f))
     private val origin = BoardPoint(
-        padding.left + (width - padding.left - padding.right - 4.5f * scale) / 2,
-        padding.top + (height - padding.top - padding.bottom - 5.4f * scale) / 2 + .12f * scale)
+        padding.left + (width - padding.left - padding.right - spanX * scale) / 2 - minX * scale,
+        padding.top + (height - padding.top - padding.bottom - spanY * scale) / 2 - minY * scale + .12f * scale)
     val radius get() = scale * .1f
     fun toScreen(x: Double, y: Double, layer: Int = 0) = BoardPoint(
         origin.x + x.toFloat() * scale, origin.y + y.toFloat() * scale * 1.3f - layer * scale * .09f)
