@@ -160,3 +160,13 @@ Final serial `python3 tools/verify_offline.py` completed with exit code 0. All 8
 - Android installation/launch/instrumentation/visual review: **NOT EXECUTED**.
 - Full A–Q report and all 24 acceptance criteria: `CODEX_07_REPORT.md`.
 - Local diagnostic evidence: `app/build/codex07/` (ignored build output).
+
+## CODEX 08 — puzzle quality and victory correction
+
+Live Level 1 keeps its 24-tile geometry and verified witness, but uses a version-2 symbol distribution selected for a clear two-pair opening and a demonstrated consequential pairing decision. Levels 2–5 use bounded candidate selection with recorded quality results; Level 5 now uses seed 511. Historical version-1 generation remains available explicitly. Incompatible old snapshots safely restart rather than replaying moves against changed symbols.
+
+`PuzzleAnalyzer` and `PuzzleSolver` are pure Kotlin and use the production rules. They report witness branching, forced/multiple choices, different unlock consequences, bounded solvability classifications, unknown results and node usage. These are design proxies, not validated human difficulty scores. No analysis runs per frame. See [CODEX_08_REPORT.md](CODEX_08_REPORT.md) for original/current measurements, budgets, limitations and the complete acceptance assessment.
+
+Victory now uses only the centered Next Level / Replay Level panel. The footer and Restart are hidden during victory; deadlock retains its explanation and exact-puzzle Restart. Buttons use forest-green surfaces, ivory labels, muted-gold accents and rounded ripple feedback. Tile artwork and match animations are unchanged.
+
+Run `python3 tools/verify_offline.py` for the diagnostic JVM/build pipeline, or append `--jvm-only` for JVM checks alone. Run these serially because they share `app/build/offline`. Standard Gradle and device verification remain described in [HOST_VERIFICATION.md](HOST_VERIFICATION.md). The new APK is a diagnostic build; compiled instrumentation does not establish Android runtime success. No publication or monetization was added.

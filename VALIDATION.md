@@ -577,3 +577,26 @@ Final serial `python3 tools/verify_offline.py` completed with exit code 0. All 8
 - Android installation/launch/instrumentation/visual review: **NOT EXECUTED**.
 - Full A–Q report and all 24 acceptance criteria: `CODEX_07_REPORT.md`.
 - Local diagnostic evidence: `app/build/codex07/` (ignored build output).
+
+
+## CODEX 08 — final verification (2026-10-27)
+
+Final serial `python3 tools/verify_offline.py`: exit **0**, **104 JVM tests passed, 0 failed**, 6.663 s JUnit execution. The existing 89 regressions remain; live Level 1 fixture expectations were intentionally updated. Added 13 analyzer/quality and two presentation tests. All ten host-workflow tests passed (`python3 tools/test_host_verify.py`).
+
+The preserved 120-board matrix replayed every complete witness: 4,690 ms host time, max one geometric attempt for selected candidates. The separate 16-board/all-four-family quality matrix evaluated 58 candidates: 14 target acceptances and two verified, explicitly flagged fallback selections; 42 candidates not selected. One internal candidate search and two separate 1,000-node selected-board audits exhausted budgets and reported UNKNOWN. Generation including quality evaluation: 596 ms; separate audit: 120 ms. These are JVM host timings, not Android performance results.
+
+Ten Android instrumentation methods **compiled, zero executed**. Coordinate victory/deadlock coverage now checks mutually exclusive footer/panel states, visible Next/Replay on victory and hidden victory actions on deadlock. Existing gesture/effect/recreation/progression tests remain. ADB discovery failed: server socket listener not permitted. Updated installation, launch, gameplay, screenshots and visual review: **NOT EXECUTED**. Previous user feedback validates older animations, not this artifact.
+
+Standard Gradle JVM tests, assemble and Lint: **NOT EXECUTED**. The known sandbox startup restrictions have not changed; no redundant Gradle retry was made. Diagnostic success is not standard Gradle success. An intermediate overlapping diagnostic run produced shared-output errors, and a provisional fixture deadlock expectation failed; both are superseded by the final successful serial build.
+
+- Path: `app/build/outputs/apk/debug/app-debug.apk` (also archived at `app/build/codex08/app-debug.apk`).
+- Method: final serial diagnostic offline pipeline, exit 0; not standard Gradle.
+- Size: **737,683 bytes**.
+- SHA-256: `6cb49ea56e63fbf3a41310a4608e9a9334d6200df2b327eaa6cd8aaca3fda37b`.
+- Alignment: PASS (`zipalign -c 4`). Signatures: PASS, v2/v3, one debug signer. v1/v3.1/v4 and SourceStamp absent.
+- Metadata: `com.tilebloom.game`, debug enabled, min API 26, target/compile API 36, launch activity `.presentation.MainActivity`.
+- Installation, launch, instrumentation execution and updated visual playtest: NOT EXECUTED.
+
+Live seeds/version: L1 0/v2, L2 202/v2, L3 303/v2, L4 404/v2, L5 511/v2. Incompatible saved histories are rejected atomically; activity falls back to a fresh Level 1. New coordinate deadlock path: `(16,20), (0,4), (8,12), (17,21), (1,5), (9,13), (15,18), (19,23)` leaves eight tiles/four pairs. Historical fixture tests remain on `LevelOne`.
+
+Evidence: `app/build/codex08/verification.log`, `quality-matrix.tsv`, `host-workflow-tests.log`, `adb-server.log`, archived APK. Full metrics and all 26 acceptance criteria: [CODEX_08_REPORT.md](CODEX_08_REPORT.md). Human difficulty and device latency remain unverified.

@@ -7,7 +7,7 @@ import android.view.MotionEvent
 import android.view.ViewConfiguration
 import android.widget.Button
 import android.widget.TextView
-import com.tilebloom.game.domain.LevelOne
+import com.tilebloom.game.domain.Levels
 import com.tilebloom.game.presentation.MainActivity
 import com.tilebloom.game.presentation.MahjongBoardView
 import com.tilebloom.game.presentation.board.BoardPoint
@@ -55,23 +55,34 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
     }
     fun testCoordinateWitnessAndPlayAgain() {
         activity; instrumentation.waitForIdleSync(); assertCount(24)
-        LevelOne.witness.forEachIndexed { index,pair ->
+        Levels.get(1).witness.forEachIndexed { index,pair ->
             tap(pair.first); ui { assertEquals(pair.first,board().selectedTileId) }
             tap(pair.second); assertCount(22-index*2); ui { assertNull(board().selectedTileId) }
         }
         ui {
-            assertTrue(activity.findViewById<TextView>(R.id.feedback).text.toString().contains(activity.getString(R.string.won)))
-            assertEquals(activity.getString(R.string.play_again),activity.findViewById<Button>(R.id.restart).text.toString())
-            activity.findViewById<Button>(R.id.restart).performClick()
+            assertFalse(activity.findViewById<TextView>(R.id.feedback).isShown)
+            assertFalse(activity.findViewById<Button>(R.id.restart).isShown)
+            assertTrue(activity.findViewById<Button>(R.id.next_level).isShown)
+            assertTrue(activity.findViewById<Button>(R.id.replay_level).isShown)
+            fun countTitles(view: android.view.View): Int {
+                if (!view.isShown) return 0
+                val own = if (view is TextView && view.text.toString() == activity.getString(R.string.won)) 1 else 0
+                return own + if (view is android.view.ViewGroup) (0 until view.childCount).sumOf { countTitles(view.getChildAt(it)) } else 0
+            }
+            assertEquals(1, countTitles(activity.window.decorView))
+            activity.findViewById<Button>(R.id.replay_level).performClick()
         }
         assertCount(24); tap(16); ui { assertEquals(16,board().selectedTileId) }
     }
     fun testCoordinateDeadlockAndRestart() {
         activity; instrumentation.waitForIdleSync()
-        for ((a,b) in listOf(12 to 15,14 to 23,16 to 20,13 to 21,0 to 4)) { tap(a); tap(b) }
-        assertCount(14)
+        for ((a,b) in listOf(16 to 20,0 to 4,8 to 12,17 to 21,1 to 5,9 to 13,15 to 18,19 to 23)) { tap(a); tap(b) }
+        assertCount(8)
         ui {
             assertTrue(activity.findViewById<TextView>(R.id.feedback).text.toString().contains(activity.getString(R.string.no_moves)))
+            assertFalse(activity.findViewById<Button>(R.id.next_level).isShown)
+            assertFalse(activity.findViewById<Button>(R.id.replay_level).isShown)
+            assertTrue(activity.findViewById<Button>(R.id.restart).isShown)
             activity.findViewById<Button>(R.id.restart).performClick()
         }
         assertCount(24); ui { assertNull(board().selectedTileId) }

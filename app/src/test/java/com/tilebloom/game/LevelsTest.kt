@@ -10,9 +10,9 @@ class LevelsTest {
     private fun rejected(level: LevelDefinition) {
         try { LevelValidator.validate(level); fail("Accepted corrupt level") } catch (_: IllegalArgumentException) { }
     }
-    @Test fun originalUnchanged() {
+    @Test fun introductoryFixtureVersioned() {
         val l = Levels.get(1)
-        assertEquals(LevelOne.tiles(), l.tiles); assertEquals(LevelOne.witness, l.witness)
+        assertNotEquals(LevelOne.tiles(), l.tiles); assertEquals(LevelOne.witness, l.witness); assertEquals(2,l.version)
         assertEquals(24, l.tiles.size); assertEquals(0L, l.seed)
     }
     @Test fun reproducible() { assertEquals(Levels.get(3), Levels.get(3)) }
@@ -49,7 +49,7 @@ class LevelsTest {
     @Test fun completionEnablesNext() { val s=GardenSession(); assertFalse(s.canAdvance); finish(s); assertTrue(s.canAdvance) }
     @Test fun advancesCorrectly() { val s=GardenSession(); finish(s); assertTrue(s.advance()); assertEquals(Levels.get(2),s.level) }
     @Test fun advanceClearsHistoryAndSelection() { val s=GardenSession(); finish(s); s.advance(); assertNull(s.game.selected); assertTrue(s.game.snapshot().moves.isEmpty()); assertEquals(s.level.tiles,s.game.tiles) }
-    @Test fun deadlockNeverAdvances() { val s=GardenSession(); listOf(12 to 15,14 to 23,16 to 20,13 to 21,0 to 4).forEach { assertTrue(s.game.match(it.first,it.second)) }; assertEquals(Status.NO_MOVES,s.game.status); assertFalse(s.advance()); assertEquals(1,s.level.id) }
+    @Test fun deadlockNeverAdvances() { val s=GardenSession(); deadlockPath(s.game).forEach { assertTrue(s.game.match(it.first,it.second)) }; assertEquals(Status.NO_MOVES,s.game.status); assertFalse(s.advance()); assertEquals(1,s.level.id) }
     @Test fun finalTerminal() { val s=GardenSession(); repeat(5) { finish(s); if(it<4) assertTrue(s.advance()) }; assertEquals(5,s.level.id); assertFalse(s.canAdvance); assertFalse(s.advance()); s.restart(); assertEquals(Status.PLAYING,s.game.status) }
     @Test fun restoresEveryLevel() { val s=GardenSession(); repeat(5) {
         val p=s.level.witness.first(); s.game.match(p.first,p.second)

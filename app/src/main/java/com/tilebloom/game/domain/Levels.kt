@@ -4,8 +4,12 @@ import java.util.Random
 
 data class TileSlot(val id: Int, val x: Double, val y: Double, val layer: Int)
 data class BoardLayout(val id: String, val slots: List<TileSlot>)
+data class CandidateQuality(val index: Int, val consequenceChoices: Int, val riskyChoices: Int,
+    val searchNodes: Int, val unknownAlternatives: Int, val targetMet: Boolean)
 data class LevelDefinition(val id: Int, val seed: Long, val version: Int, val layout: BoardLayout,
-    val tiles: List<Tile>, val witness: List<PairMove>, val attempts: Int)
+    val tiles: List<Tile>, val witness: List<PairMove>, val attempts: Int,
+    val qualityTargetMet: Boolean = false, val candidatesEvaluated: Int = 0,
+    val candidateQuality: List<CandidateQuality> = emptyList())
 
 object Layouts {
     private fun layout(id: String, rows: List<Pair<Int, Int>>, top: List<Pair<Double, Double>>): BoardLayout {
@@ -43,14 +47,42 @@ object LevelValidator {
     }
 }
 
-/** Version 1 uses java.util.Random and ordered slot lists; outputs are stable across Android/JVM.
- * At most 64 attempts, each removing at most 16 pairs. No recursive search or unverified fallback.
+/** Version 1 is retained unchanged for explicit historical generation.
+ * Version 2 evaluates at most six verified v1 candidates, each with at most 64 geometry attempts.
+ * Quality search is capped at 2000–5000 nodes per candidate and never runs during board rendering.
  */
 object LevelGenerator {
-    const val VERSION = 1
+    const val VERSION = 2
     const val MAX_ATTEMPTS = 64
-    fun generate(id: Int, seed: Long, layout: BoardLayout, version: Int = VERSION): LevelDefinition {
-        require(version == VERSION)
+    fun generate(id: Int, seed: Long, layout: BoardLayout, version: Int = VERSION): LevelDefinition =
+        generateWithProfile(id, seed, layout, version)
+    // Internal profile override exercises fallback in tests; live identity always uses the versioned defaults.
+    internal fun generateWithProfile(id: Int, seed: Long, layout: BoardLayout, version: Int = VERSION,
+        qualityAttempts: Int = 6, minimumChoices: Int? = null): LevelDefinition {
+        require(version == 1 || version == VERSION)
+        require(qualityAttempts in 1..6)
+        if (version == VERSION) {
+            var best: LevelDefinition? = null
+            var bestScore = Int.MIN_VALUE
+            val quality = mutableListOf<CandidateQuality>()
+            for (candidate in 0 until qualityAttempts) {
+                val level = generate(id, seed + candidate * 7919L, layout, 1)
+                val a = PuzzleAnalyzer.analyze(level, if (id == 3) 5000 else if (id == 4) 4000 else 2000)
+                val score = a.consequenceChoiceStates * 3 + a.riskyChoiceStates * 5 - a.forced - (if (id == 3) maxOf(0, a.riskyChoiceStates - 2) * 20 else 0)
+                if (score > bestScore) { best = level; bestScore = score }
+                // Require visible unlock choices and at least one proven consequential risk.
+                // Compare at least two candidates; cap observed risk for the branching tutorial.
+                val target = minimumChoices ?: (if (id <= 2) 3 else if (id == 3) 5 else 6)
+                val targetMet = a.consequenceChoiceStates >= target && a.forced <= a.branching.size / 2 &&
+                    a.riskyChoiceStates >= (if (id == 5) 2 else 1) && (id != 3 || (a.complete && a.riskyChoiceStates <= 2))
+                quality.add(CandidateQuality(candidate, a.consequenceChoiceStates, a.riskyChoiceStates,
+                    a.searchNodes, a.unknownAlternatives, targetMet))
+                if (candidate >= 1 && targetMet) {
+                    return level.copy(seed = seed, version = VERSION, qualityTargetMet = true, candidatesEvaluated = candidate + 1, candidateQuality = quality.toList())
+                }
+            }
+            return checkNotNull(best).copy(seed = seed, version = VERSION, candidatesEvaluated = qualityAttempts, candidateQuality = quality.toList())
+        }
         require(layout.slots.size in 2..32 && layout.slots.size % 2 == 0)
         val random = Random(seed xor id.toLong())
         repeat(MAX_ATTEMPTS) { attempt ->
@@ -80,12 +112,32 @@ object LevelGenerator {
 
 object Levels {
     const val COUNT = 5
+    // Historical LevelOne remains available for engine regression fixtures; live identity is v2.
+    private val introductory: LevelDefinition by lazy {
+        // Candidate 12 of 24 offline symbol assignments (Random(108)); selected for a
+        // two-pair opening and one proven risky witness state, rather than four.
+        val symbols = listOf(0, 1, 2, 3, 4, 4, 5, 5, 0, 1, 3, 2)
+        val assignments = mutableMapOf<Int, Symbol>()
+        LevelOne.witness.forEachIndexed { i, p ->
+            assignments[p.first] = Symbol.entries[symbols[i]]
+            assignments[p.second] = Symbol.entries[symbols[i]]
+        }
+        LevelDefinition(1, 0, 2, Layouts.original,
+            LevelOne.tiles().map { it.copy(symbol = assignments.getValue(it.id)) },
+            LevelOne.witness, 0, qualityTargetMet = true, candidatesEvaluated = 24)
+            .also(LevelValidator::validate)
+    }
+    private val generated by lazy { mapOf(
+        2 to LevelGenerator.generate(2, 202L, Layouts.terrace),
+        3 to LevelGenerator.generate(3, 303L, Layouts.woodland),
+        4 to LevelGenerator.generate(4, 404L, Layouts.courtyard),
+        5 to LevelGenerator.generate(5, 511L, Layouts.woodland)) }
     fun get(id: Int): LevelDefinition = when (id) {
-        1 -> LevelDefinition(1, 0, 0, Layouts.original, LevelOne.tiles(), LevelOne.witness, 0).also(LevelValidator::validate)
-        2 -> LevelGenerator.generate(2, 202L, Layouts.terrace)
-        3 -> LevelGenerator.generate(3, 303L, Layouts.woodland)
-        4 -> LevelGenerator.generate(4, 404L, Layouts.courtyard)
-        5 -> LevelGenerator.generate(5, 505L, Layouts.woodland)
+        1 -> introductory
+        2 -> generated.getValue(2)
+        3 -> generated.getValue(3)
+        4 -> generated.getValue(4)
+        5 -> generated.getValue(5)
         else -> error("Unknown introductory level $id")
     }
 }

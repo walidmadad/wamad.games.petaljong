@@ -142,6 +142,14 @@ class MainActivity : Activity() {
             setPadding(0, dp(8), 0, dp(12))
         }
         victory.addView(victoryDetail)
+        fun styleVictory(button: Button, primary: Boolean) {
+            button.setTextColor(ivory)
+            button.backgroundTintList = null
+            button.background = RippleDrawable(ColorStateList.valueOf(Color.argb(40, 235, 218, 164)),
+                surface(if (primary) Color.rgb(43, 91, 65) else Color.rgb(22, 55, 43), 24, true),
+                surface(Color.WHITE, 24))
+            button.setPadding(dp(24), dp(10), dp(24), dp(10))
+        }
         next = Button(this).apply {
             id = R.id.next_level; text = getString(R.string.next_level); isAllCaps = false
             minimumHeight = dp(48)
@@ -153,8 +161,11 @@ class MainActivity : Activity() {
                 }
             }
         }
-        victory.addView(next)
+        styleVictory(next, true)
+        victory.addView(next, LinearLayout.LayoutParams(-1, -2))
         victory.addView(Button(this).apply {
+            id = R.id.replay_level
+            styleVictory(this, false)
             text = getString(R.string.replay_level); isAllCaps = false; minimumHeight = dp(48)
             setOnClickListener { session.restart(); board.clearFeedback(); update() }
         })
@@ -187,7 +198,8 @@ class MainActivity : Activity() {
     private fun dp(n: Int) = (n * resources.displayMetrics.density).toInt()
     private fun update() {
         levelLabel.text = getString(R.string.level_number, session.level.id)
-        val won = game.status == Status.WON
+        val presentation = com.tilebloom.game.presentation.board.ScreenPresentation.forStatus(game.status, session.canAdvance)
+        val won = presentation.victory
         victory.animate().cancel()
         victory.alpha = 1f
         val enteringVictory = won && victory.visibility != View.VISIBLE
@@ -199,15 +211,17 @@ class MainActivity : Activity() {
         }
         victoryTitle.text = getString(if (session.level.id == Levels.COUNT) R.string.journey_complete else R.string.won)
         victoryDetail.text = getString(if (session.level.id == Levels.COUNT) R.string.journey_detail else R.string.won_detail)
-        next.visibility = if (session.canAdvance) View.VISIBLE else View.GONE
+        next.visibility = if (presentation.advance) View.VISIBLE else View.GONE
         counter.text = getString(R.string.pairs, game.remainingPairs)
+        feedback.visibility = if (presentation.footer) View.VISIBLE else View.GONE
+        restart.visibility = if (presentation.restart) View.VISIBLE else View.GONE
         feedback.text = when (game.status) {
             Status.PLAYING -> getString(R.string.instruction)
-            Status.WON -> getString(R.string.won) + "\n" + getString(R.string.won_detail)
+            Status.WON -> ""
             Status.NO_MOVES -> getString(R.string.no_moves) + "\n" + getString(R.string.no_moves_detail)
         }
         feedback.setTextColor(if (game.status == Status.PLAYING) Color.rgb(191, 207, 187) else Color.rgb(184, 163, 107))
-        restart.setText(if (game.status == Status.WON) R.string.play_again else R.string.restart)
+        restart.setText(R.string.restart)
         board.refresh()
     }
     override fun onSaveInstanceState(outState: Bundle) {

@@ -1,2 +1,2 @@
 <resources><item name="board" type="id"/><item name="restart" type="id"/><item name="counter" type="id"/><item name="feedback" type="id"/>    <item name="next_level" type="id" />
-</resources>
+<item name="replay_level" type="id"/></resources>

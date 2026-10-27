@@ -4,7 +4,7 @@ Builds a genuine debug APK and runs production engine tests using JUnitCore.
 The standard supported build remains ./gradlew; this does not run Android Lint.
 """
 from pathlib import Path
-import glob, os, shutil, subprocess, zipfile
+import glob, os, shutil, subprocess, zipfile, sys
 ROOT = Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
 SDK = Path(os.environ.get('ANDROID_HOME') or os.environ.get('ANDROID_SDK_ROOT') or Path.home() / 'Android/Sdk')
@@ -40,6 +40,8 @@ kotlin(list((ROOT/'app/src/main/java/com/tilebloom/game/domain').glob('*.kt')) +
        testclasses, ':'.join([stdlib, annotations, junit, hamcrest]))
 run('java','-cp',':'.join([str(testclasses),stdlib,junit,hamcrest]),'org.junit.runner.JUnitCore',
     *['.'.join(p.relative_to(ROOT/'app/src/test/java').with_suffix('').parts) for p in tests])
+if '--jvm-only' in sys.argv:
+    sys.exit(0)
 res = OUT / 'resources.zip'
 run(bt/'aapt2','compile','--dir','app/src/main/res','-o',res)
 manifest = OUT / 'AndroidManifest.xml'
