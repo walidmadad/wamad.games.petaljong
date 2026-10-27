@@ -16,7 +16,9 @@ import com.tilebloom.game.R
 import com.tilebloom.game.domain.*
 
 class MainActivity : Activity() {
-    private val session = GardenSession()
+    private lateinit var progress: ProgressController
+    private val session get() = progress.session
+    private var saveOwner = 0L
     private val game get() = session.game
     private lateinit var levelLabel: TextView
     private lateinit var victoryScroll: ScrollView
@@ -30,12 +32,19 @@ class MainActivity : Activity() {
     private lateinit var restart: Button
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        savedInstanceState?.getIntArray("moves")?.let { moves ->
-            if (moves.size % 2 == 0) {
-                session.restore(SessionSnapshot(savedInstanceState.getInt("level_id", 1),
-                    savedInstanceState.getLong("level_seed", 0), savedInstanceState.getInt("level_version", 0),
-                    GameSnapshot(moves.toList().chunked(2).map { PairMove(it[0], it[1]) },
-                    savedInstanceState.getInt("selected", -1).takeIf { it >= 0 })))
+        saveOwner = com.tilebloom.game.storage.ProgressRepository.acquire()
+        progress = ProgressController(com.tilebloom.game.storage.ProgressRepository.load(this))
+        if (progress.recovered) android.util.Log.w("TileBloomSave", "Board snapshot rejected; completion retained")
+        // Durable moves always win. Bundle may restore only a selection on that exact board.
+        if (savedInstanceState != null) {
+            val snapshot = session.snapshot()
+            val moves = snapshot.game.moves.flatMap { listOf(it.first, it.second) }.toIntArray()
+            if (savedInstanceState.getInt("level_id") == snapshot.id &&
+                savedInstanceState.getLong("level_seed") == snapshot.seed &&
+                savedInstanceState.getInt("level_version") == snapshot.version &&
+                savedInstanceState.getIntArray("moves")?.contentEquals(moves) == true) {
+                val selected = savedInstanceState.getInt("selected", -1)
+                if (selected >= 0 && game.isAvailable(selected)) game.select(selected)
             }
         }
         val root = LinearLayout(this).apply {
@@ -93,6 +102,10 @@ class MainActivity : Activity() {
             setTextColor(gold)
             setPadding(0, 0, dp(8), 0)
         }
+        levelLabel.textSize = 16f
+        levelLabel.minHeight = dp(48)
+        levelLabel.contentDescription = "Select Level"
+        levelLabel.setOnClickListener { showLevels() }
         status.addView(levelLabel, LinearLayout.LayoutParams(0, -2, 1f))
         counter = TextView(this).apply {
             id = R.id.counter
@@ -195,9 +208,54 @@ class MainActivity : Activity() {
         root.requestApplyInsets()
         update()
     }
+    private fun showLevels() {
+        val current = session.level.id
+        val completed = progress.capture().completed
+        val labels = (1..Levels.COUNT).map { id ->
+            "Level $id — " + when {
+                id > progress.highestUnlocked -> "Locked"
+                id == current -> if (id in completed) "Current · Completed · Continue" else "Current · Continue"
+                id in completed -> "Completed · Start fresh"
+                else -> "Unlocked · Start fresh"
+            }
+        }.toTypedArray()
+        val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, labels) {
+            override fun areAllItemsEnabled() = false
+            override fun isEnabled(position: Int) = position + 1 <= progress.highestUnlocked
+            override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
+                return (super.getView(position, convertView, parent) as TextView).apply {
+                    setTextColor(if (isEnabled(position)) Color.rgb(245, 237, 214) else Color.rgb(125, 144, 127))
+                    minHeight = dp(52)
+                }
+            }
+        }
+        val dialog = android.app.AlertDialog.Builder(this)
+            .setTitle("Select Level")
+            .setMessage(null as String?)
+            .setAdapter(adapter) { _, index ->
+                val id = index + 1
+                if (id == current) return@setAdapter
+                if (id <= progress.highestUnlocked) {
+                    android.app.AlertDialog.Builder(this)
+                        .setMessage("Start Level $id fresh? This replaces the current attempt. Completed levels stay saved.")
+                        .setNegativeButton("Return to game", null)
+                        .setPositiveButton("Start level") { _, _ ->
+                            if (progress.select(id)) { board.load(game); update() }
+                        }.show()
+                }
+            }.setNegativeButton("Return to game", null).create()
+        dialog.setOnShowListener {
+            dialog.window?.setBackgroundDrawable(GradientDrawable().apply {
+                setColor(Color.rgb(27, 65, 51)); cornerRadius = dp(24).toFloat()
+                setStroke(dp(1), Color.rgb(184, 163, 107))
+            })
+        }
+        dialog.show()
+    }
     private fun dp(n: Int) = (n * resources.displayMetrics.density).toInt()
     private fun update() {
-        levelLabel.text = getString(R.string.level_number, session.level.id)
+        com.tilebloom.game.storage.ProgressRepository.save(this, saveOwner, progress.capture())
+        levelLabel.text = getString(R.string.level_number, session.level.id) + " ▾"
         val presentation = com.tilebloom.game.presentation.board.ScreenPresentation.forStatus(game.status, session.canAdvance)
         val won = presentation.victory
         victory.animate().cancel()
@@ -223,6 +281,11 @@ class MainActivity : Activity() {
         feedback.setTextColor(if (game.status == Status.PLAYING) Color.rgb(191, 207, 187) else Color.rgb(184, 163, 107))
         restart.setText(R.string.restart)
         board.refresh()
+    }
+    override fun onStop() {
+        super.onStop()
+        // Drain already-submitted small writes on ordinary departure; never resubmit stale state.
+        com.tilebloom.game.storage.ProgressRepository.awaitWrites()
     }
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)

@@ -1,3 +1,22 @@
+# CODEX 09 validation — current evidence
+
+This section supersedes earlier iteration counts and artifact evidence below.
+
+- Diagnostic Kotlin 1.9.24/JUnitCore: **127 PASS**, all original 104 plus 23 new progress/restore tests. Original 120-board generator regression retained.
+- Host-workflow tests: **10 PASS**, tools/test_host_verify.py; fake-tool workflow coverage only.
+- Android instrumentation: **14 compiled, 0 executed**; original ten retained, four new durable-storage/relaunch/failure cases. Uses isolated test storage and geometry-derived board taps. A fresh activity relaunch is distinct from process restart; manual fresh-process commands are in HOST_VERIFICATION.md.
+- Standard tools/host_verify.sh: exit 1 at wrapper version preflight; wrapper cache lock is read-only. Standard Gradle JVM/build/Lint tasks **NOT EXECUTED**, rather than represented by diagnostic results.
+- ADB: cannot start listener (Operation not permitted). Installation, connected instrumentation, UI screenshots, current CODEX 08 victory fix, new selector, runtime restoration and latency **NOT VERIFIED**.
+- No human five-level playtest results supplied. PLAYTEST_01.md is a blank structured worksheet.
+
+Updated debug APK: `app/build/outputs/apk/debug/app-debug.apk` — **745,875 bytes**. Build: `python3 tools/verify_offline.py`, cached Kotlin 1.9.24 diagnostic compiler, SDK 36 / Build Tools 35.0.0; not a standard Gradle build. Package: `com.tilebloom.game`, versionCode 1 / versionName 0.1, min SDK 26 / target 36 (aapt2 badging verified). zipalign 4-byte check PASS; apksigner verification PASS, one signer, v2 and v3 signatures. SHA-256: `4e112e3896c5844f7aac2b0afb48f32782aba94d3dffb4eb448ecf84468b29a7`. No installation or runtime verification performed.
+
+Logs for this iteration: /tmp/tilebloom09-verified.log, /tmp/tilebloom09-workflow.log, /tmp/tilebloom09-host.log. Standard preflight evidence: app/build/host-verification/run-20261027T210731Z-6PK65F/. These generated logs/artifacts are not committed. The complete 28-criterion evaluation and A–S development report are in CODEX_09_REPORT.md.
+
+---
+
+Historical evidence follows. Earlier screenshots or APKs do not establish runtime verification of CODEX 09.
+
 # CODEX 06 verification — 2026-10-27
 
 ## Outcome and evidence

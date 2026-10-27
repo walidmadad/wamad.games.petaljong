@@ -1,3 +1,41 @@
+# CODEX 09 — five-level human playtest
+
+No human results have been provided for this iteration. Leave blanks until observed. Automated solver outcomes do not establish enjoyment or fairness. Use the new APK identified in CODEX_09_REPORT.md and record device, Android version, APK hash/build, date and tester alias (no account required).
+
+Play Levels 1–5 in order without following a solution witness. Record a restart when Restart or Replay begins a new attempt; record every deadlock. Time only if measured, noting interruptions. Do not change seeds during this evaluation.
+
+Measurable observations:
+
+| Level | Completed (yes/no) | Time (if measured) | Restarts | Deadlock count | Restoration matched after closing? |
+|---|---|---|---|---|---|
+| 1 | | | | | |
+| 2 | | | | | |
+| 3 | | | | | |
+| 4 | | | | | |
+| 5 | | | | | |
+
+Player opinions (ask after each level):
+
+| Level | Available tiles understandable? | Symbols distinguishable? | Needed planning? | Felt fair? | Difficulty 1–5 | Wanted to continue? |
+|---|---|---|---|---|---|---|
+| 1 | | | | | | |
+| 2 | | | | | | |
+| 3 | | | | | | |
+| 4 | | | | | | |
+| 5 | | | | | | |
+
+Difficulty anchors: 1 very easy, 2 easy, 3 moderate, 4 hard, 5 very hard. Record exact player comments separately; do not infer opinions from speed or completion.
+
+For Level 1, specifically ask whether the revised symbol arrangement requires meaningful choices compared with the earlier easy version, if the tester played it. For a deadlock ask whether its cause was understandable and whether restarting felt acceptable. Avoid teaching a solution before recording that answer.
+
+Multi-session checks: pause mid-Level 3 after five pairs, leave and fully close, then relaunch; compare tiles and counter. Close on Level 2 victory before Next and verify completion/unlock. Close on Level 5 victory and verify final panel and replay access. Revisit a completed level through the level-number selector and confirm the replacement wording is clear. Cancel once before accepting. Test a locked row and system Back. Record any save warning in Android logs separately from player opinion.
+
+Do not fabricate feedback or rebalance from metrics alone. CODEX 10 decisions should follow the actual five-level results and deadlock observations.
+
+---
+
+Historical playtest instructions follow; their earlier observations do not validate CODEX 09.
+
 # TileBloom — first Android playtest
 
 Status: NO COMPLETED HUMAN PLAYTEST RECEIVED. User-reported emulator screenshots establish earlier-build rendering and progression (10 then 7 pairs), not a completed playtest or validation of the CODEX 06 APK. Leave feedback empty until a person plays on Android.

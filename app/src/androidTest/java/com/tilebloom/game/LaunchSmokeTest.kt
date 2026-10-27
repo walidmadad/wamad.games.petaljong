@@ -15,6 +15,71 @@ import java.util.concurrent.atomic.AtomicReference
 
 @Suppress("DEPRECATION")
 class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivity::class.java) {
+    override fun setUp() {
+        super.setUp()
+        com.tilebloom.game.storage.ProgressRepository.awaitWrites()
+        com.tilebloom.game.storage.ProgressRepository.useTestStorage("test-smoke-progress")
+        java.io.File(instrumentation.targetContext.filesDir, "test-smoke-progress").delete()
+        java.io.File(instrumentation.targetContext.filesDir, "test-smoke-progress.bak").delete()
+    }
+    override fun tearDown() {
+        super.tearDown()
+        com.tilebloom.game.storage.ProgressRepository.awaitWrites()
+        java.io.File(instrumentation.targetContext.filesDir, "test-smoke-progress").delete()
+        java.io.File(instrumentation.targetContext.filesDir, "test-smoke-progress.bak").delete()
+        com.tilebloom.game.storage.ProgressRepository.useTestStorage(null)
+    }
+    fun testDurableStoreWithoutBundle() {
+        activity
+        tap(16); tap(20)
+        com.tilebloom.game.storage.ProgressRepository.awaitWrites()
+        // Drop process memory cache, then read the real AtomicFile without any Bundle.
+        com.tilebloom.game.storage.ProgressRepository.useTestStorage("test-smoke-progress")
+        val p = com.tilebloom.game.domain.ProgressController(com.tilebloom.game.storage.ProgressRepository.load(instrumentation.targetContext))
+        assertEquals(11, p.session.game.remainingPairs)
+        assertEquals(listOf(com.tilebloom.game.domain.PairMove(16,20)), p.session.game.snapshot().moves)
+        assertFalse(p.select(2))
+    }
+    fun testCompletionDurableAndReplayPreservesIt() {
+        activity
+        Levels.get(1).witness.forEach { tap(it.first); tap(it.second) }
+        ui { activity.findViewById<Button>(R.id.replay_level).performClick() }
+        com.tilebloom.game.storage.ProgressRepository.awaitWrites()
+        com.tilebloom.game.storage.ProgressRepository.useTestStorage("test-smoke-progress")
+        val p = com.tilebloom.game.domain.ProgressController(com.tilebloom.game.storage.ProgressRepository.load(instrumentation.targetContext))
+        assertEquals(setOf(1), p.capture().completed)
+        assertTrue(p.select(2)); assertFalse(p.select(3))
+        assertEquals(2,p.session.level.id)
+    }
+    fun testStorageFailureIsReportedAndRecovers() {
+        val repository = com.tilebloom.game.storage.ProgressRepository
+        val blocker = java.io.File(instrumentation.targetContext.filesDir, "test-blocked")
+        blocker.writeText("blocks directory creation")
+        try {
+            repository.useTestStorage("test-blocked/progress")
+            val token = repository.acquire()
+            repository.save(instrumentation.targetContext, token, com.tilebloom.game.domain.ProgressController().capture())
+            repository.awaitWrites()
+            assertTrue(repository.lastWriteFailed)
+            assertEquals(1,repository.load(instrumentation.targetContext).highestUnlocked)
+        } finally { blocker.delete() }
+    }
+    fun testFreshActivityLaunchWithoutBundleRestoresMoves() {
+        val original = activity
+        tap(16); tap(20)
+        ui { original.finish() }
+        instrumentation.waitForIdleSync()
+        com.tilebloom.game.storage.ProgressRepository.awaitWrites()
+        com.tilebloom.game.storage.ProgressRepository.useTestStorage("test-smoke-progress")
+        val intent = android.content.Intent(instrumentation.targetContext, MainActivity::class.java)
+            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+        val relaunched = instrumentation.startActivitySync(intent) as MainActivity
+        try {
+            instrumentation.waitForIdleSync()
+            assertCount(22,relaunched)
+            ui { assertEquals(0,board(relaunched).activeMatchEffectCount) }
+        } finally { ui { relaunched.finish() } }
+    }
     private fun <T> ui(action: () -> T): T {
         val result = AtomicReference<T>()
         instrumentation.runOnMainSync { result.set(action()) }

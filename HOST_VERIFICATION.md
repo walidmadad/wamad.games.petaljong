@@ -1,3 +1,36 @@
+# CODEX 09 persistence verification supplement
+
+This section supersedes historical runtime status below. Current sandbox: wrapper cannot create its cache lock (read-only filesystem); ADB cannot open its server listener (Operation not permitted). Standard Gradle tasks, Lint and connected instrumentation were NOT EXECUTED. Diagnostic builds are separate evidence.
+
+On an unrestricted authorized host, from this repository:
+
+```sh
+bash tools/host_verify.sh
+python3 tools/test_host_verify.py
+./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug :app:assembleDebugAndroidTest
+adb devices
+./gradlew :app:connectedDebugAndroidTest
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb shell am start -n com.tilebloom.game/.presentation.MainActivity
+```
+
+Instrumentation uses private test-smoke-progress storage and cleans it before/after each test; the storage-failure test uses test-blocked. Production progression is not loaded or deleted by tests. Tests include a fresh activity launch without Bundle and real AtomicFile reload after dropping the process cache; these are not fresh-process tests.
+
+Manual fresh-process check (developer/playtest data only): play several pairs, note level/seed identity and counter, press Home, then:
+
+```sh
+adb shell am force-stop com.tilebloom.game
+adb shell am start -n com.tilebloom.game/.presentation.MainActivity
+adb logcat -d -s TileBloomSave AndroidRuntime
+adb shell run-as com.tilebloom.game cat files/player-progress-v1
+```
+
+Check exact removed tiles, remaining pairs and absence of old effects. Repeat after Level 2 victory before Next, after Level 5 victory, and during a deadlock. Verify replay/restart keep completions and reproduce the same definition. Install an update with matching signature using adb install -r and repeat. Do not clear application data. Different debug signing identities require special care; do not uninstall a real player installation to bypass a signature mismatch.
+
+Check the level panel: current Continue, locked rows disabled, completed rows marked, explicit confirmation for replacing an attempt, cancellation, system Back, bottom navigation insets. Complete all five witness paths through geometry-derived instrumentation helpers. Visually inspect the revised Level 1 arrangement, single centered victory panel, gold/green buttons, Next/Replay, and final-level handling. No current screenshots establish these checks yet.
+
+---
+
 # TileBloom — Linux host verification
 
 Run from the existing TileBloom directory in a normal Linux terminal outside the Codex sandbox. Do not change operating-system security settings. Java 17, SDK platform 36 and Build Tools 35.0.0 are required. Gradle dependencies must be cached or downloadable. Configured versions: Kotlin 2.2.10, AGP 8.10.0, Gradle 8.13. The standalone diagnostic compiler is separately pinned to 1.9.24.
