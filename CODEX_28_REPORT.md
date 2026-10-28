@@ -34,7 +34,7 @@ P. APK delivery: NO fresh APK generated. New APK path, size, creation timestamp,
 
 Q. Signing: local keystore configuration unchanged. Rechecked configured local certificate: `fc1828f63432530e788baa4d69c70594157dfad0312a977e710158393e4110f6`, matching the supplied fingerprint. New APK signature and in-place installed-app update cannot be verified without a fresh APK and working ADB. No credentials/keystores were added to Git.
 
-R. Git: existing `.tilebloom-git` history retained. Implementation commit uses `feat: add timed interstitial ads after Mahjong victories`; obtain its hash with `git --git-dir=.tilebloom-git --work-tree=. log -1 --oneline`. Unrelated pre-existing CODEX_18_REPORT.md and docs/codex26 files are excluded. No push, history rewrite or publication.
+R. Git: existing `.tilebloom-git` history retained. Implementation commit uses `feat: add timed interstitial ads after Mahjong victories`; implementation commit: `d2f147f`. Unrelated pre-existing CODEX_18_REPORT.md and docs/codex26 files are excluded. No push, history rewrite or publication.
 
 S. Remaining issues: host restrictions prevent standard Gradle/Lint, executable Android instrumentation, real consent/ad playback, signing/update installation and APK delivery. This implementation is development test-ad integration, not production revenue configuration. Visual timing and SDK lifecycle behavior require device confirmation before release.
 
@@ -43,3 +43,5 @@ T. CODEX 29: run the standard Gradle tasks and eight new UI tests on an unrestri
 Policy review (2026-10-28): [Google interstitial integration](https://developers.google.com/admob/android/interstitial) recommends natural transitions and official test ads. [Google Play Ads policy](https://support.google.com/googleplay/android-developer/answer/9857753) prohibits unexpected ads during gameplay or at content startup and requires standard dismissal behavior. The implementation uses the completed-level break and never intercepts the Next Level action.
 
 Executed JVM result: **233/233 PASS**, 39.865 seconds with Java 17 and cached Kotlin/JUnit. This includes the existing 216 regressions and 17 new tests. Final diagnostic main/resource/Android-test source compilation result is in `docs/codex28/diagnostic.log`; this is not a standard Gradle build or executed instrumentation. Verification summary: `docs/codex28/results.txt`.
+
+Final diagnostic result: **PASS** for main sources, linked resources and Android test source compilation. Android tests were compiled, not executed. Evidence log whitespace was normalized for Git review.
