@@ -705,3 +705,27 @@ Evidence: `app/build/codex08/verification.log`, `quality-matrix.tsv`, `host-work
 Reproduce with Java 17: `python3 tools/verify_offline.py`, then
 `python3 -m unittest tools/test_host_verify.py`. Standard Gradle remains the preferred
 normal-host build. Environment diagnostics: `docs/codex14/environment.txt`.
+
+## CODEX 15 validation
+
+The active rules are individual tile collection, automatic pairs and four-distinct-symbol
+loss. Historical pair-selection UI expectations above describe older builds. Current
+JVM tests replay witnesses through production `Game.select`, preserve geometry tests,
+and cover tray ordering, duplicate rejection, defeat Undo, atomic replay, credits,
+schema 4 restoration and legacy migration. `TrayAnalyzer` keeps budget exhaustion UNKNOWN.
+
+Standard Gradle attempt: blocked by read-only wrapper lock under ~/.gradle. Offline
+verification command: `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:$PATH python3 tools/verify_offline.py`.
+Android instrumentation and runtime are NOT EXECUTED: ADB cannot bind port 5037 in this
+sandbox. No Android Lint result is claimed. See CODEX_15_REPORT.md and docs/codex15 for
+final test/build evidence and APK digest. Small-phone layout and animation quality
+remain device playtest items; the compact header hides decorative subtitle and reduces
+status/footer height to make room for the tray.
+
+Final CODEX 15 results: **180 JVM tests PASS** (52.162 s); instrumentation sources
+compile successfully, NOT EXECUTED. Fresh APK: 774,547 bytes, 2026-10-28 19:27:57 +01:00,
+package `com.tilebloom.game`, aligned and verified with signatures v2/v3.
+SHA-256: `d8aebcc2ac8ef94f32c1f0c4aca1721b697224334187045819ae1d5e9df73527`.
+APK DEX contains the new tray renderer, analyzer and selection-history methods. Evidence:
+`docs/codex15/offline-verification.txt`, `apk-verification.txt`, `gradle.txt` and
+`android-runtime.txt`. No Android execution or Lint claim is made.

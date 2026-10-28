@@ -26,6 +26,7 @@ class MainActivity : Activity() {
     private lateinit var victoryDetail: TextView
     private lateinit var next: Button
     private lateinit var board: MahjongBoardView
+    private lateinit var tray: TileTrayView
     private lateinit var counter: TextView
     private lateinit var feedback: TextView
     private lateinit var undo: Button
@@ -48,7 +49,7 @@ class MainActivity : Activity() {
         Thread {
             val loaded = runCatching { com.tilebloom.game.storage.GameStore.get(applicationContext) }
             runOnUiThread {
-                if (!isDestroyed) loaded.onSuccess { progress = it; createContent(savedInstanceState) }
+                if (!isDestroyed) loaded.onSuccess { progress = it; createContent() }
                     .onFailure { setContentView(Button(this).apply {
                         text = "Garden could not load. Tap to retry."
                         setOnClickListener { recreate() }
@@ -56,20 +57,8 @@ class MainActivity : Activity() {
             }
         }.start()
     }
-    private fun createContent(savedInstanceState: Bundle?) {
+    private fun createContent() {
         if (progress.recovered) android.util.Log.w("TileBloomSave", "Board snapshot rejected; completion retained")
-        // Durable moves always win. Bundle may restore only a selection on that exact board.
-        if (savedInstanceState != null) {
-            val snapshot = session.snapshot()
-            val moves = snapshot.game.moves.flatMap { listOf(it.first, it.second) }.toIntArray()
-            if (savedInstanceState.getLong("level_id") == snapshot.id &&
-                savedInstanceState.getLong("level_seed") == snapshot.seed &&
-                savedInstanceState.getInt("level_version") == snapshot.version &&
-                savedInstanceState.getIntArray("moves")?.contentEquals(moves) == true) {
-                val selected = savedInstanceState.getInt("selected", -1)
-                if (selected >= 0 && game.isAvailable(selected)) game.select(selected)
-            }
-        }
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
@@ -106,6 +95,7 @@ class MainActivity : Activity() {
             setPadding(0, 0, 0, dp(2))
         }
         label(getString(R.string.subtitle), 13f).apply {
+            if (compact) visibility = View.GONE
             setTextColor(Color.rgb(191, 207, 187))
             letterSpacing = .06f
         }
@@ -113,7 +103,7 @@ class MainActivity : Activity() {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             background = surface(Color.rgb(27, 65, 51), 16)
-            setPadding(dp(14), dp(10), dp(14), dp(10))
+            setPadding(dp(14), dp(if (compact) 2 else 10), dp(14), dp(if (compact) 2 else 10))
         }
         root.addView(status, LinearLayout.LayoutParams(-1, -2).apply {
             topMargin = dp(if (compact) 10 else 22)
@@ -126,7 +116,7 @@ class MainActivity : Activity() {
             setPadding(0, 0, dp(8), 0)
         }
         levelLabel.textSize = 16f
-        levelLabel.minHeight = dp(48)
+        levelLabel.minHeight = dp(if (compact) 28 else 48)
         levelLabel.isClickable = false
         status.addView(levelLabel, LinearLayout.LayoutParams(0, -2, 1f))
         counter = TextView(this).apply {
@@ -137,6 +127,8 @@ class MainActivity : Activity() {
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
         status.addView(counter, LinearLayout.LayoutParams(0, -2, 2f))
+        tray = TileTrayView(this) { game.tray }.apply { id = R.id.tray; contentDescription = "Four tile tray slots" }
+        root.addView(tray, LinearLayout.LayoutParams(-1, dp(if (compact) 58 else 78)))
         board = MahjongBoardView(this, game) { update() }
         board.id = R.id.board
         val playArea = FrameLayout(this)
@@ -189,6 +181,7 @@ class MainActivity : Activity() {
             id = R.id.next_level; text = getString(R.string.next_level); isAllCaps = false
             minimumHeight = dp(48)
             setOnClickListener {
+                if (game.status == Status.LOST) { session.restart(); board.clearFeedback(); tray.clearFeedback(); update(); return@setOnClickListener }
                 if (com.tilebloom.game.storage.GameStore.transitioning || !session.canAdvance) return@setOnClickListener
                 loading = true; com.tilebloom.game.storage.GameStore.transitioning = true; next.isEnabled = false; next.text = "Preparing garden…"
                 val expected = session.level.id
@@ -225,9 +218,10 @@ class MainActivity : Activity() {
             id = R.id.feedback
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
             setTextColor(gold)
-            minLines = 2
+            minLines = if (compact) 1 else 2
+            if (compact) textSize = 12f
             gravity = Gravity.CENTER
-            setPadding(0, dp(4), 0, dp(10))
+            setPadding(0, dp(4), 0, dp(if (compact) 2 else 10))
         }
         restart = Button(this).apply {
             id = R.id.restart
@@ -240,7 +234,7 @@ class MainActivity : Activity() {
                 surface(Color.rgb(35, 77, 58), 24, true),
                 surface(Color.WHITE, 24))
             setPadding(dp(28), dp(10), dp(28), dp(10))
-            setOnClickListener { session.restart(); board.clearFeedback(); update() }
+            setOnClickListener { session.restart(); board.clearFeedback(); tray.clearFeedback(); update() }
         }
         val actions = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
         undo = Button(this).apply {
@@ -250,7 +244,7 @@ class MainActivity : Activity() {
                 intArrayOf(Color.rgb(191, 207, 187), ivory)))
             setOnClickListener {
                 if (game.canUndo && progress.wallet.balance > 0) {
-                    if (progress.undo()) { board.clearFeedback(); update() }
+                    if (progress.undo()) { board.clearFeedback(); tray.clearFeedback(); update() }
                     else android.util.Log.e("TileBloomUndo", "Validated history reconstruction failed; board retained")
                 }
             }
@@ -268,7 +262,7 @@ class MainActivity : Activity() {
         com.tilebloom.game.storage.GameStore.persist(this)
         levelLabel.text = getString(R.string.level_number, session.level.id)
         val presentation = com.tilebloom.game.presentation.board.ScreenPresentation.forStatus(game.status, session.canAdvance)
-        val won = presentation.victory
+        val won = presentation.victory || game.status == Status.LOST
         victory.animate().cancel()
         victory.alpha = 1f
         val enteringVictory = won && victory.visibility != View.VISIBLE
@@ -278,18 +272,21 @@ class MainActivity : Activity() {
             victory.alpha = 0f
             victory.animate().alpha(1f).setDuration(200L).start()
         }
-        victoryTitle.text = getString(R.string.won)
+        victoryTitle.text = if (game.status == Status.LOST) "Tray Full!" else getString(R.string.won)
         victoryDetail.text = "Beautifully done.\nLevel ${session.level.id} Complete" +
             if (session.level.id == Long.MAX_VALUE) "\nLevel number limit reached. Progress saved." else ""
+        if (game.status == Status.LOST) victoryDetail.text = if (game.tray.size == 4) "Four different tiles.\nTry again!" else "No legal continuation.\nTry again!"
+        tray.refresh()
         loading = com.tilebloom.game.storage.GameStore.transitioning
         next.isEnabled = !loading
-        next.text = if (loading) "Preparing garden…" else getString(R.string.next_level)
-        next.visibility = if (presentation.advance) View.VISIBLE else View.GONE
+        next.text = if (game.status == Status.LOST) "Restart Level" else if (loading) "Preparing garden…" else getString(R.string.next_level)
+        next.visibility = if (presentation.advance || game.status == Status.LOST) View.VISIBLE else View.GONE
         counter.text = getString(R.string.pairs, game.remainingPairs)
         feedback.visibility = if (presentation.footer) View.VISIBLE else View.GONE
         restart.visibility = if (presentation.restart) View.VISIBLE else View.GONE
         feedback.text = when (game.status) {
-            Status.PLAYING -> getString(R.string.instruction)
+            Status.PLAYING -> "Collect tiles. Two identical symbols clear."
+            Status.LOST -> "Restart Level or Undo the last tile."
             Status.WON -> ""
             Status.NO_MOVES -> getString(R.string.no_moves) + "\n" + getString(R.string.no_moves_detail)
         }
@@ -306,14 +303,5 @@ class MainActivity : Activity() {
         super.onStop()
         // Drain already-submitted small writes on ordinary departure; never resubmit stale state.
         com.tilebloom.game.storage.ProgressRepository.awaitWrites()
-    }
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        if (!::progress.isInitialized) return
-        outState.putLong("level_id", session.level.id)
-        outState.putLong("level_seed", session.level.seed)
-        outState.putInt("level_version", session.level.version)
-        outState.putIntArray("moves", game.snapshot().moves.flatMap { listOf(it.first, it.second) }.toIntArray())
-        outState.putInt("selected", game.selected ?: -1)
     }
 }

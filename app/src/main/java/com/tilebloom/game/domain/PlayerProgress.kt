@@ -7,27 +7,36 @@ data class PlayerProgress(val completed: Set<Int> = emptySet(), val active: Sess
     val highestUnlocked: Long get() = if (frontier == Long.MAX_VALUE) frontier else frontier + 1
 }
 object ProgressCodec {
-    const val SCHEMA = 3
+    const val SCHEMA = 4
     fun encode(p: PlayerProgress): String {
         val s = p.active
-        return listOf("$SCHEMA", p.frontier.toString(), s?.let { "${it.id},${it.seed},${it.version}" } ?: "",
-            s?.game?.moves?.joinToString(";") { "${it.first},${it.second}" } ?: "", p.undoCredits.toString()).joinToString("\n")
+        return listOf("$SCHEMA", p.frontier.toString(), s?.let { "${it.id},${it.seed},${it.version},2" } ?: "",
+            s?.game?.let { g -> (g.selections ?: g.moves.flatMap { listOf(it.first, it.second) }).joinToString(";") } ?: "", p.undoCredits.toString()).joinToString("\n")
     }
     fun decode(raw: String): PlayerProgress {
         require(raw.length <= 8192)
         val lines = raw.split('\n'); val schema = lines[0].toInt(); require(schema in 1..SCHEMA)
         val credits = if (schema == 1) 3 else lines.getOrNull(4)?.toIntOrNull() ?: error("Missing credits")
         require(credits >= 0)
-        val frontier = if (schema == 3) lines[1].toLong().also { require(it >= 0) } else {
+        val frontier = if (schema >= 3) lines[1].toLong().also { require(it >= 0) } else {
             val recorded = lines.getOrNull(1).orEmpty().split(',').mapNotNull { it.toIntOrNull() }.toSet()
             (1..5).takeWhile { it in recorded }.size.toLong()
         }
         val active = runCatching {
             val identity = lines[2].split(',')
-            val moves = lines.getOrNull(3).orEmpty().takeIf { it.isNotEmpty() }?.split(';')?.map {
-                val pair = it.split(','); require(pair.size == 2); PairMove(pair[0].toInt(), pair[1].toInt())
-            }.orEmpty()
-            SessionSnapshot(identity[0].toLong(), identity[1].toLong(), identity[2].toInt(), GameSnapshot(moves, null))
+            require(identity.size == if (schema == 4) 4 else 3)
+            val actions = lines.getOrNull(3).orEmpty().takeIf { it.isNotEmpty() }?.split(';').orEmpty()
+            val snapshot = if (schema == 4) {
+                GameSnapshot(emptyList(), null, actions.map { it.toInt() }, identity[3].toInt())
+            } else {
+                val pairs = actions.map {
+                    val pair = it.split(','); require(pair.size == 2)
+                    PairMove(pair[0].toInt(), pair[1].toInt())
+                }
+                // Legacy schema actions are pairs, explicitly expanded during validated restoration.
+                GameSnapshot(pairs, null)
+            }
+            SessionSnapshot(identity[0].toLong(), identity[1].toLong(), identity[2].toInt(), snapshot)
         }.getOrNull()
         return PlayerProgress((1..minOf(5L, frontier).toInt()).toSet(), active, credits, frontier)
     }

@@ -9,7 +9,7 @@ class PuzzleAnalyzerTest {
     @Test fun audit() {
         fun randomWins(l: LevelDefinition): Int = (0L..31L).count { seed ->
             val r=java.util.Random(seed); val g=Game(l.tiles)
-            while(g.status==Status.PLAYING) { val moves=g.matchingPairs(); val p=moves[r.nextInt(moves.size)]; check(g.match(p.first,p.second)) }
+            while(g.status==Status.PLAYING && g.matchingPairs().isNotEmpty()) { val moves=g.matchingPairs(); val p=moves[r.nextInt(moves.size)]; check(g.match(p.first,p.second)) }
             g.status==Status.WON
         }
         (1..5).forEach { id ->
@@ -38,7 +38,7 @@ class PuzzleAnalyzerTest {
         assertEquals(2,a.initialPairs); assertEquals(1,a.riskyChoiceStates)
         assertEquals(List(6){4},l.tiles.groupingBy { it.symbol }.eachCount().values.toList())
         val game=Game(l.tiles); listOf(16 to 20,0 to 4,8 to 12,17 to 21,1 to 5,9 to 13,15 to 18,19 to 23).forEach { assertTrue(game.match(it.first,it.second)) }
-        assertEquals(Status.NO_MOVES,game.status)
+        assertEquals(Status.PLAYING,game.status)
     }
     @Test fun emptyAnalysis() { val a=PuzzleAnalyzer.analyze(LevelDefinition(0,0,2,BoardLayout("empty",emptyList()),emptyList(),emptyList(),0)); assertEquals(0,a.tileCount); assertTrue(a.complete) }
     @Test fun fallbackBounded() { val l=LevelGenerator.generateWithProfile(2,42,Layouts.terrace,qualityAttempts=2,minimumChoices=100); assertFalse(l.qualityTargetMet); assertEquals(2,l.candidatesEvaluated); LevelValidator.validate(l) }
@@ -55,7 +55,7 @@ fun deadlockPath(game: Game): List<PairMove> {
     fun find(tiles: List<Tile>): List<PairMove>? {
         if(nodes++ >= 20000 || !seen.add(tiles.map { it.id }.toSet())) return null
         val g=Game(tiles)
-        if(g.status==Status.NO_MOVES) return emptyList()
+        if(g.remaining.isNotEmpty() && g.matchingPairs().isEmpty()) return emptyList()
         for(p in g.matchingPairs()) {
             val tail=find(tiles.filter { it.id!=p.first && it.id!=p.second })
             if(tail!=null) return listOf(p)+tail

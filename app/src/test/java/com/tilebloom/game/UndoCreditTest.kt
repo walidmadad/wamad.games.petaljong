@@ -7,7 +7,7 @@ import org.junit.Test
 class UndoCreditTest {
     private fun match(c: ProgressController) {
         val p = c.session.game.matchingPairs().first()
-        assertTrue(c.session.game.match(p.first, p.second))
+        assertTrue(c.session.game.select(p.first))
     }
     private fun reload(c: ProgressController) = ProgressController(ProgressCodec.decode(ProgressCodec.encode(c.capture())))
     @Test fun threeCreditsThenRejectWithoutChangingBoard() {
@@ -32,7 +32,7 @@ class UndoCreditTest {
         listOf(15 to 23, 10 to 22, 9 to 20, 6 to 16, 17 to 18, 0 to 14).forEach {
             assertTrue(deadlocked.session.game.match(it.first,it.second))
         }
-        assertEquals(Status.NO_MOVES,deadlocked.session.game.status)
+        assertEquals(Status.PLAYING,deadlocked.session.game.status)
         val blocked=deadlocked.capture(); assertFalse(deadlocked.undo()); assertEquals(blocked,deadlocked.capture())
         deadlocked.wallet.rewardTicket().earned(); assertTrue(deadlocked.undo())
         assertEquals(0,deadlocked.wallet.balance); assertEquals(Status.PLAYING,deadlocked.session.game.status)
@@ -69,7 +69,8 @@ class UndoCreditTest {
     }
     @Test fun migrationKeepsCompletionsIdentityAndMovesExactlyOnce() {
         val c=ProgressController(PlayerProgress(setOf(1,2))); c.select(3); match(c)
-        val old=ProgressCodec.encode(c.capture()).split('\n').take(4).toMutableList(); old[0]="1"; old[1]="1,2"
+        val l=c.session.level; val p=l.witness.first(); c.session.restart(); c.session.game.match(p.first,p.second)
+        val old=mutableListOf("1","1,2","${l.id},${l.seed},${l.version}","${p.first},${p.second}")
         val migrated=ProgressController(ProgressCodec.decode(old.joinToString("\n")))
         assertEquals(c.capture(),migrated.capture()); assertEquals(3,migrated.wallet.balance)
         assertTrue(migrated.undo()); assertEquals(2,reload(migrated).wallet.balance)

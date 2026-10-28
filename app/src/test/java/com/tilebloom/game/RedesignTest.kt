@@ -116,7 +116,7 @@ class RedesignTest {
         val move=l.witness.first()
         val raw="1\n1\n2,202,2\n${move.first},${move.second}"
         val controller=ProgressController(ProgressCodec.decode(raw))
-        assertFalse(controller.recovered); assertEquals("3" + raw.drop(1) + "\n3",ProgressCodec.encode(controller.capture()))
+        assertFalse(controller.recovered); assertEquals(listOf(move),controller.session.game.snapshot().moves)
     }
     @Test fun legacyHistoryIsNeverAppliedToNewGeometry() {
         val session=GardenSession(); val before=session.snapshot()
@@ -127,7 +127,7 @@ class RedesignTest {
         for(l in listOf(Levels.legacyIntroductory)+(1..5).map { Levels.get(it) }) {
             val wins=(0L..31L).count { seed ->
                 val r=java.util.Random(seed); val g=Game(l.tiles)
-                while(g.status==Status.PLAYING) { val moves=g.matchingPairs(); val p=moves[r.nextInt(moves.size)]; check(g.match(p.first,p.second)) }
+                while(g.status==Status.PLAYING && g.matchingPairs().isNotEmpty()) { val moves=g.matchingPairs(); val p=moves[r.nextInt(moves.size)]; check(g.match(p.first,p.second)) }
                 g.status==Status.WON
             }
             println("DESIGN_AUDIT version=${l.version} ${PuzzleAnalyzer.analyze(l)} randomWins=$wins/32")

@@ -283,3 +283,31 @@ For each milestone record device/density/font scale, perceived challenge (1–5)
 recognizability, comfortable touch size, planning needed, generation delay and overall
 progression satisfaction. Record traps separately from interesting unlocking choices.
 These are pending subjective observations; automated analysis is not a substitute.
+
+## CODEX 15: tray playtest (PENDING on real Android)
+
+Install without clearing application data:
+
+```sh
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb shell am start -n com.tilebloom.game/.presentation.MainActivity
+```
+
+Check on 320 dp, 360 dp and tall portrait screens, including large fonts/system insets:
+
+1. Four empty botanical tray slots appear between status and board. Board taps remain comfortable.
+2. Tap a free tile: one tile enters. Covered and side-blocked tiles stay put; upper faces intercept taps.
+3. Tap a matching symbol: both held tiles clear and other held tiles compact in order.
+4. Hold three different symbols: play continues. A fourth different symbol shows Tray Full,
+   keeps all four symbols visible, and blocks additional actions. Restart is explicit.
+5. Undo that loss: last tile returns to its exact board position; three held tiles remain,
+   defeat dismisses and one global credit is spent. Undo a match restores its first held tile.
+6. Restart clears tray/effects, repeats the seed and preserves credits. Relaunch with one,
+   three, and four held symbols; check exact restoration and no obsolete effects.
+7. Complete the coordinate witness: victory requires empty board AND tray. Advance exactly
+   one level; completed levels stay inaccessible. Check 20→21 and 40→41 symbols and credits.
+8. Upgrade a schema 3 installation in place: compatible pair history becomes two taps per
+   pair. Invalid history restarts only the unfinished attempt and preserves credits/frontier.
+
+Android execution was blocked by sandbox ADB socket restrictions. These are pending checks,
+not claims of successful device validation. Automated coordinate tests compile in the offline builder.

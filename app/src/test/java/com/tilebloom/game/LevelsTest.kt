@@ -49,7 +49,7 @@ class LevelsTest {
     @Test fun completionEnablesNext() { val s=GardenSession(); assertFalse(s.canAdvance); finish(s); assertTrue(s.canAdvance) }
     @Test fun advancesCorrectly() { val s=GardenSession(); finish(s); assertTrue(s.advance()); assertEquals(Levels.get(2),s.level) }
     @Test fun advanceClearsHistoryAndSelection() { val s=GardenSession(); finish(s); s.advance(); assertNull(s.game.selected); assertTrue(s.game.snapshot().moves.isEmpty()); assertEquals(s.level.tiles,s.game.tiles) }
-    @Test fun deadlockNeverAdvances() { val s=GardenSession(); deadlockPath(s.game).forEach { assertTrue(s.game.match(it.first,it.second)) }; assertEquals(Status.NO_MOVES,s.game.status); assertFalse(s.advance()); assertEquals(1L,s.level.id) }
+    @Test fun deadlockNeverAdvances() { val s=GardenSession(); deadlockPath(s.game).forEach { assertTrue(s.game.match(it.first,it.second)) }; assertEquals(Status.PLAYING,s.game.status); assertFalse(s.advance()); assertEquals(1L,s.level.id) }
     @Test fun fifthIsNotTerminal() { val s=GardenSession(); repeat(5) { finish(s); if(it<4) assertTrue(s.advance()) }; assertEquals(5L,s.level.id); assertTrue(s.canAdvance); assertFalse(s.restart()); assertTrue(s.advance()); assertEquals(6L,s.level.id) }
     @Test fun restoresEveryLevel() { val s=GardenSession(); repeat(5) {
         val p=s.level.witness.first(); s.game.match(p.first,p.second)

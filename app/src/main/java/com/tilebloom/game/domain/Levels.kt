@@ -44,7 +44,7 @@ object LevelValidator {
         require(tiles.filter { it.layer > 0 }.all { a -> tiles.any { b -> b.layer < a.layer && Rules.overlaps(a, b) } })
         require(level.witness.size * 2 == tiles.size)
         val game = Game(tiles)
-        require(level.witness.all { game.match(it.first, it.second) })
+        require(level.witness.all { game.select(it.first) && game.select(it.second) && game.tray.isEmpty() })
         require(game.status == Status.WON && game.remaining.isEmpty())
     }
 }

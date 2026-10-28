@@ -1,0 +1,32 @@
+APK: /home/walid/Documents/projects/androidGames/TileBloom/app/build/outputs/apk/debug/app-debug.apk
+Bytes: 774547
+Modified: 2026-10-28T19:27:57.174110+01:00
+SHA-256: d8aebcc2ac8ef94f32c1f0c4aca1721b697224334187045819ae1d5e9df73527
+Freshness: PASS; APK newer than every Kotlin source and XML resource
+/home/walid/Android/Sdk/build-tools/35.0.0/aapt2 dump badging /home/walid/Documents/projects/androidGames/TileBloom/app/build/outputs/apk/debug/app-debug.apk
+package: name='com.tilebloom.game' versionCode='1' versionName='0.1' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
+/home/walid/Android/Sdk/build-tools/35.0.0/zipalign -c 4 /home/walid/Documents/projects/androidGames/TileBloom/app/build/outputs/apk/debug/app-debug.apk
+PASS
+/home/walid/Android/Sdk/build-tools/35.0.0/apksigner verify --verbose --print-certs /home/walid/Documents/projects/androidGames/TileBloom/app/build/outputs/apk/debug/app-debug.apk
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=Android Debug, O=Android, C=US
+Signer #1 certificate SHA-256 digest: fc1828f63432530e788baa4d69c70594157dfad0312a977e710158393e4110f6
+Signer #1 certificate SHA-1 digest: ebb0b20491eefc87a83c27c10119530e6bf811aa
+Signer #1 certificate MD5 digest: 9b5454ccb93e69e1aba0435f889409da
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 2048
+Signer #1 public key SHA-256 digest: 43ae771eb6b1814b69a3afbb588c3b9b5fba3d9c567c92c203eac1f12681e527
+Signer #1 public key SHA-1 digest: ed9874fd036271fe151de49ab7d266811a92b0c6
+Signer #1 public key MD5 digest: 534003caac478076c1db27552c44a231
+DEX contains Lcom/tilebloom/game/presentation/TileTrayView;: PASS
+DEX contains Lcom/tilebloom/game/domain/TrayAnalyzer;: PASS
+DEX contains getTraySlots: PASS
+DEX contains getSelections: PASS
+DEX contains select: PASS

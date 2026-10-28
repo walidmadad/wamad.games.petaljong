@@ -32,29 +32,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
     }
     fun load(next: Game) { clearFeedback(); game = next; refresh() }
     fun refresh() {
-        val selected = game.tiles.find { it.id == game.selected }
-        val selectedText = selected?.let {
-            val symbol = when (it.symbol) {
-                Symbol.LEAF -> R.string.symbol_leaf
-                Symbol.LOTUS -> R.string.symbol_lotus
-                Symbol.FERN -> R.string.symbol_fern
-                Symbol.FLOWER -> R.string.symbol_flower
-                Symbol.BERRIES -> R.string.symbol_berries
-                Symbol.SUNFLOWER -> R.string.symbol_sunflower
-                Symbol.MUSHROOM -> R.string.symbol_mushroom
-                Symbol.BUTTERFLY -> R.string.symbol_butterfly
-                Symbol.BAMBOO -> R.string.symbol_bamboo
-                Symbol.ACORN -> R.string.symbol_acorn
-                Symbol.MAPLE_LEAF -> R.string.symbol_maple_leaf
-                Symbol.PINECONE -> R.string.symbol_pinecone
-                Symbol.IRIS -> R.string.symbol_iris
-                Symbol.GINKGO_LEAF -> R.string.symbol_ginkgo_leaf
-                Symbol.CHERRY_BLOSSOM -> R.string.symbol_cherry_blossom
-                Symbol.DRAGONFLY -> R.string.symbol_dragonfly
-            }
-            context.getString(R.string.board_selected, context.getString(symbol))
-        } ?: context.getString(R.string.board_none_selected)
-        contentDescription = context.getString(R.string.board_state, remainingTileCount, selectedText)
+        contentDescription = "$remainingTileCount board tiles. ${game.tray.size} tray tiles. Tap an available tile to collect it."
         invalidate()
     }
     fun clearFeedback() {
@@ -153,7 +131,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
                 val tile = geometry().hitTest(game.tiles, event.x, event.y)
                 val id = gesture.up(event.getPointerId(0), tile?.id, event.x, event.y)
                 if (id != null) {
-                    if (game.isAvailable(id)) {
+                    if (game.status == Status.PLAYING && game.isAvailable(id)) {
                         removeCallbacks(clearBlocked); blockedTileId = null
                         val before = game.tiles
                         game.select(id)

@@ -45,6 +45,8 @@ data class PuzzleAnalysis(
 }
 data class MoveImpact(val move: PairMove, val newlyAvailable: Set<Int>, val result: SearchResult)
 object PuzzleAnalyzer {
+    fun analyzeTray(tiles: List<Tile>, snapshot: GameSnapshot, budget: Int = 2000) =
+        TrayAnalyzer.analyze(tiles, snapshot, budget)
     /** Every legal association, with a shared budget. Empty unlock sets can be equivalent
      * immediately without being equivalent for eventual solvability. */
     fun alternatives(tiles: List<Tile>, budget: Int = 10000): List<MoveImpact> {
@@ -101,5 +103,62 @@ object PuzzleAnalyzer {
             initialPairs.map { p -> level.tiles.first { it.id == p.first }.symbol }.distinct().size,
             profile, profile.count { it == 1 }, profile.count { it > 1 }, unlocks, consequences, risky,
             safe, dead, unknown, nodes, level.layout.id, level.seed)
+    }
+}
+
+/** Bounded individual-action analysis. UNKNOWN never terminates a live attempt. */
+object TrayAnalyzer {
+    data class Analysis(val result: SearchResult, val available: Int, val unmatched: Int,
+        val immediateLosses: Int, val matchingReveals: Int,
+        val safeContinuations: Int, val losingContinuations: Int, val unknownContinuations: Int)
+    fun analyze(tiles: List<Tile>, snapshot: GameSnapshot, budget: Int = 2000): Analysis {
+        require(budget >= 0)
+        val start = Game(tiles); require(start.restore(snapshot))
+        var nodes = 0
+        val memo = mutableMapOf<Pair<Set<Int>, List<Int>>, Solvability>()
+        fun visit(g: Game): Solvability {
+            if (g.status == Status.WON) return Solvability.SOLVABLE
+            if (g.status == Status.LOST) return Solvability.UNSOLVABLE
+            val key = g.remaining.map { it.id }.toSet() to g.tray.map { it.symbol.stableId }.sorted()
+            memo[key]?.let { return it }
+            if (nodes >= budget) return Solvability.UNKNOWN_BUDGET_EXCEEDED
+            nodes++
+            var unknown = false
+            for (tile in g.remaining.filter { g.isAvailable(it.id) }) {
+                val next = Game(tiles); check(next.restore(g.snapshot())); check(next.select(tile.id))
+                when (visit(next)) {
+                    Solvability.SOLVABLE -> { memo[key] = Solvability.SOLVABLE; return Solvability.SOLVABLE }
+                    Solvability.UNKNOWN_BUDGET_EXCEEDED -> unknown = true
+                    else -> Unit
+                }
+            }
+            val result = if (unknown) Solvability.UNKNOWN_BUDGET_EXCEEDED else Solvability.UNSOLVABLE
+            if (!unknown) memo[key] = result
+            return result
+        }
+        if (start.status != Status.PLAYING) return Analysis(
+            SearchResult(if (start.status == Status.WON) Solvability.SOLVABLE else Solvability.UNSOLVABLE, 0),
+            0, start.tray.size, 0, 0, 0, 0, 0)
+        val free = start.remaining.filter { start.isAvailable(it.id) }
+        val losses = free.count { tile -> start.tray.size == 3 && start.tray.none { it.symbol == tile.symbol } }
+        val reveals = free.count { tile ->
+            val next = Game(tiles); check(next.restore(snapshot)); next.select(tile.id)
+            next.remaining.any { next.isAvailable(it.id) && !start.isAvailable(it.id) && next.tray.any { held -> held.symbol == it.symbol } }
+        }
+        var safe = 0; var losing = 0; var unknown = 0
+        for (tile in free) {
+            val next = Game(tiles); check(next.restore(snapshot)); check(next.select(tile.id))
+            when (visit(next)) {
+                Solvability.SOLVABLE -> safe++
+                Solvability.UNSOLVABLE -> losing++
+                Solvability.UNKNOWN_BUDGET_EXCEEDED -> unknown++
+            }
+        }
+        val result = when {
+            start.status == Status.WON || safe > 0 -> Solvability.SOLVABLE
+            unknown > 0 -> Solvability.UNKNOWN_BUDGET_EXCEEDED
+            else -> Solvability.UNSOLVABLE
+        }
+        return Analysis(SearchResult(result, nodes), free.size, start.tray.size, losses, reveals, safe, losing, unknown)
     }
 }

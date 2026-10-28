@@ -17,7 +17,7 @@ class ProgressTest {
     @Test fun unfinishedLegacySurvives() { val l=Levels.get(4); val m=l.witness.first(); val raw="2\n1,2,3\n4,${l.seed},${l.version}\n${m.first},${m.second}\n1"; val c=ProgressController(ProgressCodec.decode(raw)); assertEquals(listOf(m),c.session.game.snapshot().moves); assertEquals(4L,c.session.level.id) }
     @Test fun completedLegacySelectionMovesToFirstUnfinished() { val l=Levels.get(1); val c=ProgressController(ProgressCodec.decode("2\n1,2\n1,${l.seed},${l.version}\n\n2")); assertEquals(3L,c.session.level.id) }
     @Test fun generatedTransitionsAndUndoIsolation() { for(id in listOf(5L,99L,999L,9999L)) { val l=Levels.get(id); val c=ProgressController(PlayerProgress(active=SessionSnapshot(id,l.seed,l.version,GameSnapshot(emptyList(),null)),highestCompleted=id-1,undoCredits=1)); win(c); val next=c.prepareNext()!!; assertTrue(c.commitNext(next)); assertFalse(c.commitNext(next)); assertEquals(id+1,c.session.level.id); assertEquals(id,c.capture().frontier); assertEquals(1,c.wallet.balance); assertFalse(c.undo()); assertEquals(c.capture(),reload(c).capture()) } }
-    @Test fun deadlockNeverAdvances() { val c=ProgressController(); deadlockPath(c.session.game).forEach { c.session.game.match(it.first,it.second) }; assertEquals(Status.NO_MOVES,c.session.game.status); assertFalse(c.advance()); assertEquals(0L,reload(c).capture().frontier) }
+    @Test fun deadlockNeverAdvances() { val c=ProgressController(); deadlockPath(c.session.game).forEach { c.session.game.match(it.first,it.second) }; assertEquals(Status.PLAYING,c.session.game.status); assertFalse(c.advance()); assertEquals(0L,reload(c).capture().frontier) }
     @Test fun restartSameIdentityAndBalance() { val c=ProgressController(PlayerProgress(highestCompleted=99,undoCredits=0)); val l=c.session.level; val m=l.witness.first(); c.session.game.match(m.first,m.second); assertTrue(c.session.restart()); assertEquals(l.tiles,c.session.game.tiles); assertEquals(100L,c.session.level.id); assertEquals(0,c.wallet.balance) }
     @Test fun corruptPendingHistoryNeverReplaysCompleted() { val c=ProgressController(); win(c); val p=c.capture(); val r=ProgressController(p.copy(active=p.active!!.copy(game=GameSnapshot(emptyList(),null)))); assertEquals(2L,r.session.level.id); assertEquals(1L,r.capture().frontier) }
     @Test fun invalidCompletionsCannotUnlock() { assertEquals(1L,ProgressController(PlayerProgress(setOf(2,5,999))).highestUnlocked) }
@@ -32,7 +32,7 @@ class ProgressTest {
     }
     @Test fun duplicateAcceptedMoveIsRejectedAtomically() {
         val c=ProgressController(); val m=c.session.level.witness.first(); c.session.game.match(m.first,m.second)
-        val p=c.capture(); val s=p.active!!; val r=ProgressController(p.copy(active=s.copy(game=s.game.copy(moves=listOf(m,m)))))
+        val p=c.capture(); val s=p.active!!; val r=ProgressController(p.copy(active=s.copy(game=s.game.copy(selections=listOf(m.first,m.second,m.first,m.second)))))
         assertTrue(r.recovered); assertTrue(r.session.game.snapshot().moves.isEmpty()); assertEquals(12,r.session.game.remainingPairs)
     }
     @Test fun repeatedRestoresKeepIdentityCounterAndCredits() {

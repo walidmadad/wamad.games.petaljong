@@ -1,0 +1,4 @@
+NOT EXECUTED
+Command: /home/walid/Android/Sdk/platform-tools/adb devices
+ADB daemon failed: could not install smartsocket listener: Operation not permitted.
+Cannot bind local ADB listener on port 5037 in this sandbox.

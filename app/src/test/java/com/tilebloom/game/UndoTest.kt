@@ -15,38 +15,34 @@ class UndoTest {
         assertFalse(g.canUndo); assertEquals(before, g.snapshot())
     }
     @Test fun everyLayoutRestoresExactTilesGeometryBlockingAndPairs() {
-        for (id in 1..5) {
-            val l = Levels.get(id); val original = l.tiles.toList(); val g = Game(l.tiles)
-            val states = mutableListOf(g.tiles)
-            val pairs = mutableListOf(g.matchingPairs())
-            val availability = mutableListOf(g.tiles.map { g.isAvailable(it.id) })
-            l.witness.dropLast(1).forEach {
-                play(g, it); states.add(g.tiles); pairs.add(g.matchingPairs())
-                availability.add(g.tiles.map { t -> g.isAvailable(t.id) })
+        for(id in 1..5) {
+            val l=Levels.get(id); val g=Game(l.tiles)
+            val states=mutableListOf(g.snapshot())
+            val boards=mutableListOf(g.tiles)
+            val availability=mutableListOf(g.tiles.map{g.isAvailable(it.id)})
+            val pairs=mutableListOf(g.matchingPairs())
+            l.witness.dropLast(1).flatMap{listOf(it.first,it.second)}.forEach {
+                assertTrue(g.select(it)); states.add(g.snapshot()); boards.add(g.tiles)
+                availability.add(g.tiles.map{tile->g.isAvailable(tile.id)}); pairs.add(g.matchingPairs())
             }
-            for (n in states.lastIndex downTo 1) {
-                val remaining = g.remaining.size
-                assertTrue(g.undo())
-                assertEquals(remaining + 2, g.remaining.size)
-                assertEquals(states[n-1], g.tiles)
-                assertEquals(pairs[n-1], g.matchingPairs())
-                assertEquals(availability[n-1], g.tiles.map { g.isAvailable(it.id) })
-                assertEquals(l.tiles.size/2 - n + 1, g.remainingPairs)
-                assertEquals(g.tiles.size, g.tiles.map { it.id }.toSet().size)
+            for(n in states.lastIndex downTo 1) {
+                val count=g.remaining.size
+                assertTrue(g.undo()); assertEquals(states[n-1],g.snapshot()); assertEquals(count+1,g.remaining.size)
+                assertEquals(boards[n-1],g.tiles); assertEquals(availability[n-1],g.tiles.map{g.isAvailable(it.id)})
+                assertEquals(pairs[n-1],g.matchingPairs()); assertEquals(l.tiles.size,g.tiles.map{it.id}.distinct().size)
             }
-            assertFalse(g.undo()); assertEquals(original, l.tiles); assertEquals(original, g.tiles)
+            assertFalse(g.undo()); assertEquals(l.tiles,g.tiles)
         }
     }
     @Test fun selectedTileClearedOnUndo() {
-        val l=Levels.get(1); val g=Game(l.tiles); play(g,l.witness.first())
-        g.select(g.matchingPairs().first().first); assertNotNull(g.selected)
-        assertTrue(g.undo()); assertNull(g.selected)
-        g.select(l.witness.first().first); assertEquals(l.witness.first().first,g.selected)
+        val l=Levels.get(1); val g=Game(l.tiles); val p=l.witness.first()
+        g.select(p.first); val before=g.snapshot(); g.select(p.second)
+        assertTrue(g.undo()); assertEquals(before,g.snapshot()); assertEquals(listOf(p.first),g.tray.map{it.id})
     }
     @Test fun deadlockRecoversWithoutRegeneration() {
         val s=GardenSession(); val identity=s.snapshot()
         deadlockPath(s.game).forEach { play(s.game,it) }
-        assertEquals(Status.NO_MOVES,s.game.status)
+        assertEquals(Status.PLAYING,s.game.status)
         assertTrue(s.game.undo()); assertEquals(Status.PLAYING,s.game.status)
         assertEquals(identity.copy(game=s.game.snapshot()),s.snapshot())
     }
@@ -57,7 +53,7 @@ class UndoTest {
         val before=c.capture(); val restored=reload(before)
         assertTrue(restored.session.game.undo())
         val after=restored.capture(); val s=before.active!!
-        assertEquals(s.copy(game=GameSnapshot(s.game.moves.dropLast(1),null)),after.active)
+        assertEquals(s.game.selections!!.dropLast(1),after.active!!.game.selections)
         assertEquals(before.completed,after.completed); assertEquals(3L,restored.highestUnlocked)
         val again=reload(after); assertEquals(after,again.capture()); assertTrue(again.session.game.canUndo)
     }
@@ -75,14 +71,14 @@ class UndoTest {
         val before=g.snapshot(); val tiles=g.tiles
         assertFalse(g.restore(GameSnapshot(before.moves + PairMove(-1,999),null)))
         assertEquals(before,g.snapshot()); assertEquals(tiles,g.tiles)
-        assertTrue(g.undo()); assertEquals(l.tiles,g.tiles)
+        assertTrue(g.undo()); assertEquals(1,g.tray.size)
     }
     @Test fun rapidUndoDuringEffectsDoesNotDuplicateTilesOrMoves() {
         val l=Levels.get(1); val g=Game(l.tiles); val effects=MatchEffects()
         repeat(100) {
             val before=g.tiles; play(g,l.witness.first()); effects.record(before,g.tiles,0,true)
             assertEquals(2,effects.active.size)
-            assertTrue(g.undo()); effects.clear()
+            assertTrue(g.undo()); assertTrue(g.undo()); effects.clear()
             repeat(5) { assertFalse(g.undo()) }
             assertTrue(effects.active.isEmpty()); assertEquals(l.tiles,g.tiles); assertTrue(g.snapshot().moves.isEmpty())
         }

@@ -59,7 +59,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             assertFalse(undo.isEnabled)
         }
         repeat(3) {
-            tap(firstA); tap(firstB)
+            tap(firstA)
             ui {
                 activity.findViewById<Button>(R.id.undo).performClick()
                 assertEquals("Undo (${2-it})", activity.findViewById<Button>(R.id.undo).text.toString())
@@ -80,8 +80,8 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             com.tilebloom.game.domain.PlayerProgress(setOf(1, 2)))
         val move = original.session.level.witness.first()
         assertTrue(original.session.game.match(move.first, move.second))
-        val legacy = com.tilebloom.game.domain.ProgressCodec.encode(original.capture())
-            .split('\n').take(4).toMutableList().apply { this[0] = "1"; this[1] = "1,2" }.joinToString("\n")
+        val l=original.session.level
+        val legacy="1\n1,2\n${l.id},${l.seed},${l.version}\n${move.first},${move.second}"
         java.io.File(instrumentation.targetContext.filesDir, "test-smoke-progress").writeText(legacy)
         activity; instrumentation.waitForIdleSync()
         assertCount(26)
@@ -97,7 +97,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         repo.awaitWrites(); repo.useTestStorage("test-smoke-progress")
         val saved = repo.load(instrumentation.targetContext)
         assertEquals(setOf(1, 2), saved.completed)
-        assertEquals(original.session.snapshot().copy(game = com.tilebloom.game.domain.GameSnapshot(emptyList(), null)), saved.active)
+        assertEquals(listOf(move.first),saved.active!!.game.selections)
         assertEquals(2, saved.undoCredits)
         val relaunched = instrumentation.startActivitySync(android.content.Intent(instrumentation.targetContext, MainActivity::class.java)
             .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) as MainActivity
@@ -118,7 +118,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
     }
     private fun exhaustCredits() {
         activity; instrumentation.waitForIdleSync()
-        repeat(3) { tap(firstA); tap(firstB); ui { activity.findViewById<Button>(R.id.undo).performClick() } }
+        repeat(3) { tap(firstA); ui { activity.findViewById<Button>(R.id.undo).performClick() } }
     }
     fun testZeroCreditsSurviveRelaunch() {
         exhaustCredits()
@@ -165,38 +165,19 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         assertEquals(setOf(1,2),saved.completed); assertEquals(0,saved.undoCredits)
     }
     fun testUndoRestoresPairSelectionAndRestartState() {
-        activity; instrumentation.waitForIdleSync()
-        ui { assertFalse(activity.findViewById<Button>(R.id.undo).isEnabled) }
-        tap(firstA); tap(firstB); assertCount(22)
+        activity; tap(firstA); tap(firstB); assertCount(22)
         ui { activity.findViewById<Button>(R.id.undo).performClick() }
-        assertCount(24)
-        ui {
-            assertEquals("Pairs left: 12", activity.findViewById<TextView>(R.id.counter).text.toString())
-            assertEquals(0, activity.findViewById<MahjongBoardView>(R.id.board).activeMatchEffectCount)
-            assertFalse(activity.findViewById<Button>(R.id.undo).isEnabled)
-        }
-        tap(firstA)
-        ui { assertEquals(firstA, activity.findViewById<MahjongBoardView>(R.id.board).selectedTileId) }
+        assertCount(23); assertEquals(listOf(firstA),currentGame().tray.map{it.id})
         tap(firstB); assertCount(22)
         ui { activity.findViewById<Button>(R.id.restart).performClick() }
-        assertCount(24)
-        ui { assertFalse(activity.findViewById<Button>(R.id.undo).isEnabled) }
+        assertCount(24); assertTrue(currentGame().tray.isEmpty())
     }
     fun testDeadlockUndoRecoversThroughPresentation() {
-        activity; instrumentation.waitForIdleSync()
-        deadlockMoves.forEach { tap(it.first); tap(it.second) }
-        ui {
-            val undo = activity.findViewById<Button>(R.id.undo)
-            assertTrue(undo.isShown); assertTrue(undo.isEnabled)
-            assertEquals("Undo (3)", undo.text.toString()); undo.performClick()
-        }
-        assertCount(24-deadlockMoves.size*2+2)
-        ui {
-            assertEquals(activity.getString(R.string.instruction), activity.findViewById<TextView>(R.id.feedback).text.toString())
-            assertEquals("Undo (2)", activity.findViewById<Button>(R.id.undo).text.toString())
-        }
-        tap(deadlockMoves.last().first)
-        ui { assertEquals(deadlockMoves.last().first, board().selectedTileId) }
+        activity; deadlockMoves.forEach { tap(it.first); tap(it.second) }
+        assertEquals(com.tilebloom.game.domain.Status.PLAYING,currentGame().status)
+        ui { activity.findViewById<Button>(R.id.undo).performClick() }
+        assertCount(24-deadlockMoves.size*2+1)
+        assertEquals(listOf(deadlockMoves.last().first),currentGame().tray.map{it.id})
     }
     fun testUndoAfterFreshLaunchPersistsShorterHistory() {
         val original = activity
@@ -210,10 +191,10 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         try {
             instrumentation.waitForIdleSync(); assertCount(20, relaunched)
             ui { relaunched.findViewById<Button>(R.id.undo).performClick() }
-            assertCount(22, relaunched)
+            assertCount(21, relaunched)
             repository.awaitWrites(); repository.useTestStorage("test-smoke-progress")
             val saved = repository.load(instrumentation.targetContext)
-            assertEquals(listOf(com.tilebloom.game.domain.PairMove(firstA, firstB)), saved.active!!.game.moves)
+            assertEquals(listOf(com.tilebloom.game.domain.PairMove(firstA, firstB)), com.tilebloom.game.domain.ProgressController(saved).capture().active!!.game.moves)
         } finally { ui { relaunched.finish() } }
     }
     fun testPreviousPuzzleVersionUpgradePreservesProgress() {
@@ -227,7 +208,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         val saved = com.tilebloom.game.storage.ProgressRepository.load(instrumentation.targetContext)
         assertEquals(setOf(1,2),saved.completed)
         assertEquals(3L,saved.active!!.id)
-        assertEquals(listOf(pair),saved.active!!.game.moves)
+        assertEquals(listOf(pair),com.tilebloom.game.domain.ProgressController(saved).capture().active!!.game.moves)
     }
     fun testDurableStoreWithoutBundle() {
         activity
@@ -298,6 +279,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         instrumentation.runOnMainSync { result.set(action()) }
         return result.get()
     }
+    private fun currentGame() = com.tilebloom.game.storage.GameStore.get(instrumentation.targetContext).session.game
     private fun board(screen: MainActivity = activity) = screen.findViewById<MahjongBoardView>(R.id.board)
     private fun target(id: Int, screen: MainActivity = activity): BoardPoint {
         ready(screen)
@@ -322,7 +304,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         ready(screen)
         ui {
             assertEquals(expected,board(screen).remainingTileCount)
-            assertEquals(screen.getString(R.string.pairs,expected/2),screen.findViewById<TextView>(R.id.counter).text.toString())
+            assertEquals(screen.getString(R.string.pairs,(expected + com.tilebloom.game.storage.GameStore.get(instrumentation.targetContext).session.game.tray.size)/2),screen.findViewById<TextView>(R.id.counter).text.toString())
         }
     }
     fun testLaunchAndRestart() {
@@ -338,7 +320,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
     fun testCoordinateWitnessAndPlayAgain() {
         activity; instrumentation.waitForIdleSync(); assertCount(24)
         Levels.get(1).witness.forEachIndexed { index,pair ->
-            tap(pair.first); ui { assertEquals(pair.first,board().selectedTileId) }
+            tap(pair.first); ui { assertTrue(currentGame().tray.any { it.id == pair.first }) }
             tap(pair.second); assertCount(22-index*2); ui { assertNull(board().selectedTileId) }
         }
         ui {
@@ -358,33 +340,22 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         tap(Levels.get(2).witness.first().first)
     }
     fun testCoordinateDeadlockAndRestart() {
-        activity; instrumentation.waitForIdleSync()
-        for (pair in deadlockMoves) { tap(pair.first); tap(pair.second) }
-        assertCount(24-deadlockMoves.size*2)
-        ui {
-            assertTrue(activity.findViewById<TextView>(R.id.feedback).text.toString().contains(activity.getString(R.string.no_moves)))
-            assertFalse(activity.findViewById<Button>(R.id.next_level).isShown)
-            assertNull(activity.findViewById<Button>(R.id.replay_level))
-            assertTrue(activity.findViewById<Button>(R.id.restart).isShown)
-            activity.findViewById<Button>(R.id.restart).performClick()
-        }
-        assertCount(24); ui { assertNull(board().selectedTileId) }
+        activity; deadlockMoves.forEach { tap(it.first); tap(it.second) }
+        assertEquals(com.tilebloom.game.domain.Status.PLAYING,currentGame().status)
+        ui { assertFalse(activity.findViewById<Button>(R.id.next_level).isShown)
+            activity.findViewById<Button>(R.id.restart).performClick() }
+        assertCount(24); assertTrue(currentGame().tray.isEmpty())
     }
     fun testSelectionBlockedTapAndDrag() {
-        activity; instrumentation.waitForIdleSync()
-        tap(firstA); tap(blockedId) // Middle cap is visible but laterally blocked; it must not replace selection.
-        ui { assertEquals(firstA,board().selectedTileId) }; assertCount(24)
-        tap(firstA); ui { assertNull(board().selectedTileId) }
-        tap(firstA); tap(differentId) // Available but different symbols: move selection.
-        ui { assertEquals(differentId,board().selectedTileId) }; assertCount(24)
-        tap(differentId)
-        val p = target(firstA); val down = SystemClock.uptimeMillis()
-        val distance = ui { ViewConfiguration.get(activity).scaledTouchSlop + 12f }
+        activity; tap(blockedId); assertCount(24)
+        tap(firstA); assertCount(23)
+        val p=target(firstB); val down=SystemClock.uptimeMillis()
+        val distance=ui { ViewConfiguration.get(activity).scaledTouchSlop+12f }
         send(MotionEvent.ACTION_DOWN,p,down)
         send(MotionEvent.ACTION_MOVE,BoardPoint(p.x+distance,p.y),down)
         send(MotionEvent.ACTION_MOVE,p,down); send(MotionEvent.ACTION_UP,p,down)
-        instrumentation.waitForIdleSync(); ui { assertNull(board().selectedTileId) }
-        assertCount(24)
+        instrumentation.waitForIdleSync(); assertCount(23)
+        assertEquals(listOf(firstA),currentGame().tray.map{it.id})
     }
     fun testRestartCancelsPendingTouchAndBlockedFeedback() {
         activity; instrumentation.waitForIdleSync(); tap(blockedId)
@@ -394,7 +365,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         send(MotionEvent.ACTION_UP,p,down)
         SystemClock.sleep(180); instrumentation.waitForIdleSync()
         assertCount(24); ui { assertNull(board().selectedTileId) }
-        tap(firstA); ui { assertEquals(firstA,board().selectedTileId) }
+        tap(firstA); ui { assertTrue(currentGame().tray.any { it.id == firstA }) }
     }
     fun testRapidTouchesDuringBlockedFeedbackAndAfterRestart() {
         activity; instrumentation.waitForIdleSync()
@@ -406,7 +377,9 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             val now = SystemClock.uptimeMillis()
             send(MotionEvent.ACTION_DOWN,p,now); send(MotionEvent.ACTION_UP,p,now)
         }
-        instrumentation.waitForIdleSync(); assertCount(22)
+        instrumentation.waitForIdleSync()
+        val actions=currentGame().snapshot().selections!!
+        assertEquals(actions.size,actions.distinct().size)
         ui { activity.findViewById<Button>(R.id.restart).performClick() }
         tap(firstA); tap(firstB); assertCount(22)
     }
@@ -428,7 +401,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             } finally { release.recycle() }
             assertNull(view.selectedTileId)
         }
-        assertCount(24); tap(firstA); ui { assertEquals(firstA,board().selectedTileId) }
+        assertCount(24); tap(firstA); ui { assertTrue(currentGame().tray.any { it.id == firstA }) }
     }
     fun testMatchEffectsRestartAndCompletion() {
         activity; instrumentation.waitForIdleSync()
@@ -463,7 +436,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
     }
     fun testActivityRecreationRestoresPlayedState() {
         val original = activity; instrumentation.waitForIdleSync()
-        tap(firstA); tap(firstB); tap(secondA); assertCount(22)
+        tap(firstA); tap(firstB); tap(secondA); assertCount(21)
         val monitor = Instrumentation.ActivityMonitor(MainActivity::class.java.name,null,false)
         instrumentation.addMonitor(monitor)
         var replacement: MainActivity? = null
@@ -473,8 +446,8 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             assertNotNull("Recreated activity did not launch",replacement)
             instrumentation.waitForIdleSync()
             val restored = replacement!!; ready(restored)
-            assertCount(22,restored); ui {
-                assertEquals(secondA,board(restored).selectedTileId)
+            assertCount(21,restored); ui {
+                assertTrue(currentGame().tray.any { it.id == secondA })
                 assertEquals(0,board(restored).activeMatchEffectCount)
             }
             tap(secondB,restored); assertCount(20,restored)
@@ -525,7 +498,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         val l=Levels.get(6); val m=l.witness.first()
         tap(m.first); tap(m.second)
         ui { activity.findViewById<Button>(R.id.undo).performClick(); assertEquals("Undo (0)",activity.findViewById<Button>(R.id.undo).text.toString()) }
-        tap(m.first); tap(m.second); assertCount(l.tiles.size-2)
+        tap(m.second); assertCount(l.tiles.size-2)
         ui { activity.finish() }; repo.awaitWrites(); repo.useTestStorage("test-smoke-progress")
         val screen=instrumentation.startActivitySync(android.content.Intent(instrumentation.targetContext,MainActivity::class.java).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) as MainActivity
         try { ready(screen); assertCount(l.tiles.size-2,screen)
