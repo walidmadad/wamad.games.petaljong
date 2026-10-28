@@ -323,7 +323,8 @@ class MainActivity : Activity() {
             Status.NO_MOVES -> getString(R.string.no_moves) + "\n" + getString(R.string.no_moves_detail)
         }
         feedback.setTextColor(if (game.status == Status.PLAYING) Color.rgb(191, 207, 187) else Color.rgb(184, 163, 107))
-        undo.visibility = if (presentation.footer) View.VISIBLE else View.GONE
+        // The wallet is global, including before the first move and after victory.
+        undo.visibility = View.VISIBLE
         undo.isEnabled = game.canUndo && progress.wallet.balance > 0
         undo.text = getString(if (game.status == Status.NO_MOVES) R.string.undo_last_credits else R.string.undo_credits, progress.wallet.balance)
         watchAd.visibility = if (game.canUndo && progress.wallet.balance == 0) View.VISIBLE else View.GONE
@@ -331,7 +332,8 @@ class MainActivity : Activity() {
         watchAd.isEnabled = !ads.loading
         privacy.visibility = if (ads.privacyRequired) View.VISIBLE else View.GONE
         restart.setText(if (game.status == Status.NO_MOVES) R.string.restart_level else R.string.restart)
-        if (ads.failed && progress.wallet.balance == 0 && game.canUndo) {
+        if (progress.wallet.balance == 0 && game.canUndo && !ads.loading && !ads.available) {
+            feedback.visibility = View.VISIBLE
             feedback.append("\n" + getString(R.string.ad_unavailable))
         }
         if (displayedBalance >= 0 && progress.wallet.balance > displayedBalance) {

@@ -33,14 +33,24 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
     }
     fun testThreeCreditsThenRewardedCredit() {
         activity; instrumentation.waitForIdleSync()
-        ui { assertEquals("Undo (3)", activity.findViewById<Button>(R.id.undo).text.toString()) }
+        ui {
+            val undo = activity.findViewById<Button>(R.id.undo)
+            assertEquals("Undo (3)", undo.text.toString())
+            assertTrue(undo.isShown)
+            assertFalse(undo.isEnabled)
+        }
         repeat(3) {
             tap(firstA); tap(firstB)
-            ui { activity.findViewById<Button>(R.id.undo).performClick() }
+            ui {
+                activity.findViewById<Button>(R.id.undo).performClick()
+                assertEquals("Undo (${2-it})", activity.findViewById<Button>(R.id.undo).text.toString())
+            }
         }
         tap(firstA); tap(firstB)
         ui {
             assertFalse(activity.findViewById<Button>(R.id.undo).isEnabled)
+            activity.findViewById<Button>(R.id.undo).performClick()
+            assertEquals("Undo (0)", activity.findViewById<Button>(R.id.undo).text.toString())
             assertTrue(activity.findViewById<Button>(R.id.watch_ad).isShown)
             activity.findViewById<Button>(R.id.watch_ad).performClick()
             val fake = MainActivity.debugAdProvider as FakeGameAds
@@ -52,6 +62,55 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             assertEquals("Undo (0)", activity.findViewById<Button>(R.id.undo).text.toString())
         }
         assertCount(24)
+    }
+    fun testSchemaOneMigrationShowsCreditsAndDoesNotRefillOnRelaunch() {
+        val original = com.tilebloom.game.domain.ProgressController(
+            com.tilebloom.game.domain.PlayerProgress(setOf(1, 2)))
+        assertTrue(original.session.game.match(firstA, firstB))
+        val legacy = com.tilebloom.game.domain.ProgressCodec.encode(original.capture())
+            .split('\n').take(4).toMutableList().apply { this[0] = "1" }.joinToString("\n")
+        java.io.File(instrumentation.targetContext.filesDir, "test-smoke-progress").writeText(legacy)
+        activity; instrumentation.waitForIdleSync()
+        assertCount(22)
+        ui {
+            val undo = activity.findViewById<Button>(R.id.undo)
+            assertTrue(undo.isShown); assertEquals("Undo (3)", undo.text.toString())
+            undo.performClick()
+            assertEquals("Undo (2)", undo.text.toString())
+            activity.finish()
+        }
+        instrumentation.waitForIdleSync()
+        val repo = com.tilebloom.game.storage.ProgressRepository
+        repo.awaitWrites(); repo.useTestStorage("test-smoke-progress")
+        val saved = repo.load(instrumentation.targetContext)
+        assertEquals(setOf(1, 2), saved.completed)
+        assertEquals(original.session.snapshot().copy(game = com.tilebloom.game.domain.GameSnapshot(emptyList(), null)), saved.active)
+        assertEquals(2, saved.undoCredits)
+        val relaunched = instrumentation.startActivitySync(android.content.Intent(instrumentation.targetContext, MainActivity::class.java)
+            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) as MainActivity
+        try {
+            instrumentation.waitForIdleSync()
+            ui { assertEquals("Undo (2)", relaunched.findViewById<Button>(R.id.undo).text.toString()) }
+        } finally { ui { relaunched.finish() } }
+    }
+    fun testCreditBalanceRemainsVisibleAfterVictory() {
+        activity; instrumentation.waitForIdleSync()
+        Levels.get(1).witness.forEach { tap(it.first); tap(it.second) }
+        ui {
+            val undo = activity.findViewById<Button>(R.id.undo)
+            assertTrue(undo.isShown)
+            assertEquals("Undo (3)", undo.text.toString())
+        }
+    }
+    fun testUnavailableAdKeepsOptionalActionAndBoard() {
+        exhaustCredits(); tap(firstA); tap(firstB)
+        ui {
+            (MainActivity.debugAdProvider as FakeGameAds).loadFailure()
+            assertTrue(activity.findViewById<Button>(R.id.watch_ad).isShown)
+            assertTrue(activity.findViewById<TextView>(R.id.feedback).text.contains(activity.getString(R.string.ad_unavailable)))
+            assertTrue(activity.findViewById<Button>(R.id.restart).isEnabled)
+        }
+        assertCount(22)
     }
     fun testDismissalWithoutRewardAndRepeatedTaps() {
         activity; instrumentation.waitForIdleSync()

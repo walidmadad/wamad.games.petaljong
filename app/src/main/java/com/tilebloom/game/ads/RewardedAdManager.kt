@@ -50,7 +50,10 @@ class RewardedAdManager private constructor(private val context: Context) : Game
                 MobileAds.initialize(context) {
                     handler.post { initializing = false; initialized = true; load() }
                 }
-            } catch (_: Exception) { initializing = false }
+            } catch (error: Exception) {
+                initializing = false; failed = true
+                android.util.Log.w("TileBloomAds", "SDK initialization failed", error)
+            }
         } else load()
         changed?.invoke()
     }
@@ -66,6 +69,7 @@ class RewardedAdManager private constructor(private val context: Context) : Game
                     changed?.invoke()
                 }
                 override fun onAdFailedToLoad(error: LoadAdError) {
+                    android.util.Log.w("TileBloomAds", "Rewarded load failed: ${error.domain}/${error.code}: ${error.message}")
                     loading = false; failed = true; ad = null
                     retryAfter = android.os.SystemClock.elapsedRealtime() + 30_000
                     changed?.invoke()
@@ -74,7 +78,8 @@ class RewardedAdManager private constructor(private val context: Context) : Game
         } catch (_: Exception) { loading = false; failed = true; retryAfter = android.os.SystemClock.elapsedRealtime() + 30_000; changed?.invoke() }
     }
     override fun show(host: Activity): Boolean {
-        if (!available || host.isDestroyed || host.isFinishing) { load(); return false }
+        if (host.isDestroyed || host.isFinishing) return false
+        if (!available) { refreshPermission(); return false }
         val current = ad ?: return false
         val ticket = gate.begin() ?: return false
         ad = null; showing = true
@@ -85,7 +90,10 @@ class RewardedAdManager private constructor(private val context: Context) : Game
         }
         current.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() = finish()
-            override fun onAdFailedToShowFullScreenContent(error: AdError) { failed = true; retryAfter = android.os.SystemClock.elapsedRealtime() + 30_000; finish() }
+            override fun onAdFailedToShowFullScreenContent(error: AdError) {
+                android.util.Log.w("TileBloomAds", "Rewarded display failed: ${error.domain}/${error.code}: ${error.message}")
+                failed = true; retryAfter = android.os.SystemClock.elapsedRealtime() + 30_000; finish()
+            }
         }
         try {
             current.show(host) {
