@@ -57,6 +57,7 @@ class HintInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(MainA
             assertEquals(before, state.session.game.snapshot())
             val board = screen.findViewById<MahjongBoardView>(R.id.board)
             id = board.hintedTileId!!
+            assertEquals(HintPolicy.suggest(state.session.level.tiles, before).id, id)
             assertTrue(state.session.game.isAvailable(id))
             val center = board.tileCenter(id)!!
             val now = SystemClock.uptimeMillis()
@@ -95,6 +96,30 @@ class HintInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(MainA
             enter(fresh)
             ui { assertEquals(2, fresh.findViewById<GardenIconButton>(R.id.hint).badge) }
         } finally { ui { fresh.finish() } }
+    }
+    fun testExpirationRestartAndHomeClearFeedbackWithoutCharging() {
+        val screen = activity; enter(screen)
+        val state = GameStore.get(instrumentation.targetContext)
+        val board = screen.findViewById<MahjongBoardView>(R.id.board)
+        val id = HintPolicy.suggest(state.session.level.tiles, state.session.game.snapshot()).id!!
+        ui { screen.findViewById<GardenIconButton>(R.id.hint).performClick() }
+        waitFor { board.hintedTileId != null }
+        ui { assertEquals(id, board.hintedTileId); assertEquals(2, state.hintCredits) }
+        waitFor { board.hintedTileId == null }
+        ui {
+            assertEquals(2, state.hintCredits)
+            board.showHint(id)
+            screen.findViewById<GardenIconButton>(R.id.restart).performClick()
+            assertNull(board.hintedTileId)
+            board.showHint(id)
+            board.load(Game(Levels.get(7).tiles))
+            assertNull(board.hintedTileId)
+            board.load(state.session.game)
+            board.showHint(id)
+            screen.findViewById<GardenIconButton>(R.id.home).performClick()
+            assertNull(board.hintedTileId)
+            assertEquals(2, state.hintCredits)
+        }
     }
     fun testZeroRemainsDisabledAfterRestore() {
         File(instrumentation.targetContext.filesDir, storage).writeText(ProgressCodec.encode(PlayerProgress(hintCredits = 0)))

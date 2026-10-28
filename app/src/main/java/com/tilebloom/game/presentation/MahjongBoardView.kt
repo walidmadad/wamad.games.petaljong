@@ -15,15 +15,18 @@ import kotlin.math.*
 class MahjongBoardView(context: Context, private var game: Game, private val changed: () -> Unit) : View(context) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val effects = MatchEffects()
-    var hintedTileId: Int? = null; private set
-    private var hintStarted = 0L
-    private val expireHint = Runnable { hintedTileId = null; invalidate() }
+    private val hintEffect = HintPresentation()
+    val hintedTileId get() = hintEffect.targetId
+    private val hintBounds = RectF()
+    private var hintIndicator: BoardPoint? = null
+    private val expireHint = Runnable { clearHint(); invalidate() }
     fun showHint(id: Int) {
-        if (hintedTileId != null || !game.isAvailable(id)) return
-        hintedTileId = id; hintStarted = SystemClock.uptimeMillis()
-        postDelayed(expireHint, 2000L); invalidate()
+        if (!hintEffect.show(id, game, SystemClock.uptimeMillis())) return
+        hintIndicator = null
+        postDelayed(expireHint, HintPresentation.DURATION_MS)
+        invalidate()
     }
-    private fun clearHint() { removeCallbacks(expireHint); hintedTileId = null }
+    private fun clearHint() { removeCallbacks(expireHint); hintEffect.clear(); hintIndicator = null }
 
     val activeMatchEffectCount get() = effects.active.size
     private val gesture = TileTapGesture(ViewConfiguration.get(context).scaledTouchSlop.toFloat())
@@ -42,6 +45,8 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
     }
     fun load(next: Game) { clearFeedback(); game = next; refresh() }
     fun refresh() {
+        hintEffect.validate(game, SystemClock.uptimeMillis())
+        if (hintedTileId == null) removeCallbacks(expireHint)
         contentDescription = context.getString(R.string.collection_board_description, remainingTileCount, game.tray.size)
         invalidate()
     }
@@ -110,13 +115,6 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
                 paint.color = Color.rgb(227, 201, 135)
                 canvas.drawRoundRect(face.inset(scale * .075f).android(), scale * .06f, scale * .06f, paint)
             }
-            if (hintedTileId == tile.id) {
-                paint.style = Paint.Style.STROKE
-                val pulse = if (ValueAnimator.areAnimatorsEnabled()) ((sin((now - hintStarted) / 180.0) + 1) / 2).toFloat() else .5f
-                paint.strokeWidth = scale * (.035f + .012f * pulse)
-                paint.color = Color.argb((180 + 65 * pulse).toInt(), 201, 183, 122)
-                canvas.drawRoundRect(face.inset(scale * .025f).android(), layout.radius, layout.radius, paint)
-            }
             paint.style = Paint.Style.FILL
             canvas.save()
             canvas.translate(r.centerX(), r.centerY())
@@ -131,7 +129,46 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             }
             canvas.restoreToCount(saved)
         }
-        if (effects.active.isNotEmpty() || hintedTileId != null) postInvalidateOnAnimation()
+        hintEffect.validate(game, now)
+        // Foreground decoration shares the authoritative face transform, never hit geometry.
+        hintEffect.face(game, layout)?.let { face -> drawHint(canvas, layout, face, now) }
+        if (effects.active.isNotEmpty() || (hintedTileId != null && ValueAnimator.areAnimatorsEnabled())) postInvalidateOnAnimation()
+    }
+    private fun drawHint(canvas: Canvas, layout: BoardGeometry, face: BoardRect, now: Long) {
+        val density = resources.displayMetrics.density
+        val pulse = hintEffect.brightness(now, ValueAnimator.areAnimatorsEnabled())
+        val stroke = 3.5f * density
+        hintBounds.set(face.left, face.top, face.right, face.bottom)
+        // Stroke outside the ceramic rim keeps botanical artwork untouched.
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = stroke + 2.5f * density
+        paint.color = Color.rgb(65, 48, 12)
+        canvas.drawRoundRect(hintBounds, layout.radius, layout.radius, paint)
+        paint.strokeWidth = stroke
+        paint.color = Color.rgb(255, (191 + 38 * pulse).toInt(), (32 + 56 * pulse).toInt())
+        canvas.drawRoundRect(hintBounds, layout.radius, layout.radius, paint)
+        val radius = min(11f * density, layout.scale * .22f)
+        val bulb = hintIndicator ?: hintEffect.indicator(face, width.toFloat(), height.toFloat(), radius, game, layout)
+            .also { hintIndicator = it }
+        paint.strokeWidth = 2f * density
+        paint.color = Color.rgb(65, 48, 12)
+        val anchorX = if (bulb.x > face.center.x) face.right - layout.radius else face.left + layout.radius
+        val anchorY = if (bulb.y > face.center.y) face.bottom else face.top
+        canvas.drawLine(bulb.x, bulb.y, anchorX, anchorY, paint)
+        paint.style = Paint.Style.FILL
+        canvas.drawCircle(bulb.x, bulb.y, radius, paint)
+        paint.color = Color.rgb(255, 229, 110)
+        canvas.drawCircle(bulb.x, bulb.y, radius * .82f, paint)
+        // Original vector bulb: globe, neck, filament and base, no font/emoji dependency.
+        paint.color = Color.rgb(65, 48, 12)
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = max(1f, radius * .13f)
+        canvas.drawCircle(bulb.x, bulb.y - radius * .18f, radius * .37f, paint)
+        canvas.drawLine(bulb.x - radius * .2f, bulb.y + radius * .14f, bulb.x - radius * .2f, bulb.y + radius * .43f, paint)
+        canvas.drawLine(bulb.x + radius * .2f, bulb.y + radius * .14f, bulb.x + radius * .2f, bulb.y + radius * .43f, paint)
+        canvas.drawLine(bulb.x - radius * .2f, bulb.y + radius * .43f, bulb.x + radius * .2f, bulb.y + radius * .43f, paint)
+        canvas.drawLine(bulb.x - radius * .13f, bulb.y + radius * .6f, bulb.x + radius * .13f, bulb.y + radius * .6f, paint)
+        paint.style = Paint.Style.FILL
     }
     override fun onTouchEvent(event: MotionEvent): Boolean {
         // Batched movement can accompany the final UP as well as MOVE.
@@ -153,6 +190,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             MotionEvent.ACTION_UP -> {
                 val tile = geometry().hitTest(game.tiles, event.x, event.y)
                 val id = gesture.up(event.getPointerId(0), tile?.id, event.x, event.y)
+                if (tile != null) { clearHint(); invalidate() }
                 if (id != null) {
                     if (game.status == Status.PLAYING && game.isAvailable(id)) {
                         removeCallbacks(clearBlocked); blockedTileId = null
