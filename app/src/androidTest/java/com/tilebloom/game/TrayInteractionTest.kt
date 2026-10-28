@@ -22,7 +22,8 @@ class TrayInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(MainA
         val limit=SystemClock.uptimeMillis()+30000
         while(SystemClock.uptimeMillis()<limit) {
             var ok=false
-            instrumentation.runOnMainSync { ok=screen.findViewById<MahjongBoardView>(R.id.board)?.width?.let{it>0}==true }
+            instrumentation.runOnMainSync { screen.findViewById<Button>(R.id.play)?.takeIf { it.isShown }?.performClick()
+                ok=screen.findViewById<MahjongBoardView>(R.id.board)?.let{it.isShown && it.width>0}==true }
             if(ok)return
             SystemClock.sleep(20)
         }
@@ -80,7 +81,8 @@ class TrayInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(MainA
         val ids=path(Game(Levels.get(1).tiles)) ?: error("Fixture needs four-symbol opening")
         ids.forEach{tap(it)}; assertEquals(Status.LOST,game().status); assertEquals(4,game().tray.size)
         instrumentation.runOnMainSync {
-            assertEquals("Restart Level",activity.findViewById<Button>(R.id.next_level).text.toString())
+            assertTrue(activity.findViewById<Button>(R.id.restart).isShown)
+            assertFalse(activity.findViewById<Button>(R.id.next_level).isShown)
             activity.findViewById<Button>(R.id.undo).performClick()
         }
         assertEquals(Status.PLAYING,game().status); assertEquals(3,game().tray.size)

@@ -1,0 +1,45 @@
+APK: /home/walid/Documents/projects/androidGames/TileBloom/app/build/outputs/apk/debug/app-debug.apk
+Bytes: 783092
+Modified: 2026-10-28T19:44:01.598425+01:00
+SHA-256: 7c261fc59eb9496417d7b3c96f7acc097b76823490429accde62acb5eebd0104
+Freshness: PASS; APK newer than all production Kotlin/XML sources
+/home/walid/Android/Sdk/build-tools/35.0.0/aapt2 dump badging /home/walid/Documents/projects/androidGames/TileBloom/app/build/outputs/apk/debug/app-debug.apk
+package: name='com.tilebloom.game' versionCode='1' versionName='0.1' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
+/home/walid/Android/Sdk/build-tools/35.0.0/zipalign -c 4 /home/walid/Documents/projects/androidGames/TileBloom/app/build/outputs/apk/debug/app-debug.apk
+PASS
+/home/walid/Android/Sdk/build-tools/35.0.0/apksigner verify --verbose --print-certs /home/walid/Documents/projects/androidGames/TileBloom/app/build/outputs/apk/debug/app-debug.apk
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=Android Debug, O=Android, C=US
+Signer #1 certificate SHA-256 digest: fc1828f63432530e788baa4d69c70594157dfad0312a977e710158393e4110f6
+Signer #1 certificate SHA-1 digest: ebb0b20491eefc87a83c27c10119530e6bf811aa
+Signer #1 certificate MD5 digest: 9b5454ccb93e69e1aba0435f889409da
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 2048
+Signer #1 public key SHA-256 digest: 43ae771eb6b1814b69a3afbb588c3b9b5fba3d9c567c92c203eac1f12681e527
+Signer #1 public key SHA-1 digest: ed9874fd036271fe151de49ab7d266811a92b0c6
+Signer #1 public key MD5 digest: 534003caac478076c1db27552c44a231
+DEX contains Lcom/tilebloom/game/presentation/board/LevelNavigation;: PASS
+DEX contains Lcom/tilebloom/game/presentation/GardenIconButton;: PASS
+DEX contains Lcom/tilebloom/game/presentation/GardenWelcomeArt;: PASS
+DEX contains createStartScreen: PASS
+DEX contains createGameplay: PASS
+DEX contains getBadge: PASS
+DEX contains Lcom/tilebloom/game/presentation/TileTrayView;: PASS
+Packaged vector res/drawable/ic_play.xml: PASS
+Packaged vector res/drawable/ic_next.xml: PASS
+Packaged vector res/drawable/ic_home.xml: PASS
+Packaged vector res/drawable/ic_undo.xml: PASS
+Packaged vector res/drawable/ic_restart.xml: PASS
+Resource table contains id/level_start: PASS
+Resource table contains id/play: PASS
+Resource table contains id/start_level: PASS
+Resource table contains id/home: PASS
+Resource table contains string/start_level: PASS
+Resource table contains string/undo_description: PASS

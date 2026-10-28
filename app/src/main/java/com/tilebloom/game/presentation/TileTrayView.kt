@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.*
 import android.view.View
 import com.tilebloom.game.domain.Tile
+import com.tilebloom.game.R
 
 /** Presentation only; replayable engine state owns every tile. */
 class TileTrayView(context: Context, private val tiles: () -> List<Tile>) : View(context) {
@@ -18,7 +19,7 @@ class TileTrayView(context: Context, private val tiles: () -> List<Tile>) : View
         ghosts = if (lastTiles.size > tiles().size) lastTiles.filter { it.id !in ids } else emptyList()
         lastTiles = tiles().toList()
         previous = ids
-        contentDescription = "Four tile tray slots. ${ids.size} occupied. " + tiles().joinToString { it.symbol.name }
+        contentDescription = context.getString(R.string.tray_description, ids.size, tiles().joinToString { BotanicalSymbols.label(context, it.symbol) })
         invalidate()
     }
     fun clearFeedback() { pulseUntil = 0; ghosts = emptyList(); lastTiles = tiles().toList(); previous = lastTiles.map { it.id }; invalidate() }

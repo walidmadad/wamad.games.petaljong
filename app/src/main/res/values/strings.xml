@@ -3,10 +3,10 @@
     <string name="subtitle">Mahjong Garden Puzzle</string>
     <string name="level_number">Level %1$d</string>
     <string name="generation_error">The next garden could not be saved or prepared. Your completed level is retained. Tap Next Level to retry.</string>
-    <string name="next_level">Next Level →</string>
+    <string name="next_level">Next Level</string>
     <string name="level">Level 1</string>
     <string name="pairs">Pairs left: %1$d</string>
-    <string name="instruction">Select two matching free tiles</string>
+    <string name="instruction">Collect tiles. Match identical pairs.</string>
     <string-array name="undo_balances">
         <item>Undo (0)</item>
         <item>Undo (1)</item>
@@ -48,4 +48,26 @@
     <string name="symbol_ginkgo_leaf">Ginkgo Leaf</string>
     <string name="symbol_cherry_blossom">Cherry Blossom</string>
     <string name="symbol_dragonfly">Dragonfly</string>
+    <string name="preparing_garden">Preparing your garden…</string>
+    <string name="load_retry">Your garden could not load. Tap to retry.</string>
+    <string name="start_level">LEVEL %1$d</string>
+    <string name="play">PLAY</string>
+    <string name="play_description">Play current level</string>
+    <string name="ready_garden">A quiet moment. A new garden.</string>
+    <string name="resume_garden">Your garden is saved. Continue where you left off.</string>
+    <string name="pending_victory">Garden cleared. Press Play to continue.</string>
+    <string name="pending_defeat">Your attempt is saved. Play to Undo or restart.</string>
+    <string name="undo_description">Undo, %1$d credits remaining</string>
+    <string name="restart_description">Restart current level</string>
+    <string name="home_description">Return to level start</string>
+    <string name="next_description">Next level</string>
+    <string name="level_complete">Beautifully done.\nLevel %1$d complete</string>
+    <string name="level_limit">Level number limit reached. Progress saved.</string>
+    <string name="tray_full">Tray Full!</string>
+    <string name="tray_full_detail">Four different tiles.\nUndo the last tile or restart.</string>
+    <string name="unrecoverable">Garden Paused</string>
+    <string name="unrecoverable_detail">No legal continuation.\nUndo the last tile or restart.</string>
+    <string name="defeat_hint">Undo or restart this garden.</string>
+    <string name="tray_description">Four tile tray slots. %1$d occupied. %2$s</string>
+    <string name="collection_board_description">%1$d board tiles. %2$d tray tiles. Tap an available tile to collect it.</string>
 </resources>

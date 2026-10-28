@@ -729,3 +729,33 @@ SHA-256: `d8aebcc2ac8ef94f32c1f0c4aca1721b697224334187045819ae1d5e9df73527`.
 APK DEX contains the new tray renderer, analyzer and selection-history methods. Evidence:
 `docs/codex15/offline-verification.txt`, `apk-verification.txt`, `gradle.txt` and
 `android-runtime.txt`. No Android execution or Lint claim is made.
+
+## CODEX 16 — start screen and icon controls
+
+The engine, generator, difficulty policy, symbols, save schema/codec, repository and
+Undo wallet are unchanged. `LevelNavigation` is separate presentation state: fresh
+entry START, explicit Play GAME, Home START, recreation restores only a matching
+level/screen, and a newly committed identity synchronizes to START. Navigation never
+mutates a puzzle or grants credits. The existing next-level durable-save transaction
+and forward-only completion checks are retained.
+
+All 180 prior JVM regressions are preserved, plus six combined navigation/lifecycle
+regressions (186 tests). Android source coverage adds `LevelStartTest` and updates
+legacy board helpers to explicitly press Play. Icon assertions inspect the numeric
+badge rather than the old Undo text. Board taps still use transformed geometry.
+
+Standard Gradle remains blocked by a read-only ~/.gradle wrapper lock. The established
+Java 17 offline builder is used. ADB cannot bind port 5037 in the sandbox; Android
+instrumentation, screenshots, installation, interaction, font/width matrix, TalkBack
+and animation appearance are **NOT EXECUTED / NOT VERIFIED**. Android Lint is also
+NOT EXECUTED. See `docs/codex16/gradle.txt`, `android-runtime.txt`, the final offline
+verification log and `CODEX_16_REPORT.md` for the exact build and APK results.
+
+Final CODEX 16 verification: **186 JVM tests PASS**, 30.672 seconds. All Android
+instrumentation sources compile (39 test methods), **NOT EXECUTED**. APK generated at
+2026-10-28 19:44:01 +01:00: 783,092 bytes, package `com.tilebloom.game`, aligned, valid
+APK v2/v3 signatures, same local debug certificate as CODEX 15.
+SHA-256: `7c261fc59eb9496417d7b3c96f7acc097b76823490429accde62acb5eebd0104`.
+DEX startup/navigation/control classes and all five compiled vector resources verified.
+The APK is newer than every production Kotlin/XML file. Verification evidence is saved
+in `docs/codex16/apk-verification.txt`. No Android runtime success is claimed.

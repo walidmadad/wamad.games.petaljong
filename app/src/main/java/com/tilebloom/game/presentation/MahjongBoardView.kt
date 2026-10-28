@@ -32,7 +32,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
     }
     fun load(next: Game) { clearFeedback(); game = next; refresh() }
     fun refresh() {
-        contentDescription = "$remainingTileCount board tiles. ${game.tray.size} tray tiles. Tap an available tile to collect it."
+        contentDescription = context.getString(R.string.collection_board_description, remainingTileCount, game.tray.size)
         invalidate()
     }
     fun clearFeedback() {
@@ -169,6 +169,24 @@ internal object BotanicalSymbols {
     }
     private val lotusAngles = floatArrayOf(-55f, -28f, 0f, 28f, 55f)
     private val berryCenters = listOf(-.43f to -.25f, .35f to -.1f, -.4f to .45f, .32f to .6f)
+    fun label(context: Context, symbol: Symbol): String = context.getString(when (symbol) {
+        Symbol.LEAF -> R.string.symbol_leaf
+        Symbol.LOTUS -> R.string.symbol_lotus
+        Symbol.FERN -> R.string.symbol_fern
+        Symbol.FLOWER -> R.string.symbol_flower
+        Symbol.BERRIES -> R.string.symbol_berries
+        Symbol.SUNFLOWER -> R.string.symbol_sunflower
+        Symbol.MUSHROOM -> R.string.symbol_mushroom
+        Symbol.BUTTERFLY -> R.string.symbol_butterfly
+        Symbol.BAMBOO -> R.string.symbol_bamboo
+        Symbol.ACORN -> R.string.symbol_acorn
+        Symbol.MAPLE_LEAF -> R.string.symbol_maple_leaf
+        Symbol.PINECONE -> R.string.symbol_pinecone
+        Symbol.IRIS -> R.string.symbol_iris
+        Symbol.GINKGO_LEAF -> R.string.symbol_ginkgo_leaf
+        Symbol.CHERRY_BLOSSOM -> R.string.symbol_cherry_blossom
+        Symbol.DRAGONFLY -> R.string.symbol_dragonfly
+    })
     fun draw(c: Canvas, p: Paint, symbol: Symbol) {
         p.color = green; p.style = Paint.Style.FILL
         when (symbol) {

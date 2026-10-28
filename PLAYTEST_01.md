@@ -311,3 +311,52 @@ Check on 320 dp, 360 dp and tall portrait screens, including large fonts/system 
 
 Android execution was blocked by sandbox ADB socket restrictions. These are pending checks,
 not claims of successful device validation. Automated coordinate tests compile in the offline builder.
+
+## CODEX 16 — level start and premium controls (Android execution PENDING)
+
+Do not clear application data. Install the fresh APK over the existing compatible debug
+installation, then launch:
+
+```sh
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb shell am start -n com.tilebloom.game/.presentation.MainActivity
+```
+
+On a host with normal Gradle/ADB access, execute the updated coordinate UI suite:
+
+```sh
+JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew :app:connectedDebugAndroidTest
+```
+
+Check at 320, 360 and 400 dp widths, plus a larger phone, with font sizes 100%, 150%
+and 200%. Check gesture and three-button navigation, display cutouts and system bars.
+
+1. Fresh entry shows title, subtitle, botanical art, the actual saved LEVEL X and a
+   prominent triangle PLAY button. No interactive board appears before Play. Check
+   levels 1, 21, 47, 1000 and a 19-digit level ID for clipping; scroll to Play if needed.
+2. Play once, then tap it rapidly: only one board exists and the deterministic puzzle
+   is unchanged. Confirm the four-slot tray and authentic free-tile rules still work.
+3. Collect one tile, Home, then Play. The exact same board, tray, seed, history and
+   credits must resume. Repeat after an automatic pair match and after defeat.
+4. Undo is a curved arrow with a readable numeric badge. Successful Undo decrements
+   exactly once; zero and empty-history states disable the control. Restart is a
+   circular arrow, clears only the attempt/tray/effects and never replenishes credits.
+5. Complete a level through screen taps. Show one Garden Cleared outcome and one
+   arrow/Next Level action, without Replay or enabled Home/Restart. Double-tap Next:
+   advance exactly one, persist, show its start screen and wait for Play.
+6. Complete level 20 and check level 21 start, new symbols and persistent credits.
+   A failed save/generation must keep the completed outcome available for retry.
+7. Relaunch after an unfinished attempt, start screen, saved defeat and pending victory.
+   Fresh entry shows start; Play never resets those states. Saved defeat supports Undo;
+   pending victory remains completed and advances only through Next Level.
+8. Rotate/recreate the activity while playing and while at start. Preserve that screen
+   for the same level. Background/foreground briefly: keep active gameplay. Recreate
+   during Next Level: the committed new identity must show START, not the previous board.
+9. With TalkBack, inspect Play, Next, Home, Restart and Undo (with credit count). Check
+   focus order and disabled states. The custom board does not claim full tile-by-tile
+   screen-reader support. Check contrast, pressed feedback and icon recognition.
+10. Visually inspect title/level sizing, rounded panels, static hero art, tray visibility,
+    board touch comfort and calm matching effects. These require actual Android evidence.
+
+No device/emulator success is claimed in this environment. Instrumentation source
+compilation and JVM navigation checks do not replace these pending runtime checks.

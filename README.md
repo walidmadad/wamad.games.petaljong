@@ -1,6 +1,6 @@
 # TileBloom — Mahjong Garden Puzzle
 
-Native Kotlin Android tile collection puzzle with a Zen Garden identity. CODEX 15 adds a four-slot tray above the Mahjong board. One legal tap transfers a tile; identical symbols clear in pairs; four different held symbols lose immediately. Undo reverses one tile selection, including matching and defeat. Endless generation provides on-demand, verified levels beyond the five preserved introductory boards. The only playable board is the current unfinished level. Victory offers **Next Level →**, advancing exactly one; completed boards cannot be selected or replayed. Restart repeats the same unfinished puzzle. No ads, accounts, publishing, or new dependencies.
+Native Kotlin Android tile collection puzzle with a Zen Garden identity. CODEX 16 opens on a botanical level-start screen with the actual saved level and a Play button. Play resumes the same attempt; Home returns to this screen without resetting it. Rounded vector controls replace text-heavy Undo/Restart buttons, with a persistent numeric Undo badge. CODEX 15 added a four-slot tray above the Mahjong board. One legal tap transfers a tile; identical symbols clear in pairs; four different held symbols lose immediately. Undo reverses one tile selection, including matching and defeat. Endless generation provides on-demand, verified levels beyond the five preserved introductory boards. The only playable board is the current unfinished level. Victory offers **Next Level →**, advancing exactly one; completed boards cannot be selected or replayed. Restart repeats the same unfinished puzzle. No ads, accounts, publishing, or new dependencies.
 
 Three initial Undo credits remain global and persistent. Successful Undo costs one; failed Undo costs nothing. Restart, victory, advancement, and relaunch never refill credits.
 
@@ -10,7 +10,7 @@ Schema 4 (gameplay rules 2) stores a single completion frontier, active identity
 
 Cold restoration and next-board generation run off the main thread. Next Level is guarded across Activity recreation; its AtomicFile transaction completes before the new board is installed. Failed generation/saving retains victory for retry. Botanical drawing, authentic Mahjong rules, touch geometry, and removal animations remain intact.
 
-See [CODEX_15_REPORT.md](CODEX_15_REPORT.md), [VALIDATION.md](VALIDATION.md), and [PLAYTEST_01.md](PLAYTEST_01.md) for architecture, measured verification, limitations, and device checks. Earlier iteration reports are historical.
+See [CODEX_16_REPORT.md](CODEX_16_REPORT.md), [VALIDATION.md](VALIDATION.md), and [PLAYTEST_01.md](PLAYTEST_01.md) for architecture, measured verification, limitations, and device checks. Earlier iteration reports are historical.
 
 ```sh
 JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest
@@ -76,3 +76,28 @@ only explicit tray loss, exhausted unmatched board, or absence of any legal tile
 The tray uses four responsive ivory/gold slots in a green container. Board geometry and
 system-inset handling are unchanged; the tray consumes 58–78 dp above the flexible board.
 Device playtesting is still required for smallest supported screens and animation polish.
+
+## CODEX 16: start, resume and icon controls
+
+A fresh entry without restored Activity state shows **LEVEL X** and **PLAY**. Gameplay
+views are created once on Play and reused after Home. UI navigation never changes the
+puzzle, seed, accepted selections, tray, credits or completion frontier. Returning from
+background keeps the active screen. Activity/process recreation with a matching saved
+level restores START or GAME from a Bundle; stale navigation opens the current level start.
+
+Pending victory stays completed: Play opens its outcome, and Next Level performs the
+existing durable one-level transition before showing the new start screen. A saved
+defeat stays lost until the player explicitly chooses Undo or Restart after Play.
+Home is unavailable on victory. Completed levels cannot be restarted or selected.
+
+Original lightweight VectorDrawables provide Play, Next, Undo, Restart and Home. The
+Undo icon carries a compact numeric badge, including zero; accessibility descriptions
+and tooltips identify all secondary actions. All touch targets are at least 56 dp.
+The welcome layout scrolls for compact/large-font screens; level/title text uses bounded
+auto sizing, and safe system-bar/cutout insets apply to both screens. Static botanical
+Canvas artwork reuses the existing symbol illustrations. No image/icon library was added.
+
+Save schema 4/gameplay rules 2 remain unchanged. Navigation is separate presentation
+state, so no new save migration or puzzle generation version is needed. All domain
+engine, generator, tiers, symbols, wallet and repository logic are retained. See the
+CODEX 16 report for exact test/APK evidence and pending Android playtests.

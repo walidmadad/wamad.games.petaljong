@@ -8,6 +8,7 @@ import android.view.ViewConfiguration
 import android.widget.Button
 import android.widget.TextView
 import com.tilebloom.game.domain.Levels
+import com.tilebloom.game.presentation.GardenIconButton
 import com.tilebloom.game.presentation.MainActivity
 import com.tilebloom.game.presentation.MahjongBoardView
 import com.tilebloom.game.presentation.board.BoardPoint
@@ -19,7 +20,10 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         val deadline = SystemClock.uptimeMillis() + 30000
         while (SystemClock.uptimeMillis() < deadline) {
             var loaded = false
-            instrumentation.runOnMainSync { loaded = screen.findViewById<MahjongBoardView>(R.id.board)?.width?.let { it > 0 } == true }
+            instrumentation.runOnMainSync {
+                screen.findViewById<Button>(R.id.play)?.takeIf { it.isShown }?.performClick()
+                loaded = screen.findViewById<MahjongBoardView>(R.id.board)?.let { it.isShown && it.width > 0 } == true
+            }
             if (loaded) return
             SystemClock.sleep(20)
         }
@@ -31,7 +35,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         while (SystemClock.uptimeMillis() < deadline) {
             instrumentation.waitForIdleSync()
             if (!com.tilebloom.game.storage.GameStore.transitioning &&
-                com.tilebloom.game.storage.GameStore.get(instrumentation.targetContext).session.level.id == id) return
+                com.tilebloom.game.storage.GameStore.get(instrumentation.targetContext).session.level.id == id) { ready(super.getActivity()); return }
             SystemClock.sleep(20)
         }
         fail("Next Level did not load $id")
@@ -53,25 +57,25 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
     fun testThreeCreditsThenRejectFourthUndo() {
         activity; instrumentation.waitForIdleSync()
         ui {
-            val undo = activity.findViewById<Button>(R.id.undo)
-            assertEquals("Undo (3)", undo.text.toString())
+            val undo = activity.findViewById<GardenIconButton>(R.id.undo)
+            assertEquals("3", undo.badge.toString())
             assertTrue(undo.isShown)
             assertFalse(undo.isEnabled)
         }
         repeat(3) {
             tap(firstA)
             ui {
-                activity.findViewById<Button>(R.id.undo).performClick()
-                assertEquals("Undo (${2-it})", activity.findViewById<Button>(R.id.undo).text.toString())
+                activity.findViewById<GardenIconButton>(R.id.undo).performClick()
+                assertEquals("${2-it}", activity.findViewById<GardenIconButton>(R.id.undo).badge.toString())
             }
         }
         tap(firstA); tap(firstB)
         ui {
-            assertFalse(activity.findViewById<Button>(R.id.undo).isEnabled)
-            activity.findViewById<Button>(R.id.undo).performClick()
-            assertEquals("Undo (0)", activity.findViewById<Button>(R.id.undo).text.toString())
+            assertFalse(activity.findViewById<GardenIconButton>(R.id.undo).isEnabled)
+            activity.findViewById<GardenIconButton>(R.id.undo).performClick()
+            assertEquals("0", activity.findViewById<GardenIconButton>(R.id.undo).badge.toString())
             activity.findViewById<Button>(R.id.restart).performClick()
-            assertEquals("Undo (0)", activity.findViewById<Button>(R.id.undo).text.toString())
+            assertEquals("0", activity.findViewById<GardenIconButton>(R.id.undo).badge.toString())
         }
         assertCount(24)
     }
@@ -86,10 +90,10 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         activity; instrumentation.waitForIdleSync()
         assertCount(26)
         ui {
-            val undo = activity.findViewById<Button>(R.id.undo)
-            assertTrue(undo.isShown); assertEquals("Undo (3)", undo.text.toString())
+            val undo = activity.findViewById<GardenIconButton>(R.id.undo)
+            assertTrue(undo.isShown); assertEquals("3", undo.badge.toString())
             undo.performClick()
-            assertEquals("Undo (2)", undo.text.toString())
+            assertEquals("2", undo.badge.toString())
             activity.finish()
         }
         instrumentation.waitForIdleSync()
@@ -104,21 +108,21 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         ready(relaunched)
         try {
             instrumentation.waitForIdleSync()
-            ui { assertEquals("Undo (2)", relaunched.findViewById<Button>(R.id.undo).text.toString()) }
+            ui { assertEquals("2", relaunched.findViewById<GardenIconButton>(R.id.undo).badge.toString()) }
         } finally { ui { relaunched.finish() } }
     }
     fun testCreditBalanceRemainsVisibleAfterVictory() {
         activity; instrumentation.waitForIdleSync()
         Levels.get(1).witness.forEach { tap(it.first); tap(it.second) }
         ui {
-            val undo = activity.findViewById<Button>(R.id.undo)
+            val undo = activity.findViewById<GardenIconButton>(R.id.undo)
             assertTrue(undo.isShown)
-            assertEquals("Undo (3)", undo.text.toString())
+            assertEquals("3", undo.badge.toString())
         }
     }
     private fun exhaustCredits() {
         activity; instrumentation.waitForIdleSync()
-        repeat(3) { tap(firstA); ui { activity.findViewById<Button>(R.id.undo).performClick() } }
+        repeat(3) { tap(firstA); ui { activity.findViewById<GardenIconButton>(R.id.undo).performClick() } }
     }
     fun testZeroCreditsSurviveRelaunch() {
         exhaustCredits()
@@ -130,7 +134,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         try {
             ready(launched)
             instrumentation.waitForIdleSync()
-            ui { assertEquals("Undo (0)",launched.findViewById<Button>(R.id.undo).text.toString()) }
+            ui { assertEquals("0",launched.findViewById<GardenIconButton>(R.id.undo).badge.toString()) }
         } finally { ui { launched.finish() } }
     }
     fun testRecreationKeepsZeroCredits() {
@@ -144,8 +148,8 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             assertNotNull(replacement); instrumentation.waitForIdleSync()
             val screen=replacement!!; ready(screen)
             ui {
-                assertEquals("Undo (0)",screen.findViewById<Button>(R.id.undo).text.toString())
-                assertFalse(screen.findViewById<Button>(R.id.undo).isEnabled)
+                assertEquals("0",screen.findViewById<GardenIconButton>(R.id.undo).badge.toString())
+                assertFalse(screen.findViewById<GardenIconButton>(R.id.undo).isEnabled)
             }
             assertCount(22,screen)
         } finally { instrumentation.removeMonitor(monitor); replacement?.let { ui { it.finish() } } }
@@ -166,7 +170,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
     }
     fun testUndoRestoresPairSelectionAndRestartState() {
         activity; tap(firstA); tap(firstB); assertCount(22)
-        ui { activity.findViewById<Button>(R.id.undo).performClick() }
+        ui { activity.findViewById<GardenIconButton>(R.id.undo).performClick() }
         assertCount(23); assertEquals(listOf(firstA),currentGame().tray.map{it.id})
         tap(firstB); assertCount(22)
         ui { activity.findViewById<Button>(R.id.restart).performClick() }
@@ -175,7 +179,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
     fun testDeadlockUndoRecoversThroughPresentation() {
         activity; deadlockMoves.forEach { tap(it.first); tap(it.second) }
         assertEquals(com.tilebloom.game.domain.Status.PLAYING,currentGame().status)
-        ui { activity.findViewById<Button>(R.id.undo).performClick() }
+        ui { activity.findViewById<GardenIconButton>(R.id.undo).performClick() }
         assertCount(24-deadlockMoves.size*2+1)
         assertEquals(listOf(deadlockMoves.last().first),currentGame().tray.map{it.id})
     }
@@ -190,7 +194,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         val relaunched = instrumentation.startActivitySync(intent) as MainActivity
         try {
             instrumentation.waitForIdleSync(); assertCount(20, relaunched)
-            ui { relaunched.findViewById<Button>(R.id.undo).performClick() }
+            ui { relaunched.findViewById<GardenIconButton>(R.id.undo).performClick() }
             assertCount(21, relaunched)
             repository.awaitWrites(); repository.useTestStorage("test-smoke-progress")
             val saved = repository.load(instrumentation.targetContext)
@@ -497,12 +501,12 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         activity
         val l=Levels.get(6); val m=l.witness.first()
         tap(m.first); tap(m.second)
-        ui { activity.findViewById<Button>(R.id.undo).performClick(); assertEquals("Undo (0)",activity.findViewById<Button>(R.id.undo).text.toString()) }
+        ui { activity.findViewById<GardenIconButton>(R.id.undo).performClick(); assertEquals("0",activity.findViewById<GardenIconButton>(R.id.undo).badge.toString()) }
         tap(m.second); assertCount(l.tiles.size-2)
         ui { activity.finish() }; repo.awaitWrites(); repo.useTestStorage("test-smoke-progress")
         val screen=instrumentation.startActivitySync(android.content.Intent(instrumentation.targetContext,MainActivity::class.java).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) as MainActivity
         try { ready(screen); assertCount(l.tiles.size-2,screen)
-            ui { assertEquals("Undo (0)",screen.findViewById<Button>(R.id.undo).text.toString()); screen.findViewById<Button>(R.id.restart).performClick() }
+            ui { assertEquals("0",screen.findViewById<GardenIconButton>(R.id.undo).badge.toString()); screen.findViewById<Button>(R.id.restart).performClick() }
             assertCount(l.tiles.size,screen)
             assertEquals(6L,com.tilebloom.game.storage.GameStore.get(instrumentation.targetContext).session.level.id)
         } finally { ui { screen.finish() } }
@@ -531,7 +535,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             board().draw(android.graphics.Canvas(image)); image.recycle()
         }
         next.witness.forEach { pair -> tap(pair.first); tap(pair.second) }
-        ui { assertEquals("Undo (1)",activity.findViewById<Button>(R.id.undo).text.toString()) }
+        ui { assertEquals("1",activity.findViewById<GardenIconButton>(R.id.undo).badge.toString()) }
         assertCount(0)
     }
 
@@ -551,7 +555,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             replacement=monitor.waitForActivityWithTimeout(5000) as? MainActivity
             val screen=replacement!!; ready(screen); assertCount(level.tiles.size-2,screen)
             assertEquals(1L,com.tilebloom.game.domain.DifficultyPolicy.tier(com.tilebloom.game.storage.GameStore.get(instrumentation.targetContext).session.level.id))
-            ui { assertEquals("Undo (1)",screen.findViewById<Button>(R.id.undo).text.toString()); screen.finish() }
+            ui { assertEquals("1",screen.findViewById<GardenIconButton>(R.id.undo).badge.toString()); screen.finish() }
         } finally { instrumentation.removeMonitor(monitor); replacement?.let { ui { it.finish() } } }
         repo.awaitWrites(); repo.useTestStorage("test-smoke-progress")
         val screen=instrumentation.startActivitySync(android.content.Intent(instrumentation.targetContext,MainActivity::class.java)
