@@ -1,0 +1,55 @@
+JUnit version 4.13.2
+.Generation HOST JVM level=1 ms=50 tiles=24 quality=true
+Generation HOST JVM level=2 ms=864 tiles=24 quality=true
+Generation HOST JVM level=3 ms=0 tiles=28 quality=true
+Generation HOST JVM level=4 ms=0 tiles=30 quality=true
+Generation HOST JVM level=5 ms=0 tiles=28 quality=true
+Generation HOST JVM level=6 ms=477 tiles=30 quality=true
+Generation HOST JVM level=7 ms=252 tiles=28 quality=true
+Generation HOST JVM level=8 ms=134 tiles=34 quality=true
+Generation HOST JVM level=9 ms=320 tiles=34 quality=true
+Generation HOST JVM level=10 ms=695 tiles=38 quality=true
+Generation HOST JVM level=11 ms=213 tiles=36 quality=true
+Generation HOST JVM level=12 ms=139 tiles=34 quality=true
+Generation HOST JVM level=13 ms=205 tiles=32 quality=true
+Generation HOST JVM level=14 ms=872 tiles=42 quality=true
+Generation HOST JVM level=15 ms=559 tiles=40 quality=true
+Generation HOST JVM level=16 ms=273 tiles=40 quality=true
+Generation HOST JVM level=17 ms=251 tiles=40 quality=true
+Generation HOST JVM level=18 ms=897 tiles=44 quality=true
+Generation HOST JVM level=19 ms=428 tiles=42 quality=true
+Generation HOST JVM level=20 ms=268 tiles=40 quality=true
+Generation HOST JVM level=21 ms=209 tiles=38 quality=false
+Generation HOST JVM level=22 ms=650 tiles=48 quality=true
+Generation HOST JVM level=23 ms=499 tiles=46 quality=true
+Generation HOST JVM level=24 ms=323 tiles=40 quality=true
+Generation HOST JVM level=25 ms=164 tiles=40 quality=true
+Generation HOST JVM level=26 ms=686 tiles=44 quality=true
+Generation HOST JVM level=27 ms=518 tiles=42 quality=true
+Generation HOST JVM level=28 ms=149 tiles=40 quality=true
+Generation HOST JVM level=29 ms=324 tiles=38 quality=false
+Generation HOST JVM level=30 ms=554 tiles=48 quality=true
+Generation HOST JVM level=31 ms=948 tiles=54 quality=true
+Generation HOST JVM level=32 ms=290 tiles=48 quality=true
+Generation HOST JVM level=33 ms=283 tiles=48 quality=true
+Generation HOST JVM level=34 ms=1691 tiles=52 quality=true
+Generation HOST JVM level=35 ms=988 tiles=50 quality=true
+Generation HOST JVM level=36 ms=421 tiles=48 quality=true
+Generation HOST JVM level=37 ms=407 tiles=46 quality=true
+Generation HOST JVM level=38 ms=1564 tiles=56 quality=true
+Generation HOST JVM level=39 ms=1517 tiles=54 quality=true
+Generation HOST JVM level=40 ms=392 tiles=48 quality=true
+Generation HOST JVM level=50 ms=1721 tiles=52 quality=true
+Generation HOST JVM level=100 ms=293 tiles=48 quality=true
+Generation HOST JVM level=500 ms=244 tiles=48 quality=true
+Generation HOST JVM level=1000 ms=234 tiles=48 quality=true
+Generation HOST JVM level=10000 ms=224 tiles=48 quality=true
+Generation HOST JVM level=2147483648 ms=186 tiles=48 quality=true
+Generation HOST JVM level=1000000000000 ms=391 tiles=48 quality=true
+Generation HOST JVM level=9223372036854775806 ms=1130 tiles=56 quality=true
+Generation HOST JVM level=9223372036854775807 ms=1356 tiles=54 quality=true
+.....
+Time: 69.445
+
+OK (6 tests)
+

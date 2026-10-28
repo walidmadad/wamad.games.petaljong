@@ -50,7 +50,7 @@ Exact host build, signer, installation and capture commands are in [HOST_COMMAND
 
 ## R–T. Git, limits and CODEX 31
 
-History is preserved in the existing `.tilebloom-git` repository; the sandbox's `.git` mount is empty. No repository was initialized, rewritten or pushed. Unrelated pre-existing untracked reports are excluded from the commit.
+Implementation commit: `847666d` — `feat: add colorful garden themes and diverse Mahjong layouts`. Verification logs are retained in a following documentation commit. History is preserved in the existing `.tilebloom-git` repository; the sandbox's `.git` mount is empty. No repository was initialized, rewritten or pushed. Unrelated pre-existing untracked reports are excluded from the commit.
 
 Limits: finite deterministic geometry portfolio, no global uniqueness guarantee; quality targets may be missed within budget; relative human difficulty needs playtesting; full app chrome is not comprehensively themed; no Android visual, Lint, Gradle, fresh APK or signer certification in this environment. Recommended CODEX 31: execute the host verification/capture matrix, tune themes using actual device images and benchmark cold generation before expanding the finite geometry portfolio.
 
