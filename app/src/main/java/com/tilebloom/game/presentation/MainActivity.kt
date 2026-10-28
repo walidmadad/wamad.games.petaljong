@@ -55,20 +55,22 @@ class MainActivity : Activity() {
         }
     }
 
+    private var backCallback: android.window.OnBackInvokedCallback? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Decode only the bounded save envelope; generation/restoration stays off the UI thread.
         pendingPlay = savedInstanceState?.getBoolean("pending_play") ?: false
         val metadata = ProgressRepository.load(applicationContext)
-        previewLevel = metadata.active?.takeIf { it.id == metadata.frontier }?.id ?: metadata.highestUnlocked
+        previewLevel = metadata.highestUnlocked
         createContent()
         Thread {
-            val loaded = runCatching { GameStore.get(applicationContext) }
+            val loaded = runCatching { GameStore.enter(applicationContext, savedInstanceState?.getString("garden_screen") != GardenScreen.GAME.name) }
             runOnUiThread {
                 if (!isDestroyed) loaded.onSuccess {
-                    progress = it
+                    progress = it.first
                     if (progress.recovered) android.util.Log.w("TileBloomSave", "Board snapshot rejected; completion retained")
-                    val restored = savedInstanceState?.let { saved ->
+                    val restored = savedInstanceState?.takeUnless { _ -> it.second }?.let { saved ->
                         val screen = runCatching { GardenScreen.valueOf(saved.getString("garden_screen").orEmpty()) }.getOrNull()
                         screen?.let { NavigationState(saved.getLong("garden_level"), it) }
                     }
@@ -345,6 +347,7 @@ class MainActivity : Activity() {
         navigation.synchronize(session.level.id)
         GameStore.persist(this)
         val showingGame = navigation.state.screen == GardenScreen.GAME
+        updateBackCallback(showingGame)
         startLevel.text = getString(R.string.start_level, session.level.id)
         startHint.setText(when {
             game.status == Status.WON -> R.string.pending_victory
@@ -411,6 +414,32 @@ class MainActivity : Activity() {
         board.refresh(); tray.refresh()
     }
 
+    private fun returnHomeFromBack() {
+        navigation.back(session.level.id, game.status == Status.WON, GameStore.transitioning)
+        if (::board.isInitialized) { hintRequest++; hintPending = false; board.clearFeedback(); tray.clearFeedback() }
+        update()
+    }
+
+    private fun updateBackCallback(showingGame: Boolean) {
+        if (Build.VERSION.SDK_INT >= 33) {
+            if (showingGame && backCallback == null) {
+                backCallback = android.window.OnBackInvokedCallback { returnHomeFromBack() }.also {
+                    onBackInvokedDispatcher.registerOnBackInvokedCallback(
+                        android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT, it)
+                }
+            } else if (!showingGame) {
+                backCallback?.let { onBackInvokedDispatcher.unregisterOnBackInvokedCallback(it) }
+                backCallback = null
+            }
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    override fun onBackPressed() {
+        if (::navigation.isInitialized && navigation.state.screen == GardenScreen.GAME) returnHomeFromBack()
+        else super.onBackPressed()
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean("pending_play", pendingPlay && !::navigation.isInitialized)
@@ -426,6 +455,7 @@ class MainActivity : Activity() {
     override fun onDestroy() {
         hintRequest++
         if (::board.isInitialized) board.clearFeedback()
+        updateBackCallback(false)
         if (GameStore.onChanged === refreshListener) GameStore.onChanged = null
         super.onDestroy()
     }

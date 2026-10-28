@@ -39,11 +39,11 @@ class LevelNavigationTest {
         assertEquals(GardenScreen.GAME,rotated.state.screen); assertEquals(saved,restored.capture())
         rotated.home(restored.session.level.id)
         assertEquals(GardenScreen.START,LevelNavigation(restored.session.level.id,rotated.state).state.screen)
-        assertEquals(GardenScreen.START,LevelNavigation(2,bundleState).state.screen)
+        assertEquals(GardenScreen.GAME,LevelNavigation(2,bundleState).state.screen)
         assertEquals(2L,LevelNavigation(2,bundleState).state.levelId)
         assertEquals(GardenScreen.START,LevelNavigation(c.session.level.id).state.screen)
     }
-    @Test fun pendingVictoryCannotReplayAndNextWaitsForPlayExactlyOnce() {
+    @Test fun pendingVictoryCannotReplayAndNextEntersGameplayExactlyOnce() {
         val c=ProgressController(PlayerProgress(highestCompleted=19,undoCredits=1))
         c.session.level.witness.forEach { assertTrue(c.session.game.select(it.first)); assertTrue(c.session.game.select(it.second)) }
         val restored=reload(c); val nav=LevelNavigation(restored.session.level.id)
@@ -53,18 +53,18 @@ class LevelNavigationTest {
         val definition=restored.prepareNext()!!
         assertTrue(restored.commitNext(definition)); assertFalse(restored.commitNext(definition)); assertFalse(restored.advance())
         nav.synchronize(restored.session.level.id)
-        assertEquals(NavigationState(21,GardenScreen.START),nav.state)
+        assertEquals(NavigationState(21,GardenScreen.GAME),nav.state)
         nav.play(21); assertEquals(21L,restored.session.level.id); assertEquals(20L,restored.capture().frontier)
         assertTrue(restored.session.game.tray.isEmpty()); assertEquals(1,restored.wallet.balance)
     }
-    @Test fun staleRecreationDuringAdvanceOpensNewStart() {
+    @Test fun staleRecreationDuringAdvanceKeepsGameplay() {
         val c=ProgressController(); val nav=LevelNavigation(1); nav.play(1)
         val oldUi=nav.state
         c.session.level.witness.forEach { c.session.game.select(it.first); c.session.game.select(it.second) }
         val next=c.prepareNext()!!; val committedSave=c.nextProgress(next)!!
         val afterProcessDeath=ProgressController(ProgressCodec.decode(ProgressCodec.encode(committedSave)))
         val restored=LevelNavigation(afterProcessDeath.session.level.id,oldUi)
-        assertEquals(NavigationState(2,GardenScreen.START),restored.state)
+        assertEquals(NavigationState(2,GardenScreen.GAME),restored.state)
         assertEquals(1L,afterProcessDeath.capture().frontier); assertEquals(3,afterProcessDeath.wallet.balance)
     }
     @Test fun savedDefeatHomeAndResumeDoNotResetAttemptOrSpendCredits() {
@@ -79,5 +79,35 @@ class LevelNavigationTest {
         val seed=restored.session.level.seed; assertTrue(restored.session.restart())
         assertEquals(seed,restored.session.level.seed); assertTrue(restored.session.game.tray.isEmpty())
         assertEquals(2,restored.wallet.balance); assertEquals(0L,restored.capture().frontier)
+    }
+    @Test fun backPreservesTrayWalletAndPendingVictory() {
+        val c=ProgressController(PlayerProgress(undoCredits=1)); val nav=LevelNavigation(1)
+        nav.play(1); c.session.game.select(c.session.level.witness.first().first)
+        val before=c.capture()
+        nav.back(1,false,false); assertEquals(GardenScreen.START,nav.state.screen)
+        assertEquals(before,c.capture()); nav.play(1); assertEquals(before,c.capture())
+        nav.back(1,false,true); assertEquals(GardenScreen.GAME,nav.state.screen)
+        nav.back(1,true,false); assertEquals(GardenScreen.GAME,nav.state.screen)
+    }
+    @Test fun verifiedAdvancementAndFailureKeepNavigationAndProgress() {
+        for (level in listOf(4L,20L,40L,100L)) {
+            val c=ProgressController(PlayerProgress(highestCompleted=level-1,undoCredits=1))
+            val nav=LevelNavigation(level); nav.play(level)
+            c.session.level.witness.forEach { c.session.game.select(it.first); c.session.game.select(it.second) }
+            assertEquals(Status.WON,c.session.game.status)
+            val before=c.capture()
+            nav.back(level,true,false); assertEquals(GardenScreen.GAME,nav.state.screen)
+            // A failed preparation/save never commits or changes presentation.
+            runCatching { c.prepareNext(); error("simulated generation/save failure") }
+            assertEquals(before,c.capture()); assertEquals(level,nav.state.levelId)
+            val next=c.prepareNext()!!; val saved=c.nextProgress(next)!!
+            assertTrue(c.commitNext(next)); assertFalse(c.commitNext(next)); assertFalse(c.advance())
+            nav.synchronize(c.session.level.id)
+            assertEquals(NavigationState(level+1,GardenScreen.GAME),nav.state)
+            assertEquals(1,c.wallet.balance); assertTrue(c.session.game.tray.isEmpty())
+            assertFalse(c.session.game.canUndo); assertFalse(c.select(level.toInt()))
+            val relaunch=ProgressController(ProgressCodec.decode(ProgressCodec.encode(saved)))
+            assertEquals(NavigationState(level+1,GardenScreen.START),LevelNavigation(relaunch.session.level.id).state)
+        }
     }
 }

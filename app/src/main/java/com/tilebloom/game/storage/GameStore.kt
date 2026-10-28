@@ -17,8 +17,23 @@ object GameStore {
             owner = ProgressRepository.acquire(); controller = it
         }
     }
+    /** Returns the controller and whether saved Activity navigation must be discarded.
+     * A live process plus saved GAME is recreation; a cold process is application entry.
+     */
+    @Synchronized fun enter(context: Context, freshEntry: Boolean): Pair<ProgressController, Boolean> {
+        val coldEntry = controller == null
+        val state = get(context)
+        val previous = state.session.level.id
+        if (freshEntry || coldEntry) check(state.finalizeCompletedEntry { persistTransition(context, it) }) {
+            "Completed level transition was not saved"
+        }
+        return state to (coldEntry || state.session.level.id != previous)
+    }
     fun persist(context: Context) {
         if (transitioning) return
-        ProgressRepository.save(context.applicationContext, owner, get(context).capture())
+        val state = get(context).capture()
+        if (get(context).session.game.status == com.tilebloom.game.domain.Status.WON) {
+            ProgressRepository.saveDurably(context.applicationContext, owner, state)
+        } else ProgressRepository.save(context.applicationContext, owner, state)
     }
 }

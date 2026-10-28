@@ -1,0 +1,31 @@
+Path: /home/walid/Documents/projects/androidGames/TileBloom/app/build/outputs/apk/debug/app-debug.apk
+Bytes: 795450
+Timestamp UTC: 2026-10-28T19:39:10.594910+00:00
+SHA-256: daa1f0fb6c84ae0ed7d0d366a18d276fa36e73d5d9c67751ea2dfb7686e0fd67
+package: name='com.tilebloom.game' versionCode='1' versionName='0.1' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
+Exit: 0
+Verification succesful
+Exit: 0
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by org.conscrypt.NativeLibraryUtil in an unnamed module (file:/home/walid/Android/Sdk/build-tools/35.0.0/lib/apksigner.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=Android Debug, O=Android, C=US
+Signer #1 certificate SHA-256 digest: fc1828f63432530e788baa4d69c70594157dfad0312a977e710158393e4110f6
+Signer #1 certificate SHA-1 digest: ebb0b20491eefc87a83c27c10119530e6bf811aa
+Signer #1 certificate MD5 digest: 9b5454ccb93e69e1aba0435f889409da
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 2048
+Signer #1 public key SHA-256 digest: 43ae771eb6b1814b69a3afbb588c3b9b5fba3d9c567c92c203eac1f12681e527
+Signer #1 public key SHA-1 digest: ed9874fd036271fe151de49ab7d266811a92b0c6
+Signer #1 public key MD5 digest: 534003caac478076c1db27552c44a231
+Exit: 0

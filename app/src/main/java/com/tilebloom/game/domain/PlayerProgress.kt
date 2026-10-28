@@ -73,6 +73,15 @@ class ProgressController(saved: PlayerProgress = PlayerProgress()) {
         }
         capture()
     }
+    /** Publish the next board only after the entire candidate save is durable.
+     * Retrying after a crash sees either the pending victory or the committed next board.
+     */
+    fun finalizeCompletedEntry(save: (PlayerProgress) -> Boolean): Boolean {
+        val next = prepareNext() ?: return true
+        val candidate = nextProgress(next) ?: return false
+        if (!save(candidate)) return false
+        return commitNext(next)
+    }
     fun undo(): Boolean = wallet.undo { session.game.undo() }
     fun capture(): PlayerProgress {
         if (session.game.status == Status.WON) completed = maxOf(completed, session.level.id)

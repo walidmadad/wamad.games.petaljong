@@ -43,6 +43,17 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         }
         fail("View $id did not appear")
     }
+    private fun waitAdvanced(screen: MainActivity, level: Long) {
+        val until=SystemClock.uptimeMillis()+30000
+        while(SystemClock.uptimeMillis()<until) {
+            var ready=false
+            ui { ready=state().session.level.id==level && !GameStore.transitioning &&
+                screen.findViewById<View>(R.id.board)?.isShown==true }
+            if(ready) return
+            SystemClock.sleep(20)
+        }
+        fail("Next level did not enter gameplay")
+    }
     private fun enter(screen: MainActivity) {
         waitVisible(screen,R.id.play); ui { screen.findViewById<Button>(R.id.play).performClick() }
         waitVisible(screen,R.id.board)
@@ -140,23 +151,35 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         ui { screen.findViewById<Button>(R.id.restart).performClick() }
         assertEquals(identity,state().session.level); assertTrue(game.tray.isEmpty()); assertEquals(2,state().wallet.balance)
     }
-    fun testCoordinateVictoryNextWaitsAtNextStartAndDoubleTapCannotSkip() {
+    fun testCoordinateVictoryNextEntersGameplayAndDoubleTapCannotSkip() {
+        seed(ProgressController(PlayerProgress(highestCompleted=3,undoCredits=1)))
         val screen=activity; enter(screen)
-        Levels.get(1).witness.forEach { tapTile(screen,it.first); tapTile(screen,it.second) }
+        state().session.level.witness.forEach { tapTile(screen,it.first); tapTile(screen,it.second) }
         waitVisible(screen,R.id.next_level)
+        instrumentation.sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
+        waitVisible(screen,R.id.next_level)
+        assertEquals(Status.WON,state().session.game.status)
         ui {
             assertFalse(screen.findViewById<Button>(R.id.restart).isShown)
             assertFalse(screen.findViewById<Button>(R.id.home).isShown)
             assertNull(screen.findViewById<View>(R.id.replay_level))
             val next=screen.findViewById<Button>(R.id.next_level); next.performClick(); next.performClick()
         }
-        waitVisible(screen,R.id.play)
+        waitAdvanced(screen,5)
         ui {
-            assertEquals(screen.getString(R.string.start_level,2L),screen.findViewById<TextView>(R.id.start_level).text.toString())
-            assertFalse(screen.findViewById<MahjongBoardView>(R.id.board).isShown)
+            assertFalse(screen.findViewById<View>(R.id.level_start).isShown)
+            assertTrue(screen.findViewById<MahjongBoardView>(R.id.board).isShown)
         }
-        assertEquals(2L,state().session.level.id); assertFalse(state().select(1))
-        enter(screen); assertEquals(Levels.get(2).tiles,state().session.game.tiles)
+        assertFalse(state().select(4)); assertTrue(state().session.game.tray.isEmpty())
+        assertEquals(1,state().wallet.balance)
+        assertEquals(Levels.get(5).tiles,state().session.game.tiles)
+        tapTile(screen,state().session.level.witness.first().first)
+        val before=state().capture()
+        ui { screen.findViewById<View>(R.id.home).performClick() }
+        waitVisible(screen,R.id.play); enter(screen)
+        assertEquals(before,state().capture())
+        instrumentation.sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
+        waitVisible(screen,R.id.play); assertEquals(before,state().capture())
     }
     fun testRecreationKeepsGameButFreshRelaunchRequiresPlayAndRestoresTray() {
         val screen=activity; enter(screen)
@@ -226,15 +249,41 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         assertTrue(state().session.game.tray.isEmpty())
         assertEquals(0, state().wallet.balance)
     }
-    fun testSavedPendingVictoryOpensOutcomeAndAdvancesOnce() {
+    fun testSavedPendingVictoryFinalizesBeforePlay() {
         val c=ProgressController(PlayerProgress(highestCompleted=19,undoCredits=1))
         c.session.level.witness.forEach { check(c.session.game.select(it.first)); check(c.session.game.select(it.second)) }; seed(c)
         val screen=activity; waitVisible(screen,R.id.play)
-        ui { assertEquals(screen.getString(R.string.start_level,20L),screen.findViewById<TextView>(R.id.start_level).text.toString()) }
-        enter(screen); waitVisible(screen,R.id.next_level)
-        assertEquals(Status.WON,state().session.game.status); assertFalse(state().session.restart())
-        ui { val next=screen.findViewById<Button>(R.id.next_level); next.performClick(); next.performClick() }
-        waitVisible(screen,R.id.play); assertEquals(21L,state().session.level.id); assertEquals(1,state().wallet.balance)
+        ui { assertEquals(screen.getString(R.string.start_level,21L),screen.findViewById<TextView>(R.id.start_level).text.toString()) }
+        assertEquals(21L,state().session.level.id)
+        enter(screen)
+        assertEquals(Status.PLAYING,state().session.game.status)
+        assertFalse(screen.findViewById<View>(R.id.outcome).isShown)
+        assertEquals(1,state().wallet.balance)
+        assertEquals(20L,ProgressRepository.load(instrumentation.targetContext).frontier)
+    }
+    fun testCoordinateLevelSixVictoryFreshRelaunchFinalizesOnlyOnce() {
+        seed(ProgressController(PlayerProgress(highestCompleted=5,undoCredits=1,hintCredits=0)))
+        val screen=activity; enter(screen)
+        state().session.level.witness.forEach { tapTile(screen,it.first); tapTile(screen,it.second) }
+        waitVisible(screen,R.id.next_level)
+        assertEquals(6L,ProgressRepository.load(instrumentation.targetContext).frontier)
+        ui { screen.finish() }
+        ProgressRepository.awaitWrites()
+        repeat(3) {
+            // Discard process cache and read the isolated durable save.
+            ProgressRepository.useTestStorage(storage)
+            val reopened=instrumentation.startActivitySync(Intent(instrumentation.targetContext,
+                MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) as MainActivity
+            try {
+                waitVisible(reopened,R.id.play)
+                assertEquals(7L,state().session.level.id)
+                ui { assertEquals(reopened.getString(R.string.start_level,7L),
+                    reopened.findViewById<TextView>(R.id.start_level).text.toString()) }
+                enter(reopened)
+                assertEquals(Status.PLAYING,state().session.game.status)
+                assertEquals(1,state().wallet.balance); assertEquals(0,state().hintCredits)
+            } finally { ui { reopened.finish() }; ProgressRepository.awaitWrites() }
+        }
     }
     fun testLargestLevelLabelAndPlayRemainReachable() {
         seed(ProgressController(PlayerProgress(highestCompleted=Long.MAX_VALUE-1,undoCredits=0)))
