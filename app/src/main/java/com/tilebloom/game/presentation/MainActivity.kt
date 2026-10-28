@@ -417,33 +417,89 @@ class MainActivity : Activity() {
         home.visibility = View.VISIBLE
         restart.visibility = View.VISIBLE
         hint.badge = progress.hintCredits
-        hint.contentDescription = if (progress.hintCredits == 0) getString(R.string.watch_hint) else getString(R.string.hint_description, progress.hintCredits)
+        hint.contentDescription = if (progress.hintCredits == 0) getString(R.string.hint_zero_description) else getString(R.string.hint_description, progress.hintCredits)
         hint.tooltipText = hint.contentDescription
         hint.isEnabled = !hintPending && !GameStore.transitioning && game.status == Status.PLAYING
         home.isEnabled = !GameStore.transitioning
         restart.isEnabled = !GameStore.transitioning && game.status != Status.WON
         undo.isEnabled = !GameStore.transitioning && (progress.wallet.balance == 0 || game.canUndo)
         undo.badge = progress.wallet.balance
-        undo.contentDescription = if (progress.wallet.balance == 0) getString(R.string.watch_undo) else getString(R.string.undo_description, progress.wallet.balance)
+        undo.contentDescription = if (progress.wallet.balance == 0) getString(R.string.undo_zero_description) else getString(R.string.undo_description, progress.wallet.balance)
         undo.tooltipText = undo.contentDescription
         board.refresh(); tray.refresh()
     }
 
     private fun requestReward(purpose: RewardPurpose) {
         if (GameStore.transitioning || rewardDialog?.isShowing == true || AdvertisingService.provider.state == RewardedAdManager.State.SHOWING) return
+        val panel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
+            setPadding(dp(24), dp(24), dp(24), dp(8))
+        }
+        val rewardIcon = android.widget.ImageView(this).apply {
+            setImageResource(if (purpose == RewardPurpose.HINT) R.drawable.ic_hint else R.drawable.ic_undo)
+            imageTintList = android.content.res.ColorStateList.valueOf(GardenStyle.gold)
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        }
+        panel.addView(rewardIcon, LinearLayout.LayoutParams(dp(48), dp(48)))
+        panel.addView(textLabel(24f, GardenStyle.ivory).apply {
+            setText(if (purpose == RewardPurpose.HINT) R.string.reward_hint else R.string.reward_undo)
+            setPadding(0, dp(12), 0, dp(8))
+        })
+        val loading = android.widget.ProgressBar(this).apply {
+            isIndeterminate = true
+            indeterminateTintList = android.content.res.ColorStateList.valueOf(GardenStyle.gold)
+        }
+        panel.addView(loading, LinearLayout.LayoutParams(dp(20), dp(20)))
+        val availability = textLabel(13f, GardenStyle.secondary).apply {
+            accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
+        }
+        panel.addView(availability)
         rewardDialog = AlertDialog.Builder(this)
-            .setTitle(if (purpose == RewardPurpose.HINT) R.string.need_hint else R.string.need_undo)
-            .setMessage(if (purpose == RewardPurpose.HINT) R.string.watch_hint else R.string.watch_undo)
-            .setNegativeButton(android.R.string.cancel, null)
-            .setPositiveButton(R.string.watch_ad) { _, _ ->
-                if (!AdvertisingService.provider.show(this, purpose)) {
-                    Toast.makeText(this, if (AdvertisingService.provider.state == RewardedAdManager.State.LOADING) R.string.ad_loading else R.string.ad_unavailable, Toast.LENGTH_LONG).show()
-                }
-            }.create().also { dialog ->
+            .setView(panel)
+            .setNegativeButton(R.string.close_reward, null)
+            .setPositiveButton(R.string.watch_ad, null)
+            .create().also { dialog ->
                 dialog.show()
                 dialog.window?.setBackgroundDrawable(GardenStyle.surface(this, GardenStyle.panel))
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(GardenStyle.gold)
-                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(GardenStyle.ivory)
+                val close = dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+                GardenStyle.button(close)
+                close.contentDescription = getString(R.string.close_reward)
+                val cross = getDrawable(R.drawable.ic_close)!!.mutate().apply {
+                    setTint(GardenStyle.ivory); setBounds(0, 0, dp(24), dp(24))
+                }
+                close.text = android.text.SpannableString("\uFFFC").apply {
+                    setSpan(android.text.style.ImageSpan(cross), 0, 1, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                val watch = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                GardenStyle.button(watch, true)
+                watch.setOnClickListener {
+                    if (AdvertisingService.provider.state == RewardedAdManager.State.READY) {
+                        if (AdvertisingService.provider.show(this, purpose)) dialog.dismiss()
+                    } else AdvertisingService.provider.retry()
+                }
+                // Observe presentation state only: becoming ready never starts an ad.
+                val refresh = object : Runnable {
+                    private var renderedState: RewardedAdManager.State? = null
+                    override fun run() {
+                        if (!dialog.isShowing || isDestroyed) return
+                        val state = AdvertisingService.provider.state
+                        if (state == renderedState) {
+                            panel.postDelayed(this, 250)
+                            return
+                        }
+                        renderedState = state
+                        val ready = state == RewardedAdManager.State.READY
+                        val busy = state == RewardedAdManager.State.LOADING
+                        loading.visibility = if (busy) View.VISIBLE else View.GONE
+                        availability.setText(if (ready) R.string.ad_ready else if (busy) R.string.ad_loading_short else R.string.ad_unavailable_short)
+                        watch.isEnabled = !busy
+                        watch.setText(if (ready || busy) R.string.watch_ad else R.string.ad_retry)
+                        watch.contentDescription = watch.text
+                        GardenStyle.primaryIcon(watch, if (ready || busy) R.drawable.ic_play else R.drawable.ic_restart)
+                        panel.postDelayed(this, 250)
+                    }
+                }
+                refresh.run()
             }
     }
 

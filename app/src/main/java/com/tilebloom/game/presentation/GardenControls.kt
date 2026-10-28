@@ -51,6 +51,8 @@ class GardenIconButton(context: Context, iconResource: Int, private val iconTint
     private val ink = Paint(Paint.ANTI_ALIAS_FLAG)
     var badge: Int? = null
         set(value) { field = value; invalidate() }
+    val showsAdIndicator: Boolean get() = badge == 0
+    private val video = context.getDrawable(com.tilebloom.game.R.drawable.ic_play)!!.mutate()
     init {
         GardenStyle.button(this)
         text = ""
@@ -59,16 +61,31 @@ class GardenIconButton(context: Context, iconResource: Int, private val iconTint
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         val size = GardenStyle.dp(context, 25)
-        val cx = width / 2; val cy = height / 2
+        val cx = width / 2; val cy = height / 2 - if (showsAdIndicator) GardenStyle.dp(context, 7) else 0
         icon.setTint(if (isEnabled) iconTint else Color.rgb(137, 157, 137))
         icon.setBounds(cx - size / 2, cy - size / 2, cx + size / 2, cy + size / 2)
         icon.draw(canvas)
+        if (showsAdIndicator) {
+            val density = resources.displayMetrics.density
+            val label = context.getString(com.tilebloom.game.R.string.ad_label)
+            ink.typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+            ink.textSize = 10 * resources.displayMetrics.scaledDensity
+            ink.color = GardenStyle.gold
+            val videoSize = GardenStyle.dp(context, 12)
+            val total = videoSize + 3 * density + ink.measureText(label)
+            val left = (width - total) / 2
+            val bottom = height - 5 * density
+            video.setTint(GardenStyle.gold)
+            video.setBounds(left.toInt(), (bottom - videoSize).toInt(), left.toInt() + videoSize, bottom.toInt())
+            video.draw(canvas)
+            canvas.drawText(label, left + videoSize + 3 * density, bottom - 1 * density, ink)
+        }
         badge?.let {
             val number = it.toString()
             ink.typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-            ink.textSize = 11 * resources.displayMetrics.scaledDensity
-            val gap = GardenStyle.dp(context, 5).toFloat()
-            val h = maxOf(GardenStyle.dp(context, 20).toFloat(), ink.fontSpacing + gap)
+            ink.textSize = (if (showsAdIndicator) 10 else 11) * resources.displayMetrics.scaledDensity
+            val gap = GardenStyle.dp(context, if (showsAdIndicator) 2 else 5).toFloat()
+            val h = maxOf(GardenStyle.dp(context, if (showsAdIndicator) 16 else 20).toFloat(), ink.fontSpacing + gap)
             val w = maxOf(h, ink.measureText(number) + gap * 2)
             val right = width - GardenStyle.dp(context, 3).toFloat()
             val top = GardenStyle.dp(context, 2).toFloat()

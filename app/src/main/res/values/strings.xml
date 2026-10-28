@@ -84,4 +84,14 @@
     <string name="privacy_options">Advertising privacy options</string>
     <string name="privacy_not_required">No advertising privacy form is currently required.</string>
     <string name="privacy_unavailable">Privacy options unavailable. Please try again later.</string>
+    <string name="ad_label">AD</string>
+    <string name="reward_hint">+1 Hint</string>
+    <string name="reward_undo">+1 Undo</string>
+    <string name="hint_zero_description">Hint, zero credits. Watch ad to earn one Hint.</string>
+    <string name="undo_zero_description">Undo, zero credits. Watch ad to earn one Undo.</string>
+    <string name="close_reward">Close reward panel</string>
+    <string name="ad_loading_short">Loading ad…</string>
+    <string name="ad_unavailable_short">Ad unavailable</string>
+    <string name="ad_ready">Ad ready</string>
+    <string name="ad_retry">Retry</string>
 </resources>

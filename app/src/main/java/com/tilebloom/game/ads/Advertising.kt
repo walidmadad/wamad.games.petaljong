@@ -9,6 +9,7 @@ interface Advertising {
     fun attach(activity: Activity)
     fun detach(activity: Activity)
     fun privacyOptions(activity: Activity)
+    fun retry() {}
     fun show(activity: Activity, purpose: RewardPurpose): Boolean
 }
 

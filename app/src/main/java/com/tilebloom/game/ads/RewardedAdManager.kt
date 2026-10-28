@@ -89,6 +89,8 @@ object RewardedAdManager : Advertising {
         }
     }
 
+    override fun retry() { load() }
+
     fun load() {
         if (!initialized || consentBusy || consent?.canRequestAds() != true || state == State.SHOWING || state == State.LOADING) return
         if (state == State.READY && SystemClock.elapsedRealtime() - loadedAt < 3_600_000) return

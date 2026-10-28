@@ -21,11 +21,15 @@ class RewardInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(Mai
         override var state = RewardedAdManager.State.READY
         override var privacyRequired = true
         var privacyCalls = 0
+        var retryCalls = 0
+        override fun retry() { retryCalls++ }
+        var showCalls = 0
         var ticket: AdReward? = null
         override fun attach(activity: Activity) {}
         override fun detach(activity: Activity) {}
         override fun privacyOptions(activity: Activity) { privacyCalls++ }
         override fun show(activity: Activity, purpose: RewardPurpose): Boolean {
+            showCalls++
             if (state != RewardedAdManager.State.READY) return false
             state = RewardedAdManager.State.SHOWING
             val context = activity.applicationContext
@@ -67,14 +71,26 @@ class RewardInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(Mai
             val state = GameStore.get(screen)
             val board = state.session.game.snapshot()
             for ((id, purpose) in listOf(R.id.undo to RewardPurpose.UNDO, R.id.hint to RewardPurpose.HINT)) {
+                fake.ticket = null
                 fake.state = RewardedAdManager.State.READY
                 val button = screen.findViewById<GardenIconButton>(id)
-                assertTrue(button.isEnabled); button.performClick()
+                assertTrue(button.isEnabled); assertTrue(button.isClickable)
+                assertTrue(button.showsAdIndicator)
+                assertEquals(screen.getString(if (purpose == RewardPurpose.HINT) R.string.hint_zero_description else R.string.undo_zero_description), button.contentDescription)
+                button.performClick()
                 assertTrue(dialog(screen).isShowing)
+                val expected = screen.getString(if (purpose == RewardPurpose.HINT) R.string.reward_hint else R.string.reward_undo)
+                fun containsReward(view: android.view.View): Boolean =
+                    (view is android.widget.TextView && view.text.toString() == expected) ||
+                        (view is android.view.ViewGroup && (0 until view.childCount).any { containsReward(view.getChildAt(it)) })
+                assertTrue(containsReward(dialog(screen).window!!.decorView))
+                assertNull(fake.ticket)
+
                 dialog(screen).getButton(AlertDialog.BUTTON_POSITIVE).performClick()
                 assertEquals(purpose, fake.ticket!!.purpose)
                 assertTrue(fake.ticket!!.earned()); assertFalse(fake.ticket!!.earned())
                 assertEquals(1, button.badge)
+                assertFalse(button.showsAdIndicator)
                 assertEquals(board, state.session.game.snapshot())
             }
             assertEquals(1, ProgressRepository.load(screen).undoCredits)
@@ -95,6 +111,43 @@ class RewardInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(Mai
             }
         } finally { instrumentation.removeMonitor(monitor) }
     }
+    fun testPositiveCreditsHideAdvertisingIndicators() {
+        val screen = activity; waitReady(screen)
+        ui {
+            screen.findViewById<Button>(R.id.play).performClick()
+            for (id in listOf(R.id.hint, R.id.undo)) {
+                val button = screen.findViewById<GardenIconButton>(id)
+                assertTrue(button.showsAdIndicator)
+                button.badge = 3
+                assertFalse(button.showsAdIndicator)
+            }
+        }
+    }
+    fun testLoadingNeverQueuesAnAdvertisement() {
+        val screen = activity; waitReady(screen)
+        ui {
+            screen.findViewById<Button>(R.id.play).performClick()
+            fake.state = RewardedAdManager.State.LOADING
+            screen.findViewById<GardenIconButton>(R.id.hint).performClick()
+        }
+        instrumentation.waitForIdleSync()
+        ui {
+            assertFalse(dialog(screen).getButton(AlertDialog.BUTTON_POSITIVE).isEnabled)
+            assertEquals(0, fake.showCalls)
+            assertEquals(0, GameStore.get(screen).hintCredits)
+            fake.state = RewardedAdManager.State.READY
+        }
+        SystemClock.sleep(350)
+        instrumentation.waitForIdleSync()
+        ui {
+            assertTrue(dialog(screen).getButton(AlertDialog.BUTTON_POSITIVE).isEnabled)
+            assertEquals(0, fake.showCalls)
+            assertNull(fake.ticket)
+            dialog(screen).getButton(AlertDialog.BUTTON_NEGATIVE).performClick()
+            assertFalse(dialog(screen).isShowing)
+            assertEquals(0, GameStore.get(screen).hintCredits)
+        }
+    }
     fun testCancelUnavailableAndPrivacy() {
         val screen = activity; waitReady(screen)
         ui {
@@ -107,7 +160,10 @@ class RewardInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(Mai
             screen.findViewById<GardenIconButton>(R.id.hint).performClick()
             dialog(screen).getButton(AlertDialog.BUTTON_POSITIVE).performClick()
             assertNull(fake.ticket)
+            assertEquals(1, fake.retryCalls)
+            assertEquals(0, fake.showCalls)
             assertEquals(0, GameStore.get(screen).hintCredits)
+            assertEquals(0, GameStore.get(screen).wallet.balance)
             assertTrue(screen.findViewById<Button>(R.id.restart).isEnabled)
         }
     }
