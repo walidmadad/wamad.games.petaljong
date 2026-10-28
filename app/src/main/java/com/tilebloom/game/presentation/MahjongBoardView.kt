@@ -34,8 +34,9 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
     private val gesture = TileTapGesture(ViewConfiguration.get(context).scaledTouchSlop.toFloat())
     private var blockedTileId: Int? = null
     private val clearBlocked = Runnable { blockedTileId = null; invalidate() }
-    private fun geometry() = BoardGeometry(width.toFloat(), height.toFloat(),
-        BoardPadding(paddingLeft.toFloat(), paddingTop.toFloat(), paddingRight.toFloat(), paddingBottom.toFloat()), game.tiles)
+    private var cachedGeometry: BoardGeometry? = null
+    private fun geometry() = cachedGeometry ?: BoardGeometry(width.toFloat(), height.toFloat(),
+        BoardPadding(paddingLeft.toFloat(), paddingTop.toFloat(), paddingRight.toFloat(), paddingBottom.toFloat()), game.tiles).also { cachedGeometry = it }
     // Read-only presentation queries also allow instrumentation to assert real touch results.
     val selectedTileId get() = game.selected
     val remainingTileCount get() = game.remaining.size
@@ -45,7 +46,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
         refresh()
     }
-    fun load(next: Game) { clearFeedback(); game = next; refresh() }
+    fun load(next: Game) { clearFeedback(); game = next; cachedGeometry = null; refresh() }
     fun refresh() {
         hintEffect.validate(game, SystemClock.uptimeMillis())
         if (hintedTileId == null) removeCallbacks(expireHint)
@@ -63,9 +64,6 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
     private fun BoardRect.android() = RectF(left, top, right, bottom)
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        paint.shader = LinearGradient(0f, 0f, width.toFloat(), height.toFloat(), theme.glow, theme.background, Shader.TileMode.CLAMP)
-        canvas.drawRoundRect(0f, 0f, width.toFloat(), height.toFloat(), 24f, 24f, paint)
-        paint.shader = null
         val layout = geometry()
         val scale = layout.scale
         if (scale <= 0f) return
@@ -91,50 +89,50 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             val selected = available && game.selected == tile.id
             paint.style = Paint.Style.FILL
             // Two offset shadow bands: soft penumbra and a stronger contact shadow.
-            paint.color = Color.argb(if (tile.layer > 0) 62 else 34, 3, 20, 15)
+            paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (tile.layer > 0) 62 else 34) shl 24)
             canvas.drawRoundRect(layout.shadow(tile).offset(scale * .045f).android(), layout.radius * 1.2f, layout.radius * 1.2f, paint)
-            paint.color = Color.argb(if (tile.layer > 0) 136 else 88, 3, 20, 15)
+            paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (tile.layer > 0) 136 else 88) shl 24)
             canvas.drawRoundRect(layout.shadow(tile).android(), layout.radius, layout.radius, paint)
-            paint.color = theme.accent
+            paint.color = theme.palette.tileSide
             canvas.drawRoundRect(layout.body(tile).android(), layout.radius, layout.radius, paint)
-            paint.color = GardenTheme.gold
+            paint.color = theme.palette.primaryAccent
             canvas.drawRoundRect(layout.edge(tile).android(), layout.radius, layout.radius, paint)
-            paint.color = if (available) GardenTheme.ivory else theme.ceramic
+            paint.color = if (available) theme.palette.availableTileFace else theme.palette.blockedTileFace
             paint.shader = LinearGradient(face.left, face.top, face.right, face.bottom,
-                if (available) GardenTheme.ivory else theme.ceramic,
-                if (available) Color.rgb(238, 224, 192) else theme.accent, Shader.TileMode.CLAMP)
+                if (available) theme.palette.availableTileFace else theme.palette.blockedTileFace,
+                if (available) theme.ceramic else theme.palette.tileSide, Shader.TileMode.CLAMP)
             canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
             paint.shader = null
             // Inset ceramic rim and top highlight stay inside the established face.
             paint.style = Paint.Style.STROKE
             paint.strokeWidth = scale * .018f
-            paint.color = if (available) Color.rgb(255, 253, 240) else GardenTheme.ivory
+            paint.color = if (available) theme.palette.textPrimary else theme.palette.availableTileFace
             canvas.drawRoundRect(face.inset(scale * .035f).android(), layout.radius * .8f, layout.radius * .8f, paint)
             // Keep all border strokes inside the physical face so selection never changes hit bounds.
             paint.style = Paint.Style.STROKE
             paint.strokeWidth = if (selected) scale * .045f else scale * .014f
             paint.color = when {
-                selected -> Color.rgb(193, 148, 48)
-                blockedTileId == tile.id -> Color.rgb(192, 170, 111)
-                else -> Color.rgb(151, 145, 112)
+                selected -> theme.palette.primaryAccent
+                blockedTileId == tile.id -> theme.palette.secondaryAccent
+                else -> theme.palette.border
             }
             canvas.drawRoundRect(face.inset(paint.strokeWidth / 2).android(), layout.radius, layout.radius, paint)
             if (selected) {
                 paint.strokeWidth = scale * .012f
-                paint.color = Color.rgb(227, 201, 135)
+                paint.color = theme.palette.primaryAccent
                 canvas.drawRoundRect(face.inset(scale * .075f).android(), scale * .06f, scale * .06f, paint)
             }
             paint.style = Paint.Style.FILL
-            // Any overhead intersection conceals the artwork conservatively. Ceramic
-            // edges remain visible, and opaque upper faces never disclose identity.
-            if (TileVisibility.symbolVisible(tile, game.tiles)) {
+            // Draw the whole lower face first. Opaque upper bodies/faces in the same
+            // depth order physically occlude it, including partially covered artwork.
+            if (!tile.removed) {
                 canvas.save()
                 canvas.translate(r.centerX(), r.centerY())
                 canvas.scale(scale * .34f, scale * .34f)
                 BotanicalSymbols.draw(canvas, paint, tile.symbol)
                 canvas.restore()
                 if (!available) {
-                    paint.color = Color.argb(28, 40, 65, 50)
+                    paint.color = (theme.palette.tileShadow and 0x00ffffff) or (48 shl 24)
                     canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
                 }
             }
@@ -159,25 +157,27 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         // Stroke outside the ceramic rim keeps botanical artwork untouched.
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = stroke + 2.5f * density
-        paint.color = Color.rgb(65, 48, 12)
+        paint.color = theme.palette.backgroundTop
         canvas.drawRoundRect(hintBounds, layout.radius, layout.radius, paint)
         paint.strokeWidth = stroke
-        paint.color = Color.rgb(255, (191 + 38 * pulse).toInt(), (32 + 56 * pulse).toInt())
+        paint.color = theme.palette.primaryAccent
+        paint.alpha = (215 + 40 * pulse).toInt()
         canvas.drawRoundRect(hintBounds, layout.radius, layout.radius, paint)
+        paint.alpha = 255
         val radius = min(11f * density, layout.scale * .22f)
         val bulb = hintIndicator ?: hintEffect.indicator(face, width.toFloat(), height.toFloat(), radius, game, layout)
             .also { hintIndicator = it }
         paint.strokeWidth = 2f * density
-        paint.color = Color.rgb(65, 48, 12)
+        paint.color = theme.palette.backgroundTop
         val anchorX = if (bulb.x > face.center.x) face.right - layout.radius else face.left + layout.radius
         val anchorY = if (bulb.y > face.center.y) face.bottom else face.top
         canvas.drawLine(bulb.x, bulb.y, anchorX, anchorY, paint)
         paint.style = Paint.Style.FILL
         canvas.drawCircle(bulb.x, bulb.y, radius, paint)
-        paint.color = Color.rgb(255, 229, 110)
+        paint.color = theme.palette.primaryAccent
         canvas.drawCircle(bulb.x, bulb.y, radius * .82f, paint)
         // Original vector bulb: globe, neck, filament and base, no font/emoji dependency.
-        paint.color = Color.rgb(65, 48, 12)
+        paint.color = theme.palette.backgroundTop
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = max(1f, radius * .13f)
         canvas.drawCircle(bulb.x, bulb.y - radius * .18f, radius * .37f, paint)
@@ -231,6 +231,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
     }
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
+        cachedGeometry = null
         clearFeedback()
     }
     override fun onDetachedFromWindow() {

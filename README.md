@@ -125,3 +125,7 @@ Five stable garden themes tint ceramic surfaces, board gradients and tray contai
 See [CODEX_30_REPORT.md](CODEX_30_REPORT.md) for measured results and limitations, and [host commands](docs/codex30/HOST_COMMANDS.md) for standard Android verification. A source/diagnostic check is not a fresh verified APK.
 
 CODEX 30 final diagnostic result: **244/244 JVM tests PASS**, plus **6/6 focused Endless reruns PASS** after stricter duplicate/normalization assertions. Main and instrumentation sources compile against cached Android dependencies. The 77-board matrix has 77 validated wins, eight families and zero observed exact duplicates within ten levels; strategic targets are met on 75/77 (21 and 29 miss). Actual Android screenshots, Gradle/Lint, fresh APK and signer verification remain blocked. See CODEX_30_REPORT.md and docs/codex30 for evidence.
+
+### CODEX 31 garden rendering
+
+The existing five level themes now supply an immutable screen palette: full-screen gradient, status panel, tray, empty holders, controls, ceramics, shadows and Hint. The board itself is transparent. Side-blocked botanical symbols remain visible with muted faces; opaque upper tiles cover lower artwork in physical draw order. Generator v8, historical generators, saves, credits and ads are unchanged. Android screenshots and a fresh standard APK could not be verified inside the restricted sandbox; see [CODEX 31 report](CODEX_31_REPORT.md) and [host commands](docs/codex31/HOST_COMMANDS.md).

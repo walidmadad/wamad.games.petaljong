@@ -42,19 +42,19 @@ class TileTrayView(context: Context, private val tiles: () -> List<Tile>) : View
         val gap = height * .1f
         val slots = slotBounds()
         val size = slots.first().width()
-        ink.style = Paint.Style.FILL; ink.color = theme.glow
+        ink.style = Paint.Style.FILL; ink.color = theme.palette.traySurface
         c.drawRoundRect(0f, 0f, width.toFloat(), height.toFloat(), gap * 1.6f, gap * 1.6f, ink)
         ink.style = Paint.Style.STROKE; ink.strokeWidth = resources.displayMetrics.density
-        ink.color = GardenTheme.gold
+        ink.color = theme.palette.border
         c.drawRoundRect(1f, 1f, width - 1f, height - 1f, gap * 1.6f, gap * 1.6f, ink)
         repeat(4) { i ->
             val r = slots[i]
             val tile = tiles().getOrNull(i)
             ink.style = Paint.Style.FILL
-            ink.color = if (tile == null) theme.background else Color.rgb(250, 244, 224)
+            ink.color = if (tile == null) theme.palette.emptyTraySlot else theme.palette.availableTileFace
             c.drawRoundRect(r, gap, gap, ink)
             ink.style = Paint.Style.STROKE; ink.strokeWidth = resources.displayMetrics.density
-            ink.color = if (tiles().size == 4) Color.rgb(199, 126, 94) else if (tile == null) Color.rgb(102, 119, 83) else Color.rgb(184, 163, 107)
+            ink.color = if (tiles().size == 4) theme.palette.secondaryAccent else if (tile == null) theme.palette.border else theme.palette.primaryAccent
             c.drawRoundRect(r, gap, gap, ink)
             tile?.let {
                 c.save(); c.translate(r.centerX(), r.centerY()); c.scale(size * .34f, size * .34f)
@@ -69,7 +69,7 @@ class TileTrayView(context: Context, private val tiles: () -> List<Tile>) : View
                 c.scale(size * .28f, size * .28f)
                 BotanicalSymbols.draw(c, ink, tile.symbol); c.restore()
             }
-            ink.style = Paint.Style.STROKE; ink.color = Color.argb(90, 230, 209, 150); ink.strokeWidth = 2f
+            ink.style = Paint.Style.STROKE; ink.color = (theme.palette.primaryAccent and 0x00ffffff) or (90 shl 24); ink.strokeWidth = 2f
             c.drawRoundRect(2f, 2f, width - 2f, height - 2f, gap, gap, ink)
             postInvalidateOnAnimation()
         }

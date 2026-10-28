@@ -159,7 +159,7 @@ class MainActivity : Activity() {
         root = FrameLayout(this).apply {
             background = android.graphics.drawable.GradientDrawable(
                 android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
-                intArrayOf(GardenStyle.forest, android.graphics.Color.rgb(20, 56, 43)))
+                intArrayOf(GardenStyle.forest, GardenStyle.theme.palette.backgroundBottom))
         }
         root.setOnApplyWindowInsetsListener { v, insets ->
             if (Build.VERSION.SDK_INT >= 30) {
@@ -261,7 +261,7 @@ class MainActivity : Activity() {
     private fun createConnectionPanel() {
         connectionShade = FrameLayout(this).apply {
             id = R.id.connection_overlay
-            setBackgroundColor(android.graphics.Color.argb(165, 9, 28, 22))
+            setBackgroundColor((GardenStyle.theme.palette.tileShadow and 0x00ffffff) or (165 shl 24))
             isClickable = true; isFocusable = true; visibility = View.GONE
         }
         root.addView(connectionShade, FrameLayout.LayoutParams(-1, -1))
@@ -584,6 +584,7 @@ class MainActivity : Activity() {
         gameplay?.visibility = if (showingGame) View.VISIBLE else View.GONE
         gameplay?.importantForAccessibility = if (showConnection) View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS else View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
         if (!showingGame) return
+        applyGameplayTheme(GardenTheme.forLevel(session.level.id))
         board.theme = GardenTheme.forLevel(session.level.id)
         tray.theme = board.theme
         levelLabel.text = getString(R.string.level_number, session.level.id)
@@ -800,5 +801,35 @@ class MainActivity : Activity() {
         if (GameStore.onChanged === refreshListener) GameStore.onChanged = null
         super.onDestroy()
     }
+    private var appliedTheme: GardenTheme? = null
+    private fun applyGameplayTheme(theme: GardenTheme) {
+        if (appliedTheme == theme) return
+        appliedTheme = theme
+        GardenStyle.theme = theme
+        val palette = theme.palette
+        root.background = android.graphics.drawable.GradientDrawable(
+            android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(palette.backgroundTop, palette.backgroundBottom))
+        window.statusBarColor = palette.backgroundTop
+        window.navigationBarColor = palette.backgroundBottom
+        connectionShade.setBackgroundColor((palette.tileShadow and 0x00ffffff) or (165 shl 24))
+        fun tint(view: View) {
+            when (view) {
+                is GardenIconButton -> view.invalidate()
+                is Button -> GardenStyle.button(view, view === next)
+                is TextView -> view.setTextColor(palette.textPrimary)
+            }
+            if (view is android.view.ViewGroup) {
+                if (view.background != null) view.background = GardenStyle.surface(this,
+                    if (view === controls) palette.buttonSurface else palette.headerSurface, border = false)
+                for (i in 0 until view.childCount) tint(view.getChildAt(i))
+            }
+        }
+        gameplay?.let { tint(it) }
+        levelLabel.setTextColor(palette.primaryAccent)
+        counter.setTextColor(palette.textSecondary)
+        feedback.setTextColor(palette.textSecondary)
+    }
+
     private fun dp(value: Int) = GardenStyle.dp(this, value)
 }

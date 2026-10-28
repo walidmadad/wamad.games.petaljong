@@ -1,10 +1,21 @@
 package com.tilebloom.game.presentation.board
 
-import com.tilebloom.game.domain.Rules
 import com.tilebloom.game.domain.Tile
 
-/** Conservative privacy: overhead coverage shows ceramic only, even if an edge is exposed. */
+/** Point visibility follows the exact opaque rounded surfaces and painter order.
+ * Availability is intentionally independent: side-blocked faces still carry artwork.
+ * Shadows are translucent decoration and cannot conceal identity or become touch targets.
+ */
 object TileVisibility {
-    fun symbolVisible(tile: Tile, tiles: List<Tile>) = !tile.removed &&
-        tiles.none { !it.removed && it.layer > tile.layer && Rules.overlaps(tile, it) }
+    fun faceVisibleAt(tile: Tile, tiles: List<Tile>, geometry: BoardGeometry, x: Float, y: Float): Boolean {
+        if (tile.removed || !geometry.face(tile).containsRounded(x, y, geometry.radius)) return false
+        val order = geometry.drawOrder(tiles)
+        val index = order.indexOfFirst { it.id == tile.id }
+        if (index < 0) return false
+        return order.drop(index + 1).none {
+            geometry.face(it).containsRounded(x, y, geometry.radius) ||
+                geometry.edge(it).containsRounded(x, y, geometry.radius) ||
+                geometry.body(it).containsRounded(x, y, geometry.radius)
+        }
+    }
 }

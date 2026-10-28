@@ -10,15 +10,16 @@ import android.widget.Button
 
 /** Shared surfaces and hand-drawn vector controls; no icon font or external artwork. */
 internal object GardenStyle {
-    val forest = Color.rgb(16, 47, 39)
-    val panel = Color.rgb(25, 60, 47)
-    val ivory = Color.rgb(245, 237, 214)
-    val gold = Color.rgb(199, 180, 126)
-    val secondary = Color.rgb(185, 204, 181)
+    var theme = com.tilebloom.game.domain.GardenTheme.forLevel(1)
+    val forest get() = theme.palette.backgroundTop
+    val panel get() = theme.palette.headerSurface
+    val ivory get() = theme.palette.textPrimary
+    val gold get() = theme.palette.primaryAccent
+    val secondary get() = theme.palette.textSecondary
     fun dp(context: Context, value: Int) = (context.resources.displayMetrics.density * value).toInt()
     fun surface(context: Context, color: Int, radius: Int = 22, border: Boolean = true) = GradientDrawable().apply {
         setColor(color); cornerRadius = dp(context, radius).toFloat()
-        if (border) setStroke(dp(context, 1).coerceAtLeast(1), Color.rgb(118, 129, 87))
+        if (border) setStroke(dp(context, 1).coerceAtLeast(1), theme.palette.border)
     }
     fun button(button: Button, primary: Boolean = false) {
         val context = button.context
@@ -28,7 +29,7 @@ internal object GardenStyle {
         button.textSize = 17f
         button.setTextColor(if (primary) forest else ivory)
         button.backgroundTintList = null
-        button.background = RippleDrawable(ColorStateList.valueOf(Color.argb(55, 245, 237, 214)),
+        button.background = RippleDrawable(ColorStateList.valueOf((ivory and 0x00ffffff) or (55 shl 24)),
             surface(context, if (primary) gold else panel), surface(context, Color.WHITE))
         button.setPadding(dp(context, 20), dp(context, 12), dp(context, 20), dp(context, 12))
         button.elevation = dp(context, if (primary) 3 else 1).toFloat()
@@ -46,7 +47,7 @@ internal object GardenStyle {
 }
 
 /** Button remains a single accessible touch target, including its numeric credit badge. */
-class GardenIconButton(context: Context, iconResource: Int, private val iconTint: Int = GardenStyle.ivory) : Button(context) {
+class GardenIconButton(context: Context, iconResource: Int, private val iconTint: Int? = null) : Button(context) {
     private val icon = context.getDrawable(iconResource)!!.mutate()
     private val ink = Paint(Paint.ANTI_ALIAS_FLAG)
     var badge: Int? = null
@@ -68,14 +69,14 @@ class GardenIconButton(context: Context, iconResource: Int, private val iconTint
         val cx = width / 2f; val cy = height / 2f
         val radius = minOf(28 * d, width / 2f, height / 2f)
         ink.style = Paint.Style.FILL
-        ink.color = if (isPressed) Color.rgb(49, 80, 59) else GardenStyle.forest
+        ink.color = if (isPressed) GardenStyle.theme.palette.traySurface else GardenStyle.theme.palette.buttonSurface
         canvas.drawCircle(cx, cy, radius - d, ink)
         ink.style = Paint.Style.STROKE; ink.strokeWidth = d
-        ink.color = Color.rgb(118, 129, 87)
+        ink.color = GardenStyle.theme.palette.border
         canvas.drawCircle(cx, cy, radius - d, ink)
         ink.style = Paint.Style.FILL
         val size = GardenStyle.dp(context, 24)
-        icon.setTint(if (isEnabled) iconTint else Color.rgb(137, 157, 137))
+        icon.setTint(if (isEnabled) iconTint ?: GardenStyle.ivory else GardenStyle.secondary)
         icon.setBounds((cx - size / 2).toInt(), (cy - size / 2).toInt(),
             (cx + size / 2).toInt(), (cy + size / 2).toInt())
         icon.draw(canvas)

@@ -787,3 +787,9 @@ Diagnostic validation uses cached Kotlin/JUnit under JDK 17 and cached Android S
 See [CODEX_30_REPORT.md](CODEX_30_REPORT.md) for final results, acceptance statuses and limits; [host commands](docs/codex30/HOST_COMMANDS.md) provide exact remaining build, signer and screenshot checks.
 
 CODEX 30 final diagnostic result: **244/244 JVM tests PASS**, plus **6/6 focused Endless reruns PASS** after stricter duplicate/normalization assertions. Main and instrumentation sources compile against cached Android dependencies. The 77-board matrix has 77 validated wins, eight families and zero observed exact duplicates within ten levels; strategic targets are met on 75/77 (21 and 29 miss). Actual Android screenshots, Gradle/Lint, fresh APK and signer verification remain blocked. See CODEX_30_REPORT.md and docs/codex30 for evidence.
+
+### CODEX 31
+
+Source changes unify gameplay palettes and use opaque painter-order occlusion. New JVM checks cover palette completeness/brightness, deterministic restoration, visible blocked legality, point occlusion, upper removal and Undo at four widths. Android pixel and capture tests were added; execution and image review are NOT VERIFIED. Standard Gradle tasks cannot start here (read-only default Gradle cache; writable cached distribution fails wildcard-IP/socket initialization). No fresh APK is certified by this iteration. See CODEX_31_REPORT.md for final diagnostic test results and docs/codex31/HOST_COMMANDS.md for exact host verification.
+
+Final CODEX 31 diagnostic results: **248/248 JVM tests PASS** (380.773s); strengthened four-test rendering/restoration rerun **4/4 PASS** (8.318s). Main and Android test sources compile with cached Kotlin/JDK 17/SDK dependencies. Android instrumentation, standard Gradle/Lint and a fresh APK remain unverified/blocked as described above. Logs are under docs/codex31.

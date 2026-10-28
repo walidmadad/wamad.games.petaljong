@@ -70,10 +70,18 @@ class AdvancedMahjongTest {
     @Test fun hiddenArtworkRemainsPrivateUntilCoverageIsRemoved() {
         val lower = Tile(0,Symbol.LEAF,0.0,0.0,0)
         val upper = Tile(1,Symbol.LOTUS,0.0,0.0,1)
-        assertFalse(com.tilebloom.game.presentation.board.TileVisibility.symbolVisible(lower,listOf(lower,upper)))
-        assertTrue(com.tilebloom.game.presentation.board.TileVisibility.symbolVisible(upper,listOf(lower,upper)))
-        assertTrue(com.tilebloom.game.presentation.board.TileVisibility.symbolVisible(lower,listOf(lower,upper.copy(removed=true))))
-        assertFalse(com.tilebloom.game.presentation.board.TileVisibility.symbolVisible(lower,listOf(lower,upper.copy(x=.5))))
+        val tiles = listOf(lower, upper)
+        val geometry = com.tilebloom.game.presentation.board.BoardGeometry(360f, 480f, tiles = tiles)
+        val center = geometry.face(lower).center
+        fun visible(t: Tile, state: List<Tile>) = com.tilebloom.game.presentation.board.TileVisibility
+            .faceVisibleAt(t, state, geometry, center.x, center.y)
+        assertFalse(visible(lower, tiles))
+        assertTrue(visible(upper, tiles))
+        assertTrue(visible(lower, listOf(lower, upper.copy(removed = true))))
+        val shifted = upper.copy(x = .5)
+        val exposed = geometry.face(lower).left + geometry.scale * .2f
+        assertTrue(com.tilebloom.game.presentation.board.TileVisibility.faceVisibleAt(lower,
+            listOf(lower, shifted), geometry, exposed, center.y))
     }
     @Test fun metricsHaveHandCheckedValues() {
         val tiles = listOf(Tile(0,Symbol.LEAF,0.0,0.0,0),Tile(1,Symbol.LEAF,.5,0.0,1))
