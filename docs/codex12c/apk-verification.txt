@@ -1,0 +1,6 @@
+APK: /home/walid/Documents/projects/androidGames/TileBloom/app/build/outputs/apk/debug/app-debug.apk
+Size: 749971 bytes
+Modified: 2026-10-28T18:18:07.772557+01:00
+SHA-256: 62f43621b554bad42cb8fa8d8fe871ab89f6e10a71a0f5c8a07c11191e832b6e
+Previous SHA-256: f246a09c203308e1e900f2e48a92ec00f061183f144c65133701d68895a7205b
+PASS: new timestamp and hash; MainActivity, wallet and string-array lookup in DEX; all four labels packaged; Google Ads/UMP and RewardedAdManager absent.

@@ -1,0 +1,89 @@
+Binary APK
+Package name=com.tilebloom.game id=7f
+  type array id=01 entryCount=1
+    resource 0x7f010000 array/undo_balances
+      () (array) size=4
+        ["Undo (0)", "Undo (1)", "Undo (2)", "Undo (3)"]
+  type id id=02 entryCount=7
+    resource 0x7f020000 id/board
+      () (id)
+    resource 0x7f020001 id/counter
+      () (id)
+    resource 0x7f020002 id/feedback
+      () (id)
+    resource 0x7f020003 id/next_level
+      () (id)
+    resource 0x7f020004 id/replay_level
+      () (id)
+    resource 0x7f020005 id/restart
+      () (id)
+    resource 0x7f020006 id/undo
+      () (id)
+  type string id=03 entryCount=29
+    resource 0x7f030000 string/app_name
+      () "TileBloom"
+    resource 0x7f030001 string/board_description
+      () "Mahjong garden board"
+    resource 0x7f030002 string/board_none_selected
+      () "No tile selected."
+    resource 0x7f030003 string/board_selected
+      () "Selected: %1$s."
+    resource 0x7f030004 string/board_state
+      () "Mahjong garden board. %1$d tiles remaining. %2$s"
+    resource 0x7f030005 string/generation_error
+      () "This garden could not be prepared. Please replay the current level."
+    resource 0x7f030006 string/instruction
+      () "Select two matching free tiles"
+    resource 0x7f030007 string/journey_complete
+      () "Garden Journey Complete"
+    resource 0x7f030008 string/journey_detail
+      () "Five gardens, beautifully tended."
+    resource 0x7f030009 string/level
+      () "Level 1"
+    resource 0x7f03000a string/level_number
+      () "Level %1$d"
+    resource 0x7f03000b string/next_level
+      () "Next Level"
+    resource 0x7f03000c string/no_moves
+      () "No More Matches"
+    resource 0x7f03000d string/no_moves_detail
+      () "Try another approach."
+    resource 0x7f03000e string/pairs
+      () "Pairs left: %1$d"
+    resource 0x7f03000f string/play_again
+      () "Play Again"
+    resource 0x7f030010 string/replay_level
+      () "Replay Level"
+    resource 0x7f030011 string/restart
+      () "Restart"
+    resource 0x7f030012 string/restart_level
+      () "Restart Level"
+    resource 0x7f030013 string/subtitle
+      () "Mahjong Garden Puzzle"
+    resource 0x7f030014 string/symbol_berries
+      () "Berry cluster"
+    resource 0x7f030015 string/symbol_fern
+      () "Fern"
+    resource 0x7f030016 string/symbol_flower
+      () "Five-petal flower"
+    resource 0x7f030017 string/symbol_leaf
+      () "Leaf"
+    resource 0x7f030018 string/symbol_lotus
+      () "Lotus"
+    resource 0x7f030019 string/symbol_sunflower
+      () "Sunflower"
+    resource 0x7f03001a string/undo_credits
+      () "Undo (%1$d)"
+    resource 0x7f03001b string/won
+      () "Garden Cleared!"
+    resource 0x7f03001c string/won_detail
+      () "Beautifully done."
+  type style id=04 entryCount=1
+    resource 0x7f040000 style/AppTheme
+      () (style) size=6 parent=0x0103022e
+        0x01010054=#ff102f27
+        0x010102dd=true
+        0x010103ac="sans"
+        0x01010435=#ffcbb578
+        0x010104e0=false
+        0x0101056c=false

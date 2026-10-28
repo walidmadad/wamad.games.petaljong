@@ -3,7 +3,7 @@ package com.tilebloom.game.storage
 import android.content.Context
 import com.tilebloom.game.domain.ProgressController
 
-/** Process-owned state: SDK rewards survive activity replacement and never save an old board. */
+/** Process-owned state: the wallet and board survive activity replacement together. */
 object GameStore {
     private var controller: ProgressController? = null
     private var owner = 0L

@@ -42,7 +42,6 @@ run('java','-cp',':'.join([str(testclasses),stdlib,junit,hamcrest]),'org.junit.r
     *['.'.join(p.relative_to(ROOT/'app/src/test/java').with_suffix('').parts) for p in tests])
 if '--jvm-only' in sys.argv:
     sys.exit(0)
-raise SystemExit('Ads-enabled APK requires standard Gradle with Google dependencies. Use --jvm-only for independent tests.')
 res = OUT / 'resources.zip'
 run(bt/'aapt2','compile','--dir','app/src/main/res','-o',res)
 manifest = OUT / 'AndroidManifest.xml'

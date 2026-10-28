@@ -16,17 +16,8 @@ import com.tilebloom.game.R
 import com.tilebloom.game.domain.*
 
 class MainActivity : Activity() {
-    companion object {
-        /** Instrumentation injection is ignored by release builds. No fake ships in main sources. */
-        var debugAdProvider: com.tilebloom.game.ads.GameAds? = null
-    }
     private lateinit var progress: ProgressController
     private val session get() = progress.session
-    private lateinit var ads: com.tilebloom.game.ads.GameAds
-    private lateinit var watchAd: Button
-    private lateinit var privacy: Button
-    private val adChanged: () -> Unit = { update() }
-    private var displayedBalance = -1
     private val game get() = session.game
     private lateinit var levelLabel: TextView
     private lateinit var victoryScroll: ScrollView
@@ -42,8 +33,6 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         progress = com.tilebloom.game.storage.GameStore.get(this)
-        ads = (if (com.tilebloom.game.BuildConfig.DEBUG) debugAdProvider else null)
-            ?: com.tilebloom.game.ads.RewardedAdManager.get(this)
         if (progress.recovered) android.util.Log.w("TileBloomSave", "Board snapshot rejected; completion retained")
         // Durable moves always win. Bundle may restore only a selection on that exact board.
         if (savedInstanceState != null) {
@@ -215,7 +204,7 @@ class MainActivity : Activity() {
         }
         val actions = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
         undo = Button(this).apply {
-            id = R.id.undo; isAllCaps = false; textSize = 16f; minimumHeight = dp(48)
+            id = R.id.undo; isAllCaps = false; textSize = 16f; minimumHeight = dp(48); maxLines = 1
             styleVictory(this, true)
             setTextColor(ColorStateList(arrayOf(intArrayOf(-android.R.attr.state_enabled), intArrayOf()),
                 intArrayOf(Color.rgb(191, 207, 187), ivory)))
@@ -229,28 +218,9 @@ class MainActivity : Activity() {
         actions.addView(undo, LinearLayout.LayoutParams(0, -2, 1f).apply { marginEnd = dp(8) })
         actions.addView(restart, LinearLayout.LayoutParams(0, -2, 1f))
         root.addView(actions, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(4) })
-        watchAd = Button(this).apply {
-            id = R.id.watch_ad
-            isAllCaps = false; minimumHeight = dp(48); styleVictory(this, true)
-            setOnClickListener {
-                if (progress.wallet.balance == 0 && game.canUndo && !ads.show(this@MainActivity)) {
-                    Toast.makeText(this@MainActivity, R.string.ad_unavailable, Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-        root.addView(watchAd)
-        privacy = Button(this).apply {
-            id = R.id.privacy_options
-            setText(R.string.privacy_options); isAllCaps = false; minimumHeight = dp(48)
-            styleVictory(this, false)
-            setOnClickListener { ads.privacy(this@MainActivity) }
-        }
-        root.addView(privacy)
         setContentView(root)
         root.requestApplyInsets()
         update()
-        ads.changed = adChanged
-        ads.consent(this)
     }
     private fun showLevels() {
         val current = session.level.id
@@ -326,29 +296,10 @@ class MainActivity : Activity() {
         // The wallet is global, including before the first move and after victory.
         undo.visibility = View.VISIBLE
         undo.isEnabled = game.canUndo && progress.wallet.balance > 0
-        undo.text = getString(if (game.status == Status.NO_MOVES) R.string.undo_last_credits else R.string.undo_credits, progress.wallet.balance)
-        watchAd.visibility = if (game.canUndo && progress.wallet.balance == 0) View.VISIBLE else View.GONE
-        watchAd.setText(if (ads.loading) R.string.ad_loading else R.string.watch_ad)
-        watchAd.isEnabled = !ads.loading
-        privacy.visibility = if (ads.privacyRequired) View.VISIBLE else View.GONE
-        restart.setText(if (game.status == Status.NO_MOVES) R.string.restart_level else R.string.restart)
-        if (progress.wallet.balance == 0 && game.canUndo && !ads.loading && !ads.available) {
-            feedback.visibility = View.VISIBLE
-            feedback.append("\n" + getString(R.string.ad_unavailable))
-        }
-        if (displayedBalance >= 0 && progress.wallet.balance > displayedBalance) {
-            Toast.makeText(this, R.string.reward_earned, Toast.LENGTH_SHORT).show()
-        }
-        displayedBalance = progress.wallet.balance
+        undo.text = resources.getStringArray(R.array.undo_balances).getOrNull(progress.wallet.balance)
+            ?: getString(R.string.undo_credits, progress.wallet.balance)
+        restart.setText(R.string.restart)
         board.refresh()
-    }
-    override fun onResume() {
-        super.onResume()
-        if (::ads.isInitialized && ::watchAd.isInitialized) { ads.changed = adChanged; update() }
-    }
-    override fun onDestroy() {
-        if (ads.changed === adChanged) ads.changed = null
-        super.onDestroy()
     }
     override fun onStop() {
         super.onStop()
