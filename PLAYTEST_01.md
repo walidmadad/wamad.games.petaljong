@@ -376,3 +376,13 @@ Status: NOT EXECUTED. ADB server socket is denied in this environment. Use only 
 9. With consent/availability permitting, verify optional Google test rewarded ads, earned +1 credits, canceled-ad zero reward and duplicate protection. Ads must not be mandatory.
 
 Run `ConnectivityInteractionTest` and the existing Android suite, then record actual results/screenshots here. No Android PASS is claimed by this checklist. Local validation is a platform connectivity signal, not authenticated server enforcement.
+
+## CODEX 29 pending device playtest
+
+Use an in-place signed update; never uninstall or clear the player's storage. Confirm boundaries 7→8, 15→16, 30→31 and 31→32 with unchanged Hint/Undo balances and no completed-level replay. Resume an old v6 in-progress board and confirm its exact tray/history before advancing into v7.
+
+Run AdvancedBoardVisualTest on Android to capture Normal 1, Hard 8, Very Hard 16, Expert compact 31 and Expert classic 32 at 320/360/400/600 dp. Inspect both initial and opened boards: opaque covered identities, visibly darker blocked ceramic, bright available tiles, visible terrace thickness/contact shadows, readable botanical symbols, no viewport clipping and accurate upper-tile touches. Validate Hint on several upper removals and Undo reconstruction. Compare actual Android captures with previous boards and the user's references; this has NOT been performed here.
+
+Human sessions should record future-unlock planning, tray choices at three occupied slots, accidental taps and perceptual fairness. Synthetic consequence/probe metrics do not establish subjective ordering. Verify existing rewarded +1 balances, UMP/privacy and timed victory interstitials without changing ad frequency. See CODEX_29_REPORT.md for remaining blocked verification.
+
+CODEX 29 final JVM result: **240/240 PASS** (66.007 s). Android main/instrumentation sources compile diagnostically; instrumentation and screenshot review remain NOT VERIFIED. Standard Gradle/Lint and fresh APK remain blocked. Full evidence and acceptance statuses are in CODEX_29_REPORT.md and docs/codex29.

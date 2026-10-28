@@ -94,9 +94,9 @@ object PuzzleAnalyzer {
             }
             if (signatures.size > 1) consequences++
             if (stateSafe && stateDead) risky++
-            val upper = game.remaining.any { (it.id == step.first || it.id == step.second) && it.layer > 0 }
+            val removedLayer = game.remaining.filter { it.id == step.first || it.id == step.second }.maxOf { it.layer }
             check(game.match(step.first, step.second))
-            if (upper && game.remaining.any { it.layer == 0 && it.id !in before && game.isAvailable(it.id) }) unlocks++
+            if (removedLayer > 0 && game.remaining.any { it.layer < removedLayer && it.id !in before && game.isAvailable(it.id) }) unlocks++
         }
         return PuzzleAnalysis(level.tiles.size, level.tiles.map { it.layer }.distinct().size,
             level.tiles.map { it.symbol }.distinct().size, initialFree, initialPairs.size,

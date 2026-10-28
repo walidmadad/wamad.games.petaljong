@@ -109,3 +109,9 @@ Gameplay now requires Android's default network to have both INTERNET and VALIDA
 New v6 boards introduce Cactus (ID 16) at level 6, Lavender (17) at 11, Ladybug (18) at 21 and Snail (19) at 41. All eligible new types receive real witness pairs. Existing IDs, levels 1–5, 20-level tiers and four-slot rules remain. Historical generator v4/v5 saves restore their original boards; schema 5 and balances are unchanged. Home spacing, the secondary privacy action, tray outlines and control badge separation are refined.
 
 See [CODEX_25_REPORT.md](CODEX_25_REPORT.md) for acceptance results and limitations. Cached JVM and diagnostic compilation checks are available; normal Gradle and ADB are blocked by host restrictions. **No fresh CODEX 25 APK or emulator verification is available.** Existing APKs must not be treated as this delivery.
+
+## CODEX 29: advanced Mahjong
+
+New puzzles use generator v7: Normal 1–7, Hard 8–15, Very Hard 16–30, Expert 31+. Alternating classic side-terrace and compact center-stack families reach four real blocking layers with at most 48 botanical tiles. Six bounded candidates combine pair-choice analysis and actual four-slot tray probes; every returned board replays a complete winning witness through Game. Old in-progress v4/v5/v6 puzzles reconstruct with historical definitions. Blocked faces are darker; overhead coverage hides artwork; ceramic edges and shadows are deeper.
+
+See [CODEX_29_REPORT.md](CODEX_29_REPORT.md) for measured baseline, targets, compatibility and limitations. Android visual acceptance and a fresh APK remain pending because Gradle/ADB are blocked in this environment. `tools/benchmark29.py historical` measures frozen v6; omit the argument for v7 (Java 17 required). AdvancedBoardVisualTest prepares Android board captures without touching saved progress.

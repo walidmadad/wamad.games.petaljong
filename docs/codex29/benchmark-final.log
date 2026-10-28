@@ -1,0 +1,11 @@
+1 tiles=24 layers=2 overlap=23 blocked=18 free=6 choices=8 risk=1 unknown=0 generationMs=28 analysisMs=34 ms=62
+7 tiles=24 layers=2 overlap=16 blocked=16 free=8 choices=10 risk=0 unknown=0 generationMs=224 analysisMs=12 ms=236
+8 tiles=36 layers=3 overlap=44 blocked=28 free=8 choices=16 risk=2 unknown=45 generationMs=258 analysisMs=56 ms=315
+15 tiles=36 layers=3 overlap=80 blocked=32 free=4 choices=15 risk=1 unknown=0 generationMs=149 analysisMs=24 ms=173
+16 tiles=42 layers=4 overlap=75 blocked=34 free=8 choices=18 risk=1 unknown=46 generationMs=345 analysisMs=59 ms=405
+30 tiles=42 layers=4 overlap=75 blocked=34 free=8 choices=18 risk=2 unknown=40 generationMs=408 analysisMs=28 ms=436
+31 tiles=44 layers=4 overlap=146 blocked=38 free=6 choices=19 risk=4 unknown=0 generationMs=154 analysisMs=17 ms=172
+50 tiles=48 layers=4 overlap=120 blocked=42 free=6 choices=22 risk=2 unknown=0 generationMs=196 analysisMs=22 ms=219
+100 tiles=48 layers=4 overlap=114 blocked=42 free=6 choices=19 risk=3 unknown=0 generationMs=178 analysisMs=19 ms=197
+500 tiles=48 layers=4 overlap=114 blocked=42 free=6 choices=22 risk=2 unknown=0 generationMs=150 analysisMs=19 ms=171
+1000 tiles=48 layers=4 overlap=114 blocked=42 free=6 choices=21 risk=0 unknown=0 generationMs=179 analysisMs=16 ms=196

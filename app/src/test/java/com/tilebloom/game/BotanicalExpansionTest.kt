@@ -49,7 +49,9 @@ class BotanicalExpansionTest {
                 if (level.tiles.first { it.id == pair.first }.symbol == symbol) {
                     val before = game.snapshot()
                     assertTrue(game.select(pair.first)); assertEquals(symbol, game.tray.single().symbol)
-                    assertEquals(pair.second, HintPolicy.suggest(level.tiles, game.snapshot())?.id)
+                    val hint = HintPolicy.suggest(level.tiles, game.snapshot())!!
+                    assertTrue(game.isAvailable(hint.id!!))
+                    assertEquals(symbol, game.remaining.first { it.id == hint.id }.symbol)
                     assertTrue(game.select(pair.second)); assertTrue(game.tray.isEmpty())
                     assertTrue(game.undo()); assertEquals(symbol, game.tray.single().symbol)
                     assertTrue(game.undo()); assertEquals(before, game.snapshot())

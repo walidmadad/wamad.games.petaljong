@@ -8,22 +8,32 @@ data class DifficultyProfile(
     val maximumRiskStates: Int, val candidateBudget: Int, val analysisBudget: Int,
     val phase: Int, val coverOffset: Double, val strategicEmphasis: Int
 )
+enum class Difficulty { NORMAL, HARD, VERY_HARD, EXPERT }
 object DifficultyPolicy {
-    fun tier(level: Long): Long { require(level > 0); return (level - 1) / 20 }
+    fun difficulty(level: Long): Difficulty { require(level > 0); return when(level) {
+        in 1..7 -> Difficulty.NORMAL
+        in 8..15 -> Difficulty.HARD
+        in 16..30 -> Difficulty.VERY_HARD
+        else -> Difficulty.EXPERT
+    } }
+    fun tier(level: Long) = difficulty(level).ordinal.toLong()
     fun profile(level: Long): DifficultyProfile {
-        val tier = tier(level)
-        val stage = minOf(tier, 6).toInt()
-        val first = tier * 20 + 1 // <= level, even at Long.MAX_VALUE
-        val last = first + minOf(19L, Long.MAX_VALUE - first)
-        val ranges = listOf(24..28, 28..32, 32..36, 36..40, 40..44, 40..48, 40..48)
-        return DifficultyProfile(tier, first, last, ranges[stage], minOf(16, 6 + stage * 2),
-            listOf("river", "steps", "cross", "wings", "split", "pyramid", "offset", "staggered"),
-            0..1, 12 + stage * 2, 2 + stage + minOf(6L, maxOf(0L, tier - 6)).toInt(),
-            2 + stage / 2, 4, 1500 + stage * 250, ((level - 1) % 20).toInt(),
-            if (tier >= 2 && tier % 3 != 0L) .5 else 0.0, (tier % 3).toInt())
+        val stage = difficulty(level).ordinal
+        val first = listOf(1L,8L,16L,31L)[stage]
+        val last = listOf(7L,15L,30L,Long.MAX_VALUE)[stage]
+        return DifficultyProfile(stage.toLong(), first, last,
+            listOf(24..28,32..36,40..44,44..48)[stage],
+            minOf(symbols(level).size, listOf(6,8,10,16)[stage]),
+            listOf("classic", "compact"), 0..(stage + 1).coerceAtMost(3),
+            listOf(12,22,30,34)[stage], listOf(2,4,6,8)[stage],
+            6, 6, 2000 + stage * 500, ((level - 1) % 8).toInt(), .5, stage)
     }
     fun symbols(level: Long) = Symbol.entries.filter { it.introducedAt <= level }
     fun introduced(level: Long) = Symbol.entries.filter { it.introducedAt == level && level > 1 }
-    fun transitionMessage(level: Long): String? = if (level > 1 && (level - 1) % 20 == 0L)
-        "New Garden Challenge!" + if (introduced(level).isNotEmpty()) " New tiles discovered." else "" else null
+    fun transitionMessage(level: Long): String? = when(level) {
+        8L -> "Hard Garden Challenge"
+        16L -> "Very Hard Garden Challenge"
+        31L -> "Expert Garden Challenge"
+        else -> if (introduced(level).isNotEmpty()) "New tiles discovered." else null
+    }
 }

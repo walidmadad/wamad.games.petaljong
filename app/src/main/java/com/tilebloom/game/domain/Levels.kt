@@ -5,7 +5,8 @@ import java.util.Random
 data class TileSlot(val id: Int, val x: Double, val y: Double, val layer: Int)
 data class BoardLayout(val id: String, val slots: List<TileSlot>)
 data class CandidateQuality(val index: Int, val consequenceChoices: Int, val riskyChoices: Int,
-    val searchNodes: Int, val unknownAlternatives: Int, val targetMet: Boolean)
+    val searchNodes: Int, val unknownAlternatives: Int, val targetMet: Boolean,
+    val overlapRelationships: Int = 0, val trayThreeHeldStates: Int = 0, val trayProbeLosses: Int = 0)
 data class LevelDefinition(val id: Long, val seed: Long, val version: Int, val layout: BoardLayout,
     val tiles: List<Tile>, val witness: List<PairMove>, val attempts: Int,
     val qualityTargetMet: Boolean = false, val candidatesEvaluated: Int = 0,
@@ -36,7 +37,7 @@ object LevelValidator {
         val tiles = level.tiles
         require(tiles.isNotEmpty() && tiles.size % 2 == 0)
         require(tiles.map { it.id }.distinct().size == tiles.size)
-        require(tiles.all { !it.removed && it.x.isFinite() && it.y.isFinite() && it.layer in 0..1 })
+        require(tiles.all { !it.removed && it.x.isFinite() && it.y.isFinite() && it.layer in 0..3 })
         require(tiles.map { TileSlot(it.id, it.x, it.y, it.layer) } == level.layout.slots)
         require(tiles.groupingBy { it.symbol }.eachCount().values.all { it % 2 == 0 })
         require(tiles.all { a -> tiles.none { b -> a.id != b.id && a.layer == b.layer && Rules.overlaps(a, b) } })
@@ -179,7 +180,7 @@ class GardenSession {
     fun restore(saved: SessionSnapshot): Boolean {
         // Restoration may resume this board or a later one, never an earlier board.
         if (saved.id < level.id) return false
-        val candidate = try { if (saved.id >= 6 && saved.version == 4) LegacyEndlessGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 5) VersionFiveGenerator.generate(saved.id) else Levels.get(saved.id) } catch (_: Exception) { return false }
+        val candidate = try { if (saved.id >= 6 && saved.version == 4) LegacyEndlessGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 5) VersionFiveGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 6) VersionSixGenerator.generate(saved.id) else Levels.get(saved.id) } catch (_: Exception) { return false }
         if (candidate.seed != saved.seed || candidate.version != saved.version) return false
         val restored = Game(candidate.tiles)
         if (!restored.restore(saved.game)) return false

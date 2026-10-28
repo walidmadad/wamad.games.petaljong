@@ -8,13 +8,14 @@ import org.junit.Test
 class DifficultyTest {
     private val milestones = listOf(1L,20,21,40,41,60,61,80,81,100,101,120,121,200,500,1000,10000,Long.MAX_VALUE)
     @Test fun boundariesAndSafeRanges() {
-        (1L..20).forEach { assertEquals(0L, DifficultyPolicy.tier(it)) }
+        val expected = mapOf(1L to Difficulty.NORMAL,7L to Difficulty.NORMAL,8L to Difficulty.HARD,
+            15L to Difficulty.HARD,16L to Difficulty.VERY_HARD,30L to Difficulty.VERY_HARD,
+            31L to Difficulty.EXPERT,100L to Difficulty.EXPERT,1000L to Difficulty.EXPERT)
+        expected.forEach { (id, tier) -> assertEquals(tier,DifficultyPolicy.difficulty(id)) }
         milestones.forEach { id -> val p = DifficultyPolicy.profile(id)
-            assertEquals((id-1)/20, p.tierIndex); assertTrue(id in p.firstLevel..p.lastLevel)
-            assertTrue(p.lastLevel >= p.firstLevel); assertTrue(p.activeSymbols <= 16)
+            assertEquals(DifficultyPolicy.difficulty(id).ordinal.toLong(),p.tierIndex)
+            assertTrue(id in p.firstLevel..p.lastLevel); assertTrue(p.activeSymbols <= 16)
         }
-        assertEquals(1L,DifficultyPolicy.tier(21)); assertEquals(1L,DifficultyPolicy.tier(40))
-        assertEquals(2L,DifficultyPolicy.tier(41)); assertEquals(6L,DifficultyPolicy.tier(121))
     }
     @Test fun stableCatalogAndMilestones() {
         assertEquals((0..19).toList(),Symbol.entries.map { it.stableId })
@@ -25,7 +26,7 @@ class DifficultyTest {
             val level=Levels.get(id)
             DifficultyPolicy.introduced(id).forEach { symbol -> assertTrue(level.tiles.count { it.symbol==symbol } >= 2) }
         }
-        assertFalse(DifficultyPolicy.transitionMessage(121)!!.contains("tiles"))
+        assertNull(DifficultyPolicy.transitionMessage(121))
         assertNull(DifficultyPolicy.transitionMessage(122))
     }
     @Test fun profileMatrixVerifiedAndTouchable() {
@@ -62,7 +63,7 @@ class DifficultyTest {
         }
     }
     @Test fun transitionsAreExactlyOneAndPersistCredits() {
-        for(id in listOf(20L,40,60,80,100,120)) {
+        for(id in listOf(7L,15,30,31,40,100)) {
             val c=ProgressController(PlayerProgress(highestCompleted=id-1,undoCredits=1))
             c.session.level.witness.forEach { assertTrue(c.session.game.match(it.first,it.second)) }
             val next=c.prepareNext()!!; assertTrue(c.commitNext(next)); assertFalse(c.commitNext(next))

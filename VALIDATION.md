@@ -769,3 +769,11 @@ Cached Kotlin/JUnit verifies generator v6, full production witnesses, new-symbol
 `ConnectivityInteractionTest` adds offline home/Play, consent-independent online access, action guards, tray/credit preservation, reconnect, victory gating, recreation and renderer-scale coverage. Tests are updated and compiled, not run. Real Wi-Fi/mobile, captive network, handover, callback registration under recreation, compact/large-font layout and optional rewarded-ad playback remain pending. See CODEX_25_REPORT.md for the 30-item acceptance matrix.
 
 Final CODEX 25 JVM result: **216 tests, 0 failures**, 30.099 seconds. Diagnostic main/Android test compilation: PASS. Standard Gradle, Lint, emulator and fresh APK remain unverified/blocked as described above.
+
+## CODEX 29 — advanced boards
+
+Authoritative results and acceptance statuses: [CODEX_29_REPORT.md](CODEX_29_REPORT.md). New regression matrix: 1, 7, 8, 15, 16, 30, 31, 50, 100, 500, 1000. Checks exact policy, both geometry families, all terraces, invalid intersections, real coverage, full individual controller replay, empty winning tray, deterministic budgets, Expert metrics, viewport/hit replay, coverage Undo and historical v5/v6 tray restoration. Existing JVM suites continue covering credits, Hint, ads and progression.
+
+Default Gradle wrapper and writable installed Gradle both fail before tasks; ADB listener is denied. Diagnostic compilation/JVM execution must be distinguished from standard Gradle/Lint and executed instrumentation. No fresh APK or reviewed Android screenshot is available. Evidence: docs/codex29. Capture harness: AdvancedBoardVisualTest, levels 1/8/16/31/32 at four portrait widths, initial/opened states, isolated files/codex29-visual directory.
+
+CODEX 29 final JVM result: **240/240 PASS** (66.007 s). Android main/instrumentation sources compile diagnostically; instrumentation and screenshot review remain NOT VERIFIED. Standard Gradle/Lint and fresh APK remain blocked. Full evidence and acceptance statuses are in CODEX_29_REPORT.md and docs/codex29.

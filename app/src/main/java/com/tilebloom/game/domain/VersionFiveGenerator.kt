@@ -8,7 +8,7 @@ object VersionFiveGenerator {
     const val RECENT_WINDOW = 4
     fun seed(id: Long) = LegacyEndlessGenerator.seed(id) xor 4L xor VERSION.toLong()
     fun layout(id: Long): BoardLayout {
-        val profile = DifficultyPolicy.profile(id)
+        val profile = HistoricalDifficultyPolicy.profile(id)
         val old = LegacyEndlessGenerator.layout(id)
         val base = old.slots.filter { it.layer == 0 }
         // Twenty base tiles in eight compact silhouettes; at most a half-tile cover offset.
@@ -35,7 +35,7 @@ object VersionFiveGenerator {
     }
     fun generate(id: Long, forceFallback: Boolean = false): LevelDefinition {
         require(id >= 6)
-        val profile = DifficultyPolicy.profile(id)
+        val profile = HistoricalDifficultyPolicy.profile(id)
         val layout = layout(id)
         val seed = seed(id)
         check(layout.id.substringBefore('-') in profile.allowedFamilies)
@@ -47,7 +47,7 @@ object VersionFiveGenerator {
             val built = if (forceFallback) fallback(id, seed, layout) else runCatching {
                 LevelGenerator.generate(id, seed + index * 7919L, layout, version = 1)
             }.getOrElse { fallback(id, seed, layout) }
-            val catalog = DifficultyPolicy.symbols(id).filter { it.stableId < 16 }
+            val catalog = HistoricalDifficultyPolicy.symbols(id).filter { it.stableId < 16 }
             val offset = ((id - 1) % catalog.size).toInt()
             val active = List(minOf(profile.activeSymbols, built.witness.size)) { catalog[(it + offset) % catalog.size] }
             // Every active type receives a complete witness pair, including all milestone unlocks.

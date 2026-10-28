@@ -83,7 +83,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
                 val shrink = 1f - .1f * progress
                 canvas.scale(shrink, shrink, r.centerX(), r.centerY())
             }
-            val selected = game.selected == tile.id
+            val selected = available && game.selected == tile.id
             paint.style = Paint.Style.FILL
             // Two offset shadow bands: soft penumbra and a stronger contact shadow.
             paint.color = Color.argb(if (tile.layer > 0) 48 else 28, 3, 20, 15)
@@ -94,12 +94,12 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             canvas.drawRoundRect(layout.body(tile).android(), layout.radius, layout.radius, paint)
             paint.color = Color.rgb(208, 197, 163)
             canvas.drawRoundRect(layout.edge(tile).android(), layout.radius, layout.radius, paint)
-            paint.color = if (available) Color.rgb(250, 244, 224) else Color.rgb(222, 224, 204)
+            paint.color = if (available) Color.rgb(250, 244, 224) else Color.rgb(153, 163, 139)
             canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
             // Inset ceramic rim and top highlight stay inside the established face.
             paint.style = Paint.Style.STROKE
             paint.strokeWidth = scale * .018f
-            paint.color = if (available) Color.rgb(255, 253, 240) else Color.rgb(235, 237, 218)
+            paint.color = if (available) Color.rgb(255, 253, 240) else Color.rgb(182, 190, 164)
             canvas.drawRoundRect(face.inset(scale * .035f).android(), layout.radius * .8f, layout.radius * .8f, paint)
             // Keep all border strokes inside the physical face so selection never changes hit bounds.
             paint.style = Paint.Style.STROKE
@@ -116,11 +116,19 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
                 canvas.drawRoundRect(face.inset(scale * .075f).android(), scale * .06f, scale * .06f, paint)
             }
             paint.style = Paint.Style.FILL
-            canvas.save()
-            canvas.translate(r.centerX(), r.centerY())
-            canvas.scale(scale * .34f, scale * .34f)
-            BotanicalSymbols.draw(canvas, paint, tile.symbol)
-            canvas.restore()
+            // Any overhead intersection conceals the artwork conservatively. Ceramic
+            // edges remain visible, and opaque upper faces never disclose identity.
+            if (TileVisibility.symbolVisible(tile, game.tiles)) {
+                canvas.save()
+                canvas.translate(r.centerX(), r.centerY())
+                canvas.scale(scale * .34f, scale * .34f)
+                BotanicalSymbols.draw(canvas, paint, tile.symbol)
+                canvas.restore()
+                if (!available) {
+                    paint.color = Color.argb(65, 100, 115, 89)
+                    canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
+                }
+            }
             if (!available) {
                 // Engraved corner bars distinguish blocking without relying on color.
                 paint.color = Color.rgb(103, 113, 91); paint.strokeWidth = scale * .025f

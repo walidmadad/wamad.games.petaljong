@@ -1,0 +1,11 @@
+1 tiles=24 layers=2 overlap=23 blocked=18 free=6 choices=8 risk=1 unknown=0 ms=362
+7 tiles=24 layers=2 overlap=4 blocked=13 free=11 choices=9 risk=0 unknown=0 ms=510
+8 tiles=24 layers=2 overlap=4 blocked=12 free=12 choices=10 risk=0 unknown=0 ms=385
+15 tiles=28 layers=2 overlap=8 blocked=17 free=11 choices=12 risk=0 unknown=0 ms=348
+16 tiles=28 layers=2 overlap=8 blocked=16 free=12 choices=12 risk=0 unknown=0 ms=390
+30 tiles=28 layers=2 overlap=8 blocked=17 free=11 choices=11 risk=2 unknown=0 ms=324
+31 tiles=32 layers=2 overlap=12 blocked=22 free=10 choices=12 risk=0 unknown=0 ms=358
+50 tiles=32 layers=2 overlap=21 blocked=21 free=11 choices=13 risk=0 unknown=0 ms=207
+100 tiles=40 layers=2 overlap=36 blocked=32 free=8 choices=18 risk=0 unknown=0 ms=161
+500 tiles=40 layers=2 overlap=20 blocked=32 free=8 choices=17 risk=0 unknown=0 ms=236
+1000 tiles=40 layers=2 overlap=35 blocked=30 free=10 choices=18 risk=0 unknown=0 ms=261
