@@ -26,6 +26,7 @@ class MainActivity : Activity() {
     private lateinit var startScreen: ScrollView
     private lateinit var startLevel: TextView
     private lateinit var startHint: TextView
+    private lateinit var homeActions: FrameLayout
     private lateinit var play: Button
     private var gameplay: LinearLayout? = null
     private lateinit var levelLabel: TextView
@@ -62,6 +63,10 @@ class MainActivity : Activity() {
     private var online = false
     private var showConnection = false
     private lateinit var connectivity: NetworkObserver
+    private lateinit var offlineHome: LinearLayout
+    private lateinit var offlineScroll: ScrollView
+    private lateinit var onlinePrivacyParent: LinearLayout
+    private var lastRetry = -1000L
     private lateinit var connection: LinearLayout
     private lateinit var connectionShade: FrameLayout
     private lateinit var privacy: Button
@@ -155,7 +160,7 @@ class MainActivity : Activity() {
             setAutoSizeTextTypeUniformWithConfiguration(24, 42, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
         })
         add(textLabel(14f, GardenStyle.secondary).apply { setText(R.string.subtitle); letterSpacing = .05f }, 6)
-        add(GardenWelcomeArt(this), 10, dp(if (compact) 176 else 220))
+        add(GardenWelcomeArt(this).apply { id = R.id.home_art }, 10, dp(if (compact) 176 else 220))
         val levelCard = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
             background = GardenStyle.surface(this@MainActivity, GardenStyle.panel)
@@ -171,11 +176,10 @@ class MainActivity : Activity() {
         startHint = textLabel(14f, GardenStyle.secondary).apply { setPadding(0, dp(8), 0, 0) }
         levelCard.addView(startHint, LinearLayout.LayoutParams(-1, -2))
         add(levelCard, 8)
-        play = Button(this).apply {
+        play = CenteredPlayButton(this).apply {
             id = R.id.play; GardenStyle.button(this, true)
-            setText(R.string.play); contentDescription = getString(R.string.play_description)
+            contentDescription = getString(R.string.play_description, previewLevel)
             minimumHeight = dp(64); letterSpacing = .08f
-            GardenStyle.primaryIcon(this, R.drawable.ic_play)
             setOnClickListener {
                 if (!online) return@setOnClickListener
                 if (!::navigation.isInitialized) {
@@ -188,7 +192,9 @@ class MainActivity : Activity() {
                 }
             }
         }
-        add(play, 16)
+        homeActions = FrameLayout(this).apply { id = R.id.home_actions }
+        homeActions.addView(play, FrameLayout.LayoutParams(-1, dp(64), Gravity.CENTER))
+        add(homeActions, 16)
         privacy = Button(this).apply {
             id = R.id.privacy_options
             setText(R.string.privacy_short); GardenStyle.button(this, false)
@@ -201,7 +207,8 @@ class MainActivity : Activity() {
                 else Toast.makeText(this@MainActivity, R.string.privacy_not_required, Toast.LENGTH_SHORT).show()
             }
         }
-        content.addView(privacy, LinearLayout.LayoutParams(-2, -2).apply { gravity = Gravity.END; topMargin = dp(8) })
+        onlinePrivacyParent = content
+        content.addView(privacy, LinearLayout.LayoutParams(-2, -2).apply { gravity = Gravity.CENTER_HORIZONTAL; topMargin = dp(12) })
         // Cap the welcoming composition on wider devices; scroll protects large-font navigation.
         val frame = FrameLayout(this)
         frame.addView(content, FrameLayout.LayoutParams(if (resources.configuration.screenWidthDp > 480) dp(420) else -1, -2, Gravity.CENTER))
@@ -220,28 +227,68 @@ class MainActivity : Activity() {
             id = R.id.connection_panel
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
             setPadding(dp(18), dp(18), dp(18), dp(14))
-            background = GardenStyle.surface(this@MainActivity, GardenStyle.panel)
+            background = GardenStyle.surface(this@MainActivity, GardenStyle.panel, border = false)
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
+        connection.background = null
         connection.addView(ImageView(this).apply {
+            id = R.id.offline_icon
             setImageResource(R.drawable.ic_network_off)
             importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-        }, LinearLayout.LayoutParams(dp(36), dp(36)))
-        connection.addView(textLabel(16f).apply {
-            setText(R.string.no_connection); setPadding(0, dp(10), 0, dp(6))
-            typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+        }, LinearLayout.LayoutParams(dp(96), dp(96)))
+        connection.addView(textLabel(28f).apply {
+            setText(R.string.offline_heading); setPadding(0, dp(24), 0, dp(10))
+            typeface = Typeface.create("sans-serif", Typeface.BOLD)
+            if (Build.VERSION.SDK_INT >= 28) isAccessibilityHeading = true
         })
-        connection.addView(textLabel(14f, GardenStyle.secondary).apply { setText(R.string.connect_continue) })
+        connection.addView(textLabel(16f, GardenStyle.secondary).apply { setText(R.string.connect_continue) })
         connection.addView(Button(this).apply {
             id = R.id.connection_retry; GardenStyle.button(this, true); setText(R.string.connection_retry)
-            setOnClickListener { connectivity.retry() }
-        }, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(14) })
-        connection.addView(Button(this).apply {
-            GardenStyle.button(this); textSize = 13f; setText(R.string.network_settings)
+            contentDescription = getString(R.string.connection_retry)
+            GardenStyle.primaryIcon(this, R.drawable.ic_restart)
             setOnClickListener {
-                startActivity(android.content.Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS))
+                val now = android.os.SystemClock.elapsedRealtime()
+                if (now - lastRetry < 1000) return@setOnClickListener
+                lastRetry = now
+                connectivity.retry()
+                announceForAccessibility(getString(R.string.checking_connection))
+                isEnabled = false
+                postDelayed({ isEnabled = true }, 1000)
             }
+        }, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(30) })
+        connection.addView(Button(this).apply {
+            id = R.id.network_settings
+            GardenStyle.button(this); textSize = 14f; setText(R.string.network_settings_short)
+            background = GardenStyle.surface(this@MainActivity, android.graphics.Color.TRANSPARENT, 18)
+            elevation = 0f
+            GardenStyle.primaryIcon(this, R.drawable.ic_network_settings, GardenStyle.gold)
+            contentDescription = getString(R.string.network_settings)
+            setOnClickListener {
+                val actions = if (Build.VERSION.SDK_INT >= 29) listOf(android.provider.Settings.Panel.ACTION_INTERNET_CONNECTIVITY,
+                    android.provider.Settings.ACTION_WIRELESS_SETTINGS, android.provider.Settings.ACTION_SETTINGS)
+                    else listOf(android.provider.Settings.ACTION_WIRELESS_SETTINGS, android.provider.Settings.ACTION_SETTINGS)
+                val opened = actions.any { action -> runCatching {
+                    startActivity(android.content.Intent(action)); true
+                }.getOrDefault(false) }
+                if (!opened) Toast.makeText(this@MainActivity, R.string.settings_unavailable, Toast.LENGTH_SHORT).show()
+            }
+        }, LinearLayout.LayoutParams(-2, -2).apply { topMargin = dp(12) })
+        offlineHome = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL
+            setPadding(dp(24), dp(28), dp(24), dp(16))
+        }
+        offlineHome.addView(textLabel(38f).apply {
+            setText(R.string.app_name); typeface = Typeface.create("serif", Typeface.NORMAL)
         }, LinearLayout.LayoutParams(-1, -2))
+        offlineHome.addView(Space(this), LinearLayout.LayoutParams(1, dp(24), 1f))
+        offlineHome.addView(connection, LinearLayout.LayoutParams(-1, -2))
+        offlineHome.addView(Space(this), LinearLayout.LayoutParams(1, dp(24), 1f))
+        offlineScroll = ScrollView(this).apply {
+            id = R.id.offline_home; isFillViewport = true
+            addView(offlineHome, android.view.ViewGroup.LayoutParams(-1, -2))
+        }
+        root.addView(offlineScroll, FrameLayout.LayoutParams(
+            if (resources.configuration.screenWidthDp > 480) dp(420) else -1, -1, Gravity.CENTER))
     }
 
     private fun createGameplay() {
@@ -418,19 +465,53 @@ class MainActivity : Activity() {
         }.start()
     }
 
+    fun refreshPrivacyOptions() {
+        privacy.visibility = if (AdvertisingService.provider.privacyRequired) View.VISIBLE else View.GONE
+        privacy.isEnabled = AdvertisingService.provider.privacyRequired
+    }
+
     private fun update() {
         play.isEnabled = online && !GameStore.transitioning
-        privacy.visibility = View.VISIBLE
+        privacy.visibility = if (AdvertisingService.provider.privacyRequired) View.VISIBLE else View.GONE
+        privacy.isEnabled = AdvertisingService.provider.privacyRequired
+        play.visibility = if (showConnection) View.GONE else View.VISIBLE
+        play.contentDescription = getString(R.string.play_description, if (::navigation.isInitialized) session.level.id else previewLevel)
         val showingPuzzle = ::navigation.isInitialized && navigation.state.screen == GardenScreen.GAME
         connectionShade.visibility = if (showConnection && showingPuzzle) View.VISIBLE else View.GONE
-        connection.visibility = if (showConnection) View.VISIBLE else View.GONE
-        // On home the card occupies the bottom, preserving the level and privacy entry.
-        val connectionParent = if (showingPuzzle) connectionShade else startHint.parent as LinearLayout
-        if (connection.parent !== connectionParent) {
+        // A home route never exposes level/art/Play until validated connectivity arrives.
+        val offlineAtHome = !online && !showingPuzzle
+        offlineScroll.visibility = if (offlineAtHome) View.VISIBLE else View.GONE
+        startScreen.visibility = if (online && !showingPuzzle) View.VISIBLE else View.GONE
+        connection.visibility = if (offlineAtHome || showConnection && showingPuzzle) View.VISIBLE else View.GONE
+        val connectionParent = if (showingPuzzle) connectionShade else offlineHome
+        if ((if (showingPuzzle) (connection.parent as? View)?.parent else connection.parent) !== connectionParent) {
             (connection.parent as? android.view.ViewGroup)?.removeView(connection)
-            if (showingPuzzle) connectionShade.addView(connection, FrameLayout.LayoutParams(-1, -2, Gravity.CENTER).apply {
-                setMargins(dp(24), dp(16), dp(24), dp(16))
-            }) else connectionParent.addView(connection, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12) })
+            if (showingPuzzle) {
+                connection.background = GardenStyle.surface(this, GardenStyle.panel, border = false)
+                val scroll = ScrollView(this).apply { isFillViewport = false }
+                // Overlay content scrolls on short screens and with enlarged text.
+                connectionShade.removeAllViews()
+                scroll.addView(connection)
+                connectionShade.addView(scroll, FrameLayout.LayoutParams(-1, -2, Gravity.CENTER).apply {
+                    setMargins(dp(24), dp(16), dp(24), dp(16))
+                })
+            } else {
+                connection.background = null
+                offlineHome.addView(connection, 2, LinearLayout.LayoutParams(-1, -2))
+            }
+        }
+        val privacyParent = if (offlineAtHome) offlineHome else onlinePrivacyParent
+        if (privacy.parent !== privacyParent) {
+            (privacy.parent as? android.view.ViewGroup)?.removeView(privacy)
+            privacyParent.addView(privacy, LinearLayout.LayoutParams(-2, -2).apply {
+                gravity = Gravity.CENTER_HORIZONTAL; topMargin = dp(12)
+            })
+        }
+        if (offlineAtHome) {
+            privacy.background = null
+            privacy.setTextColor(GardenStyle.gold)
+        } else {
+            GardenStyle.button(privacy); privacy.textSize = 13f; privacy.minimumHeight = dp(48); privacy.elevation = 0f
         }
         connectionShade.bringToFront()
 
@@ -451,7 +532,7 @@ class MainActivity : Activity() {
             else -> R.string.ready_garden
         })
         play.isEnabled = online && !GameStore.transitioning
-        startScreen.visibility = if (showingGame) View.GONE else View.VISIBLE
+        startScreen.visibility = if (showingGame || !online) View.GONE else View.VISIBLE
         if (showingGame) createGameplay()
         gameplay?.visibility = if (showingGame) View.VISIBLE else View.GONE
         gameplay?.importantForAccessibility = if (showConnection) View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS else View.IMPORTANT_FOR_ACCESSIBILITY_AUTO

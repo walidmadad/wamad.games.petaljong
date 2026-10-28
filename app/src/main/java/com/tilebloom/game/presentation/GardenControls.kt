@@ -33,9 +33,9 @@ internal object GardenStyle {
         button.setPadding(dp(context, 20), dp(context, 12), dp(context, 20), dp(context, 12))
         button.elevation = dp(context, if (primary) 3 else 1).toFloat()
     }
-    fun primaryIcon(button: Button, resource: Int) {
+    fun primaryIcon(button: Button, resource: Int, tint: Int = forest) {
         val icon = button.context.getDrawable(resource)!!.mutate()
-        icon.setTint(forest)
+        icon.setTint(tint)
         val size = dp(button.context, 24); icon.setBounds(0, 0, size, size)
         // An inline image belongs to the centered text run, rather than the button edge.
         val group = android.text.SpannableString("\uFFFC  " + button.text)
@@ -126,5 +126,22 @@ private class CenteredIconSpan(drawable: android.graphics.drawable.Drawable) : a
         canvas.translate(x, y + (fm.ascent + fm.descent - drawable.bounds.height()) / 2f)
         drawable.draw(canvas)
         canvas.restore()
+    }
+}
+
+/** A wide ripple button with no text run or compound drawable offsets. */
+class CenteredPlayButton(context: Context) : Button(context) {
+    private val icon = context.getDrawable(com.tilebloom.game.R.drawable.ic_play)!!.mutate()
+    val iconBounds = Rect()
+    init { text = "" }
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+        val size = GardenStyle.dp(context, 28)
+        iconBounds.set((width - size) / 2, (height - size) / 2,
+            (width - size) / 2 + size, (height - size) / 2 + size)
+        icon.bounds = iconBounds
+        icon.setTint(GardenStyle.forest)
+        icon.alpha = if (isEnabled) 255 else 110
+        icon.draw(canvas)
     }
 }

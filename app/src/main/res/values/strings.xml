@@ -52,7 +52,7 @@
     <string name="load_retry">Your garden could not load. Tap to retry.</string>
     <string name="start_level">LEVEL %1$d</string>
     <string name="play">PLAY</string>
-    <string name="play_description">Play current level</string>
+    <string name="play_description">Start or continue Level %1$d.</string>
     <string name="ready_garden">A quiet moment. A new garden.</string>
     <string name="resume_garden">Your garden is saved. Continue where you left off.</string>
     <string name="pending_victory">Garden cleared. Press Play to continue.</string>
@@ -98,9 +98,13 @@
     <string name="symbol_lavender">Lavender</string>
     <string name="symbol_ladybug">Ladybug</string>
     <string name="symbol_snail">Snail</string>
-    <string name="no_connection">NO INTERNET CONNECTION</string>
-    <string name="connect_continue">Connect to the internet to continue.</string>
+    <string name="no_connection">No Connection</string>
+    <string name="connect_continue">Connect to continue.</string>
     <string name="connection_retry">Retry</string>
     <string name="network_settings">Open Network Settings</string>
-    <string name="privacy_short">Privacy options</string>
+    <string name="privacy_short">Privacy</string>
+    <string name="network_settings_short">Network Settings</string>
+<string name="offline_heading">YOU\'RE OFFLINE</string>
+<string name="checking_connection">Checking connection</string>
+<string name="settings_unavailable">Network settings unavailable</string>
 </resources>
