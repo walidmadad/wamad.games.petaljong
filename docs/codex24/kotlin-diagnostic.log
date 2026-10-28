@@ -1,0 +1,30 @@
+app/src/androidTest/java/com/tilebloom/game/AdSdkConfigurationTest.kt:4:21: warning: 'InstrumentationTestCase' is deprecated. Deprecated in Java
+import android.test.InstrumentationTestCase
+                    ^
+app/src/androidTest/java/com/tilebloom/game/HintInteractionTest.kt:5:21: warning: 'ActivityInstrumentationTestCase2<T : Activity!>' is deprecated. Deprecated in Java
+import android.test.ActivityInstrumentationTestCase2
+                    ^
+app/src/androidTest/java/com/tilebloom/game/HintInteractionTest.kt:51:18: warning: variable 'id' initializer is redundant
+        var id = -1
+                 ^
+app/src/androidTest/java/com/tilebloom/game/LaunchSmokeTest.kt:5:21: warning: 'ActivityInstrumentationTestCase2<T : Activity!>' is deprecated. Deprecated in Java
+import android.test.ActivityInstrumentationTestCase2
+                    ^
+app/src/androidTest/java/com/tilebloom/game/LevelStartTest.kt:7:21: warning: 'ActivityInstrumentationTestCase2<T : Activity!>' is deprecated. Deprecated in Java
+import android.test.ActivityInstrumentationTestCase2
+                    ^
+app/src/androidTest/java/com/tilebloom/game/LevelStartTest.kt:195:36: warning: unnecessary non-null assertion (!!) on a non-null receiver of type MainActivity
+            val replacement=rotated!!
+                                   ^
+app/src/androidTest/java/com/tilebloom/game/RewardInteractionTest.kt:5:21: warning: 'ActivityInstrumentationTestCase2<T : Activity!>' is deprecated. Deprecated in Java
+import android.test.ActivityInstrumentationTestCase2
+                    ^
+app/src/androidTest/java/com/tilebloom/game/TrayInteractionTest.kt:3:21: warning: 'ActivityInstrumentationTestCase2<T : Activity!>' is deprecated. Deprecated in Java
+import android.test.ActivityInstrumentationTestCase2
+                    ^
+app/src/main/java/com/tilebloom/game/presentation/GardenControls.kt:84:58: warning: 'scaledDensity: Float' is deprecated. Deprecated in Java
+            ink.textSize = 12 * resources.displayMetrics.scaledDensity
+                                                         ^
+app/src/main/java/com/tilebloom/game/presentation/GardenControls.kt:97:58: warning: 'scaledDensity: Float' is deprecated. Deprecated in Java
+            ink.textSize = 11 * resources.displayMetrics.scaledDensity
+                                                         ^
