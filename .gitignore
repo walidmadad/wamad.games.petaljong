@@ -12,3 +12,6 @@ local.properties
 .tilebloom-git/
 *.keystore
 __pycache__/
+
+# Local signing credentials
+signing.local.properties

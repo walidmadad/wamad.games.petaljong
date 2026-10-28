@@ -86,7 +86,7 @@ class RewardInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(Mai
                 assertTrue(containsReward(dialog(screen).window!!.decorView))
                 assertNull(fake.ticket)
 
-                dialog(screen).getButton(AlertDialog.BUTTON_POSITIVE).performClick()
+                dialog(screen).findViewById<Button>(android.R.id.button1).performClick()
                 assertEquals(purpose, fake.ticket!!.purpose)
                 assertTrue(fake.ticket!!.earned()); assertFalse(fake.ticket!!.earned())
                 assertEquals(1, button.badge)
@@ -111,6 +111,38 @@ class RewardInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(Mai
             }
         } finally { instrumentation.removeMonitor(monitor) }
     }
+    fun testDockDimensionsAndDialogLayout() {
+        val screen = activity; waitReady(screen)
+        ui { screen.findViewById<Button>(R.id.play).performClick() }
+        instrumentation.waitForIdleSync()
+        ui {
+            val buttons = listOf(R.id.home, R.id.hint, R.id.undo, R.id.restart).map {
+                screen.findViewById<GardenIconButton>(it)
+            }
+            val density = screen.resources.displayMetrics.density
+            for (button in buttons) {
+                assertEquals(buttons.first().width, button.width)
+                assertEquals(buttons.first().height, button.height)
+                assertTrue(button.width >= 48 * density)
+                assertTrue(button.height >= 48 * density)
+                assertFalse(button.contentDescription.isNullOrBlank())
+            }
+            buttons[1].performClick()
+        }
+        instrumentation.waitForIdleSync()
+        ui {
+            val dialog = dialog(screen)
+            val watch = dialog.findViewById<Button>(android.R.id.button1)
+            val close = dialog.findViewById<Button>(android.R.id.button2)
+            assertFalse(close.contentDescription.isNullOrBlank())
+            assertEquals(android.view.Gravity.CENTER, watch.gravity)
+            assertTrue(watch.width > close.width)
+            assertTrue(close.top < watch.top)
+            assertTrue(watch.text is android.text.Spanned)
+            close.performClick()
+            assertEquals(0, GameStore.get(screen).hintCredits)
+        }
+    }
     fun testPositiveCreditsHideAdvertisingIndicators() {
         val screen = activity; waitReady(screen)
         ui {
@@ -118,8 +150,11 @@ class RewardInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(Mai
             for (id in listOf(R.id.hint, R.id.undo)) {
                 val button = screen.findViewById<GardenIconButton>(id)
                 assertTrue(button.showsAdIndicator)
-                button.badge = 3
-                assertFalse(button.showsAdIndicator)
+                for (credits in 0..3) {
+                    button.badge = credits
+                    assertEquals(credits, button.badge)
+                    assertEquals(credits == 0, button.showsAdIndicator)
+                }
             }
         }
     }
@@ -132,7 +167,7 @@ class RewardInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(Mai
         }
         instrumentation.waitForIdleSync()
         ui {
-            assertFalse(dialog(screen).getButton(AlertDialog.BUTTON_POSITIVE).isEnabled)
+            assertFalse(dialog(screen).findViewById<Button>(android.R.id.button1).isEnabled)
             assertEquals(0, fake.showCalls)
             assertEquals(0, GameStore.get(screen).hintCredits)
             fake.state = RewardedAdManager.State.READY
@@ -140,10 +175,10 @@ class RewardInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(Mai
         SystemClock.sleep(350)
         instrumentation.waitForIdleSync()
         ui {
-            assertTrue(dialog(screen).getButton(AlertDialog.BUTTON_POSITIVE).isEnabled)
+            assertTrue(dialog(screen).findViewById<Button>(android.R.id.button1).isEnabled)
             assertEquals(0, fake.showCalls)
             assertNull(fake.ticket)
-            dialog(screen).getButton(AlertDialog.BUTTON_NEGATIVE).performClick()
+            dialog(screen).findViewById<Button>(android.R.id.button2).performClick()
             assertFalse(dialog(screen).isShowing)
             assertEquals(0, GameStore.get(screen).hintCredits)
         }
@@ -154,11 +189,11 @@ class RewardInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(Mai
             screen.findViewById<Button>(R.id.privacy_options).performClick(); assertEquals(1, fake.privacyCalls)
             screen.findViewById<Button>(R.id.play).performClick()
             screen.findViewById<GardenIconButton>(R.id.undo).performClick()
-            dialog(screen).getButton(AlertDialog.BUTTON_NEGATIVE).performClick()
+            dialog(screen).findViewById<Button>(android.R.id.button2).performClick()
             assertNull(fake.ticket)
             fake.state = RewardedAdManager.State.FAILED
             screen.findViewById<GardenIconButton>(R.id.hint).performClick()
-            dialog(screen).getButton(AlertDialog.BUTTON_POSITIVE).performClick()
+            dialog(screen).findViewById<Button>(android.R.id.button1).performClick()
             assertNull(fake.ticket)
             assertEquals(1, fake.retryCalls)
             assertEquals(0, fake.showCalls)

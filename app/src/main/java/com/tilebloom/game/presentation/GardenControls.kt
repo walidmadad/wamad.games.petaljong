@@ -55,45 +55,59 @@ class GardenIconButton(context: Context, iconResource: Int, private val iconTint
     private val video = context.getDrawable(com.tilebloom.game.R.drawable.ic_play)!!.mutate()
     init {
         GardenStyle.button(this)
+        minimumWidth = 0; minimumHeight = 0
+        // The outer target reserves room for attached badges inside its own bounds.
+        background = null
         text = ""
         setPadding(0, 0, 0, 0)
+        isClickable = true
     }
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        val size = GardenStyle.dp(context, 25)
-        val cx = width / 2; val cy = height / 2 - if (showsAdIndicator) GardenStyle.dp(context, 7) else 0
+        val d = resources.displayMetrics.density
+        val cx = width / 2f; val cy = height / 2f
+        val radius = minOf(28 * d, width / 2f, height / 2f)
+        ink.style = Paint.Style.FILL
+        ink.color = if (isPressed) Color.rgb(49, 80, 59) else GardenStyle.forest
+        canvas.drawCircle(cx, cy, radius - d, ink)
+        ink.style = Paint.Style.STROKE; ink.strokeWidth = d
+        ink.color = Color.rgb(118, 129, 87)
+        canvas.drawCircle(cx, cy, radius - d, ink)
+        ink.style = Paint.Style.FILL
+        val size = GardenStyle.dp(context, 24)
         icon.setTint(if (isEnabled) iconTint else Color.rgb(137, 157, 137))
-        icon.setBounds(cx - size / 2, cy - size / 2, cx + size / 2, cy + size / 2)
+        icon.setBounds((cx - size / 2).toInt(), (cy - size / 2).toInt(),
+            (cx + size / 2).toInt(), (cy + size / 2).toInt())
         icon.draw(canvas)
+        badge?.let {
+            ink.typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+            ink.textSize = 12 * resources.displayMetrics.scaledDensity
+            val h = maxOf(20 * d, ink.fontSpacing + 2 * d)
+            val w = maxOf(h, ink.measureText(it.toString()) + 6 * d)
+            val right = width - d; val top = 0f
+            ink.color = GardenStyle.gold
+            canvas.drawRoundRect(right - w, top, right, h, h / 2, h / 2, ink)
+            ink.color = GardenStyle.forest
+            canvas.drawText(it.toString(), right - w / 2 - ink.measureText(it.toString()) / 2,
+                h / 2 - (ink.ascent() + ink.descent()) / 2, ink)
+        }
         if (showsAdIndicator) {
-            val density = resources.displayMetrics.density
             val label = context.getString(com.tilebloom.game.R.string.ad_label)
             ink.typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-            ink.textSize = 10 * resources.displayMetrics.scaledDensity
+            ink.textSize = 11 * resources.displayMetrics.scaledDensity
+            val videoSize = 12 * d
+            val w = videoSize + ink.measureText(label) + 10 * d
+            val h = maxOf(20 * d, ink.fontSpacing + 2 * d)
+            val left = cx - w / 2; val top = height - h
             ink.color = GardenStyle.gold
-            val videoSize = GardenStyle.dp(context, 12)
-            val total = videoSize + 3 * density + ink.measureText(label)
-            val left = (width - total) / 2
-            val bottom = height - 5 * density
-            video.setTint(GardenStyle.gold)
-            video.setBounds(left.toInt(), (bottom - videoSize).toInt(), left.toInt() + videoSize, bottom.toInt())
+            canvas.drawRoundRect(left, top, left + w, height.toFloat(), h / 2, h / 2, ink)
+            video.setTint(GardenStyle.forest)
+            video.setBounds((left + 3*d).toInt(), (top + (h-videoSize)/2).toInt(),
+                (left + 3*d + videoSize).toInt(), (top + (h+videoSize)/2).toInt())
             video.draw(canvas)
-            canvas.drawText(label, left + videoSize + 3 * density, bottom - 1 * density, ink)
-        }
-        badge?.let {
-            val number = it.toString()
-            ink.typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-            ink.textSize = (if (showsAdIndicator) 10 else 11) * resources.displayMetrics.scaledDensity
-            val gap = GardenStyle.dp(context, if (showsAdIndicator) 2 else 5).toFloat()
-            val h = maxOf(GardenStyle.dp(context, if (showsAdIndicator) 16 else 20).toFloat(), ink.fontSpacing + gap)
-            val w = maxOf(h, ink.measureText(number) + gap * 2)
-            val right = width - GardenStyle.dp(context, 3).toFloat()
-            val top = GardenStyle.dp(context, 2).toFloat()
-            ink.style = Paint.Style.FILL; ink.color = GardenStyle.gold
-            canvas.drawRoundRect(right - w, top, right, top + h, h / 2, h / 2, ink)
             ink.color = GardenStyle.forest
-            canvas.drawText(number, right - w / 2 - ink.measureText(number) / 2,
-                top + h / 2 - (ink.ascent() + ink.descent()) / 2, ink)
+            canvas.drawText(label, left + videoSize + 5*d,
+                top + h/2 - (ink.ascent()+ink.descent())/2, ink)
         }
     }
 }

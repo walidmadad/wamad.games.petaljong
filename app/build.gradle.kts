@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins { id("com.android.application"); id("org.jetbrains.kotlin.android") }
 android {
     namespace = "com.tilebloom.game"
@@ -13,6 +15,17 @@ android {
         versionCode = 1
         versionName = "0.1"
         testInstrumentationRunner = "android.test.InstrumentationTestRunner"
+    }
+    // Optional untracked local signing configuration; never store credentials in source.
+    val signingFile = rootProject.file("signing.local.properties")
+    if (signingFile.isFile) {
+        val localSigning = Properties().apply { signingFile.inputStream().use { load(it) } }
+        signingConfigs.getByName("debug") {
+            storeFile = rootProject.file(requireNotNull(localSigning.getProperty("storeFile")))
+            storePassword = requireNotNull(localSigning.getProperty("storePassword"))
+            keyAlias = requireNotNull(localSigning.getProperty("keyAlias"))
+            keyPassword = requireNotNull(localSigning.getProperty("keyPassword"))
+        }
     }
     buildTypes {
         getByName("debug") {

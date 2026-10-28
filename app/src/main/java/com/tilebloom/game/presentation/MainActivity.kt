@@ -224,7 +224,12 @@ class MainActivity : Activity() {
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
         column.addView(feedback, LinearLayout.LayoutParams(-1, -2))
-        controls = LinearLayout(this).apply { gravity = Gravity.CENTER; orientation = LinearLayout.HORIZONTAL }
+        controls = LinearLayout(this).apply {
+            gravity = Gravity.CENTER; orientation = LinearLayout.HORIZONTAL
+            setPadding(dp(4), dp(6), dp(4), dp(6))
+            background = GardenStyle.surface(this@MainActivity, GardenStyle.panel, 28, false)
+            clipChildren = false; clipToPadding = false
+        }
         home = GardenIconButton(this, R.drawable.ic_home).apply {
             id = R.id.home; contentDescription = getString(R.string.home_description); tooltipText = contentDescription
             setOnClickListener {
@@ -234,7 +239,7 @@ class MainActivity : Activity() {
                 }
             }
         }
-        hint = GardenIconButton(this, R.drawable.ic_hint, GardenStyle.gold).apply {
+        hint = GardenIconButton(this, R.drawable.ic_hint).apply {
             id = R.id.hint
             setOnClickListener {
                 if (progress.hintCredits == 0) { requestReward(RewardPurpose.HINT); return@setOnClickListener }
@@ -284,11 +289,11 @@ class MainActivity : Activity() {
             }
         }
         listOf(home, hint, undo, restart).forEach { button ->
-            controls.addView(button, LinearLayout.LayoutParams(0, dp(56), 1f).apply {
-                marginStart = dp(3); marginEnd = dp(3)
+            controls.addView(button, LinearLayout.LayoutParams(dp(64), dp(76)).apply {
+                marginStart = dp(2); marginEnd = dp(2)
             })
         }
-        column.addView(controls, LinearLayout.LayoutParams(-1, -2))
+        column.addView(controls, LinearLayout.LayoutParams(-2, -2))
         root.addView(column, FrameLayout.LayoutParams(-1, -1))
     }
 
@@ -404,8 +409,8 @@ class MainActivity : Activity() {
         listOf(undo, restart).forEach { button ->
             if (button.parent !== destination) {
                 (button.parent as? android.view.ViewGroup)?.removeView(button)
-                val params = if (destination === controls) LinearLayout.LayoutParams(0, dp(56), 1f).apply {
-                    marginStart = dp(3); marginEnd = dp(3)
+                val params = if (destination === controls) LinearLayout.LayoutParams(dp(64), dp(76)).apply {
+                    marginStart = dp(2); marginEnd = dp(2)
                 } else LinearLayout.LayoutParams(dp(64), dp(56)).apply {
                     marginStart = dp(8); marginEnd = dp(8)
                 }
@@ -433,8 +438,13 @@ class MainActivity : Activity() {
         if (GameStore.transitioning || rewardDialog?.isShowing == true || AdvertisingService.provider.state == RewardedAdManager.State.SHOWING) return
         val panel = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
-            setPadding(dp(24), dp(24), dp(24), dp(8))
+            setPadding(dp(20), dp(8), dp(20), dp(20))
         }
+        val close = GardenIconButton(this, R.drawable.ic_close).apply {
+            id = android.R.id.button2
+            contentDescription = getString(R.string.close_reward)
+        }
+        panel.addView(close, LinearLayout.LayoutParams(dp(48), dp(48)).apply { gravity = Gravity.END })
         val rewardIcon = android.widget.ImageView(this).apply {
             setImageResource(if (purpose == RewardPurpose.HINT) R.drawable.ic_hint else R.drawable.ic_undo)
             imageTintList = android.content.res.ColorStateList.valueOf(GardenStyle.gold)
@@ -449,29 +459,30 @@ class MainActivity : Activity() {
             isIndeterminate = true
             indeterminateTintList = android.content.res.ColorStateList.valueOf(GardenStyle.gold)
         }
-        panel.addView(loading, LinearLayout.LayoutParams(dp(20), dp(20)))
+        val statusRow = LinearLayout(this).apply {
+            gravity = Gravity.CENTER; orientation = LinearLayout.HORIZONTAL
+            minimumHeight = dp(28)
+        }
+        statusRow.addView(loading, LinearLayout.LayoutParams(dp(20), dp(20)).apply { marginEnd = dp(8) })
         val availability = textLabel(13f, GardenStyle.secondary).apply {
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
-        panel.addView(availability)
+        statusRow.addView(availability)
+        panel.addView(statusRow, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(12) })
+        val watch = Button(this).apply {
+            id = android.R.id.button1
+            GardenStyle.button(this, true)
+            minHeight = dp(52)
+        }
+        panel.addView(watch, LinearLayout.LayoutParams(-1, -2))
         rewardDialog = AlertDialog.Builder(this)
             .setView(panel)
-            .setNegativeButton(R.string.close_reward, null)
-            .setPositiveButton(R.string.watch_ad, null)
             .create().also { dialog ->
                 dialog.show()
                 dialog.window?.setBackgroundDrawable(GardenStyle.surface(this, GardenStyle.panel))
-                val close = dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
-                GardenStyle.button(close)
-                close.contentDescription = getString(R.string.close_reward)
-                val cross = getDrawable(R.drawable.ic_close)!!.mutate().apply {
-                    setTint(GardenStyle.ivory); setBounds(0, 0, dp(24), dp(24))
-                }
-                close.text = android.text.SpannableString("\uFFFC").apply {
-                    setSpan(android.text.style.ImageSpan(cross), 0, 1, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
-                val watch = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                GardenStyle.button(watch, true)
+                dialog.window?.setLayout(
+                    minOf(resources.displayMetrics.widthPixels - dp(40), dp(360)), -2)
+                close.setOnClickListener { dialog.dismiss() }
                 watch.setOnClickListener {
                     if (AdvertisingService.provider.state == RewardedAdManager.State.READY) {
                         if (AdvertisingService.provider.show(this, purpose)) dialog.dismiss()
@@ -491,10 +502,13 @@ class MainActivity : Activity() {
                         val ready = state == RewardedAdManager.State.READY
                         val busy = state == RewardedAdManager.State.LOADING
                         loading.visibility = if (busy) View.VISIBLE else View.GONE
-                        availability.setText(if (ready) R.string.ad_ready else if (busy) R.string.ad_loading_short else R.string.ad_unavailable_short)
+                        availability.setText(if (busy) R.string.ad_loading_short else R.string.ad_unavailable_short)
+                        statusRow.visibility = if (ready) View.INVISIBLE else View.VISIBLE
                         watch.isEnabled = !busy
                         watch.setText(if (ready || busy) R.string.watch_ad else R.string.ad_retry)
-                        watch.contentDescription = watch.text
+                        watch.contentDescription = if (ready || busy) getString(
+                            if (purpose == RewardPurpose.HINT) R.string.watch_hint else R.string.watch_undo
+                        ) else watch.text
                         GardenStyle.primaryIcon(watch, if (ready || busy) R.drawable.ic_play else R.drawable.ic_restart)
                         panel.postDelayed(this, 250)
                     }
