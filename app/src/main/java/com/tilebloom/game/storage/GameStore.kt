@@ -36,6 +36,11 @@ object GameStore {
         if (saved) onChanged?.invoke()
         return saved
     }
+    fun persistVictory(context: Context): Boolean {
+        val state = get(context)
+        return !transitioning && state.session.game.status == com.tilebloom.game.domain.Status.WON &&
+            ProgressRepository.saveDurably(context.applicationContext, owner, state.capture())
+    }
     fun persist(context: Context) {
         if (transitioning) return
         val state = get(context).capture()

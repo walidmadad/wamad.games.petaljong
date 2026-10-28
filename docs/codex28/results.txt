@@ -1,0 +1,22 @@
+CODEX 28 verification
+Java 17, cached Kotlin compiler:
+- JVM regression suite: PASS, 233 tests, 39.865 seconds (jvm.log).
+- Main + Android instrumentation Kotlin/resource diagnostic compilation: see diagnostic.log.
+- Diagnostic compilation does not generate a deliverable APK or execute instrumentation.
+
+Standard requested Gradle commands (each attempted separately):
+./gradlew --no-daemon --console=plain :app:testDebugUnitTest
+./gradlew --no-daemon --console=plain :app:assembleDebug
+./gradlew --no-daemon --console=plain :app:lintDebug
+./gradlew --no-daemon --console=plain :app:connectedDebugAndroidTest
+All fail before tasks: default wrapper lock is on a read-only filesystem.
+
+Installed Gradle 8.13 + Java 17 + writable /tmp/tilebloom28-gradle:
+Combined test/build/lint invocation fails before tasks: no usable wildcard IP.
+
+ADB: unable to open smartsocket server listener (Operation not permitted).
+Instrumentation execution, real Google test-ad playback, install/update: NOT VERIFIED.
+Fresh application APK, APK size/timestamp/hash/alignment/signature: UNAVAILABLE.
+Configured package: com.tilebloom.game.
+Configured local signing certificate matches supplied SHA-256; see local-certificate.txt.
+No uninstall, player-data clear, publish or push was performed.

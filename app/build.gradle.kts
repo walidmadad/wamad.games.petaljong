@@ -30,11 +30,13 @@ android {
     buildTypes {
         getByName("debug") {
             manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
+            buildConfigField("String", "INTERSTITIAL_AD_UNIT", "\"ca-app-pub-3940256099942544/1033173712\"")
             buildConfigField("String", "REWARDED_AD_UNIT", "\"ca-app-pub-3940256099942544/5224354917\"")
         }
         getByName("release") {
             // Release is deliberately disabled until publishing configuration is reviewed.
             manifestPlaceholders["admobAppId"] = "RELEASE_NOT_CONFIGURED"
+            buildConfigField("String", "INTERSTITIAL_AD_UNIT", "\"\"")
             buildConfigField("String", "REWARDED_AD_UNIT", "\"\"")
         }
     }

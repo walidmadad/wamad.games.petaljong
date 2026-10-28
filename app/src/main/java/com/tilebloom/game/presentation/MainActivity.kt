@@ -4,6 +4,9 @@ import android.app.Activity
 import android.app.AlertDialog
 import com.tilebloom.game.ads.RewardedAdManager
 import com.tilebloom.game.ads.AdvertisingService
+import com.tilebloom.game.ads.AdExposure
+import com.tilebloom.game.ads.InterstitialService
+import android.os.SystemClock
 import android.os.Bundle
 import android.os.Build
 import android.view.WindowInsets
@@ -60,6 +63,42 @@ class MainActivity : Activity() {
         }
     }
 
+    private var resumed = false
+    private var focused = false
+    private var pendingVictory: Long? = null
+    private val exposureChanged: () -> Unit = { if (!isDestroyed) { accountGameplay(); if (::navigation.isInitialized) update() } }
+    private var timingEligible = false
+    private fun accountGameplay() {
+        val ready = ::navigation.isInitialized
+        val eligible = ActiveGameplayConditions(resumed, focused,
+            ready && navigation.state.screen == GardenScreen.GAME,
+            ready && game.status == Status.PLAYING, online, GameStore.transitioning || !ready,
+            AdExposure.busy || AdvertisingService.provider.state == RewardedAdManager.State.SHOWING,
+            RewardedAdManager.consentInProgress, rewardDialog?.isShowing == true).eligible
+        AdExposure.policy.active(SystemClock.elapsedRealtime(), eligible)
+        if (eligible != timingEligible) { timingEligible = eligible; AdExposure.save() }
+    }
+    private fun completedByPlayer() {
+        update() // Persists actual victory and stops active time before considering an ad.
+        if (game.status != Status.WON || !GameStore.persistVictory(applicationContext)) return
+        val level = session.level.id
+        val eligible = AdExposure.policy.victory(level, true, SystemClock.elapsedRealtime())
+        val saved = AdExposure.save() // Consume before asynchronous presentation.
+        if (!saved || !eligible || !resumed || !focused || !online || !InterstitialService.provider.ready) return
+        pendingVictory = level
+        next.isEnabled = false
+        // Let the final match (180ms) and victory confirmation finish; never wait for inventory.
+        root.postDelayed({
+            if (pendingVictory != level) return@postDelayed
+            pendingVictory = null
+            if (!isDestroyed && resumed && focused && online && session.level.id == level &&
+                navigation.state.screen == GardenScreen.GAME && game.status == Status.WON &&
+                !GameStore.transitioning && rewardDialog?.isShowing != true && !AdExposure.busy) {
+                InterstitialService.provider.show(this)
+            }
+            if (!isDestroyed) update()
+        }, 350L)
+    }
     private var online = false
     private var showConnection = false
     private lateinit var connectivity: NetworkObserver
@@ -73,6 +112,7 @@ class MainActivity : Activity() {
     private fun connectivityChanged(available: Boolean, panel: Boolean) {
         online = available; showConnection = panel
         if (!available) {
+            pendingVictory = null
             hintRequest++; hintPending = false
             rewardDialog?.dismiss()
             if (::board.isInitialized) { board.clearFeedback(); tray.clearFeedback() }
@@ -83,6 +123,8 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AdExposure.initialize(applicationContext)
+        AdExposure.changed = exposureChanged
         // Decode only the bounded save envelope; generation/restoration stays off the UI thread.
         pendingPlay = savedInstanceState?.getBoolean("pending_play") ?: false
         val metadata = ProgressRepository.load(applicationContext)
@@ -319,7 +361,7 @@ class MainActivity : Activity() {
         column.addView(status, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(8); bottomMargin = dp(10) })
         tray = TileTrayView(this) { game.tray }.apply { id = R.id.tray }
         column.addView(tray, LinearLayout.LayoutParams(-1, dp(if (compact) 76 else 84)))
-        board = MahjongBoardView(this, game) { update() }.apply { id = R.id.board }
+        board = MahjongBoardView(this, game) { completedByPlayer() }.apply { id = R.id.board }
         val area = FrameLayout(this)
         column.addView(area, LinearLayout.LayoutParams(-1, 0, 1f).apply { topMargin = dp(4) })
         area.addView(board, FrameLayout.LayoutParams(-1, -1))
@@ -439,7 +481,7 @@ class MainActivity : Activity() {
     }
 
     private fun advance() {
-        if (!online || GameStore.transitioning || !session.canAdvance) return
+        if (!online || AdExposure.busy || pendingVictory != null || GameStore.transitioning || !session.canAdvance) return
         GameStore.transitioning = true
         update()
         val expected = session.level.id
@@ -471,6 +513,11 @@ class MainActivity : Activity() {
     }
 
     private fun update() {
+        accountGameplay()
+        if (online && resumed) {
+            if (AdvertisingService.provider === RewardedAdManager) RewardedAdManager.load()
+            InterstitialService.provider.prepare(this)
+        }
         play.isEnabled = online && !GameStore.transitioning
         privacy.visibility = if (AdvertisingService.provider.privacyRequired) View.VISIBLE else View.GONE
         privacy.isEnabled = AdvertisingService.provider.privacyRequired
@@ -555,7 +602,7 @@ class MainActivity : Activity() {
                 if (session.level.id == Long.MAX_VALUE) "\n" + getString(R.string.level_limit) else ""
         } else getString(if (game.tray.size == 4) R.string.tray_full_detail else R.string.unrecoverable_detail)
         next.visibility = if (presentation.advance) View.VISIBLE else View.GONE
-        next.isEnabled = online && !GameStore.transitioning
+        next.isEnabled = online && !GameStore.transitioning && pendingVictory == null && !AdExposure.busy
         next.setText(if (GameStore.transitioning) R.string.preparing_garden else R.string.next_level)
         GardenStyle.primaryIcon(next, R.drawable.ic_next)
         feedback.visibility = if (terminal) View.GONE else View.VISIBLE
@@ -637,7 +684,9 @@ class MainActivity : Activity() {
         rewardDialog = AlertDialog.Builder(this)
             .setView(panel)
             .create().also { dialog ->
+                dialog.setOnDismissListener { accountGameplay(); AdExposure.save() }
                 dialog.show()
+                accountGameplay(); AdExposure.save()
                 dialog.window?.setBackgroundDrawable(GardenStyle.surface(this, GardenStyle.panel))
                 dialog.window?.setLayout(
                     minOf(resources.displayMetrics.widthPixels - dp(40), dp(360)), -2)
@@ -712,6 +761,20 @@ class MainActivity : Activity() {
             outState.putLong("garden_level", navigation.state.levelId)
         }
     }
+    override fun onResume() {
+        super.onResume(); resumed = true; update()
+    }
+    override fun onPause() {
+        resumed = false; pendingVictory = null
+        accountGameplay(); AdExposure.save()
+        super.onPause()
+    }
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        focused = hasFocus
+        if (!hasFocus) pendingVictory = null
+        accountGameplay(); AdExposure.save()
+    }
     override fun onStart() {
         super.onStart()
         connectivity.start()
@@ -724,7 +787,9 @@ class MainActivity : Activity() {
         ProgressRepository.awaitWrites()
     }
     override fun onDestroy() {
+        if (AdExposure.changed === exposureChanged) AdExposure.changed = null
         connectivity.destroy()
+        rewardDialog?.setOnDismissListener(null)
         rewardDialog?.dismiss()
         AdvertisingService.provider.detach(this)
         hintRequest++

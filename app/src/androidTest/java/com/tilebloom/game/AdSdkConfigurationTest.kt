@@ -13,6 +13,7 @@ class AdSdkConfigurationTest : InstrumentationTestCase() {
         val app = context.packageManager.getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
         assertEquals("ca-app-pub-3940256099942544~3347511713", app.metaData.getString("com.google.android.gms.ads.APPLICATION_ID"))
         assertEquals("ca-app-pub-3940256099942544/5224354917", BuildConfig.REWARDED_AD_UNIT)
+        assertEquals("ca-app-pub-3940256099942544/1033173712", BuildConfig.INTERSTITIAL_AD_UNIT)
         assertEquals(25, MobileAds.getVersion().majorVersion)
         assertNotNull(UserMessagingPlatform.getConsentInformation(context))
     }
