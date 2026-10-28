@@ -3,11 +3,14 @@ package com.tilebloom.game.presentation
 import android.content.Context
 import android.graphics.*
 import android.view.View
+import com.tilebloom.game.domain.GardenTheme
 import com.tilebloom.game.domain.Tile
 import com.tilebloom.game.R
 
 /** Presentation only; replayable engine state owns every tile. */
 class TileTrayView(context: Context, private val tiles: () -> List<Tile>) : View(context) {
+    var theme = GardenTheme.forLevel(1)
+        set(value) { field = value; invalidate() }
     private val ink = Paint(Paint.ANTI_ALIAS_FLAG)
     private var previous = tiles().map { it.id }
     private var ghosts = emptyList<Tile>()
@@ -39,16 +42,16 @@ class TileTrayView(context: Context, private val tiles: () -> List<Tile>) : View
         val gap = height * .1f
         val slots = slotBounds()
         val size = slots.first().width()
-        ink.style = Paint.Style.FILL; ink.color = Color.rgb(22, 55, 43)
+        ink.style = Paint.Style.FILL; ink.color = theme.glow
         c.drawRoundRect(0f, 0f, width.toFloat(), height.toFloat(), gap * 1.6f, gap * 1.6f, ink)
         ink.style = Paint.Style.STROKE; ink.strokeWidth = resources.displayMetrics.density
-        ink.color = Color.rgb(67, 91, 65)
+        ink.color = GardenTheme.gold
         c.drawRoundRect(1f, 1f, width - 1f, height - 1f, gap * 1.6f, gap * 1.6f, ink)
         repeat(4) { i ->
             val r = slots[i]
             val tile = tiles().getOrNull(i)
             ink.style = Paint.Style.FILL
-            ink.color = if (tile == null) Color.rgb(16, 40, 32) else Color.rgb(250, 244, 224)
+            ink.color = if (tile == null) theme.background else Color.rgb(250, 244, 224)
             c.drawRoundRect(r, gap, gap, ink)
             ink.style = Paint.Style.STROKE; ink.strokeWidth = resources.displayMetrics.density
             ink.color = if (tiles().size == 4) Color.rgb(199, 126, 94) else if (tile == null) Color.rgb(102, 119, 83) else Color.rgb(184, 163, 107)

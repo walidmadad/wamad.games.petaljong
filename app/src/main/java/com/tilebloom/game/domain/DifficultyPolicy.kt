@@ -22,11 +22,11 @@ object DifficultyPolicy {
         val first = listOf(1L,8L,16L,31L)[stage]
         val last = listOf(7L,15L,30L,Long.MAX_VALUE)[stage]
         return DifficultyProfile(stage.toLong(), first, last,
-            listOf(24..28,32..36,40..44,44..48)[stage],
+            listOf(20..34,32..46,38..52,46..60)[stage],
             minOf(symbols(level).size, listOf(6,8,10,16)[stage]),
-            listOf("classic", "compact"), 0..(stage + 1).coerceAtMost(3),
+            AdvancedLayouts.families, 0..(stage + 1).coerceAtMost(3),
             listOf(12,22,30,34)[stage], listOf(2,4,6,8)[stage],
-            6, 6, 2000 + stage * 500, ((level - 1) % 8).toInt(), .5, stage)
+            6, 6, 4000 + stage * 1000, ((level - 1) % 8).toInt(), .5, stage)
     }
     fun symbols(level: Long) = Symbol.entries.filter { it.introducedAt <= level }
     fun introduced(level: Long) = Symbol.entries.filter { it.introducedAt == level && level > 1 }

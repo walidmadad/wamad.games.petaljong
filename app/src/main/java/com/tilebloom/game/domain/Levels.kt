@@ -10,7 +10,8 @@ data class CandidateQuality(val index: Int, val consequenceChoices: Int, val ris
 data class LevelDefinition(val id: Long, val seed: Long, val version: Int, val layout: BoardLayout,
     val tiles: List<Tile>, val witness: List<PairMove>, val attempts: Int,
     val qualityTargetMet: Boolean = false, val candidatesEvaluated: Int = 0,
-    val candidateQuality: List<CandidateQuality> = emptyList())
+    val candidateQuality: List<CandidateQuality> = emptyList(),
+    val noveltyLimited: Boolean = false)
 
 object Layouts {
     private fun layout(id: String, rows: List<Pair<Int, Int>>, top: List<Pair<Double, Double>>): BoardLayout {
@@ -180,7 +181,7 @@ class GardenSession {
     fun restore(saved: SessionSnapshot): Boolean {
         // Restoration may resume this board or a later one, never an earlier board.
         if (saved.id < level.id) return false
-        val candidate = try { if (saved.id >= 6 && saved.version == 4) LegacyEndlessGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 5) VersionFiveGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 6) VersionSixGenerator.generate(saved.id) else Levels.get(saved.id) } catch (_: Exception) { return false }
+        val candidate = try { if (saved.id >= 6 && saved.version == 4) LegacyEndlessGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 5) VersionFiveGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 6) VersionSixGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 7) VersionSevenGenerator.generate(saved.id) else Levels.get(saved.id) } catch (_: Exception) { return false }
         if (candidate.seed != saved.seed || candidate.version != saved.version) return false
         val restored = Game(candidate.tiles)
         if (!restored.restore(saved.game)) return false

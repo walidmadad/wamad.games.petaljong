@@ -777,3 +777,13 @@ Authoritative results and acceptance statuses: [CODEX_29_REPORT.md](CODEX_29_REP
 Default Gradle wrapper and writable installed Gradle both fail before tasks; ADB listener is denied. Diagnostic compilation/JVM execution must be distinguished from standard Gradle/Lint and executed instrumentation. No fresh APK or reviewed Android screenshot is available. Evidence: docs/codex29. Capture harness: AdvancedBoardVisualTest, levels 1/8/16/31/32 at four portrait widths, initial/opened states, isolated files/codex29-visual directory.
 
 CODEX 29 final JVM result: **240/240 PASS** (66.007 s). Android main/instrumentation sources compile diagnostically; instrumentation and screenshot review remain NOT VERIFIED. Standard Gradle/Lint and fresh APK remain blocked. Full evidence and acceptance statuses are in CODEX_29_REPORT.md and docs/codex29.
+
+## CODEX 30
+
+Standard Gradle unit test/assemble/Lint execution is blocked before task startup: default home wrapper lock is read-only; using the installed distribution and writable cache fails Gradle's wildcard-IP lock service. ADB cannot open the server smart socket (`Operation not permitted`). No fresh APK, signing verification, device tests or Android screenshot review is claimed.
+
+Diagnostic validation uses cached Kotlin/JUnit under JDK 17 and cached Android SDK/dependency jars. It is separate from Gradle and Lint. Tests include the 77-level v8 generation matrix and historical v7 tray restoration. The matrix covers 8–60, 100–120, 250, 500, 1000. Existing two-family/48-tile assertions are updated to the explicit v8 family portfolio and per-stage bounded tile/node envelopes; coverage/overlap and tray/controller regressions are preserved.
+
+See [CODEX_30_REPORT.md](CODEX_30_REPORT.md) for final results, acceptance statuses and limits; [host commands](docs/codex30/HOST_COMMANDS.md) provide exact remaining build, signer and screenshot checks.
+
+CODEX 30 final diagnostic result: **244/244 JVM tests PASS**, plus **6/6 focused Endless reruns PASS** after stricter duplicate/normalization assertions. Main and instrumentation sources compile against cached Android dependencies. The 77-board matrix has 77 validated wins, eight families and zero observed exact duplicates within ten levels; strategic targets are met on 75/77 (21 and 29 miss). Actual Android screenshots, Gradle/Lint, fresh APK and signer verification remain blocked. See CODEX_30_REPORT.md and docs/codex30 for evidence.

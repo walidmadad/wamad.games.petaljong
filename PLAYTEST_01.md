@@ -386,3 +386,11 @@ Run AdvancedBoardVisualTest on Android to capture Normal 1, Hard 8, Very Hard 16
 Human sessions should record future-unlock planning, tray choices at three occupied slots, accidental taps and perceptual fairness. Synthetic consequence/probe metrics do not establish subjective ordering. Verify existing rewarded +1 balances, UMP/privacy and timed victory interstitials without changing ad frequency. See CODEX_29_REPORT.md for remaining blocked verification.
 
 CODEX 29 final JVM result: **240/240 PASS** (66.007 s). Android main/instrumentation sources compile diagnostically; instrumentation and screenshot review remain NOT VERIFIED. Standard Gradle/Lint and fresh APK remain blocked. Full evidence and acceptance statuses are in CODEX_29_REPORT.md and docs/codex29.
+
+## CODEX 30 visual pass (pending Android execution)
+
+Use `AdvancedBoardVisualTest` and `docs/codex30/HOST_COMMANDS.md`. Capture levels 6–20 plus 31, 32 and 100 at 320/360/400/600dp; this includes all themes and families. Inspect levels 13 (islands), 14 (turtle), 16 (flower) and 17 (pyramid) in fresh v8 generation; an existing saved v7 puzzle must retain its original geometry. Do not overwrite a player's active puzzle to stage screenshots.
+
+Check cream available tiles against colored blocked ceramics; opaque cover tiles must conceal lower symbols. Inspect dense terrace contact shadows, accurate top-face taps, tray spacing, control overlap and botanical artwork. Theme changes should occur on level transitions only. Actual Android appearance and subjective color appeal remain unverified until screenshots are examined.
+
+CODEX 30 final diagnostic result: **244/244 JVM tests PASS**, plus **6/6 focused Endless reruns PASS** after stricter duplicate/normalization assertions. Main and instrumentation sources compile against cached Android dependencies. The 77-board matrix has 77 validated wins, eight families and zero observed exact duplicates within ten levels; strategic targets are met on 75/77 (21 and 29 miss). Actual Android screenshots, Gradle/Lint, fresh APK and signer verification remain blocked. See CODEX_30_REPORT.md and docs/codex30 for evidence.

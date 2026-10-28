@@ -2,13 +2,13 @@ package com.tilebloom.game.domain
 
 import java.util.Random
 
-/** v7: four stages and real terraces. Historical versions retain frozen policies. */
+/** v8: scheduled garden footprints. Historical versions retain frozen geometry. */
 object EndlessGenerator {
-    const val VERSION = 7
-    const val RECENT_WINDOW = 4
+    const val VERSION = 8
+    const val RECENT_WINDOW = 10
     fun seed(id: Long) = LegacyEndlessGenerator.seed(id) xor 4L xor VERSION.toLong()
     fun layout(id: Long): BoardLayout = AdvancedLayouts.layout(id)
-    fun geometryFingerprint(layout: BoardLayout) = LegacyEndlessGenerator.geometryFingerprint(layout)
+    fun geometryFingerprint(layout: BoardLayout) = AdvancedLayouts.fingerprint(layout)
     /** No search: peel each even-sized layer using the authoritative availability rule. */
     private fun fallback(id: Long, seed: Long, layout: BoardLayout): LevelDefinition {
         var remaining = layout.slots.map { Tile(it.id, Symbol.LEAF, it.x, it.y, it.layer) }
@@ -27,15 +27,21 @@ object EndlessGenerator {
         require(id >= 6)
         val profile = DifficultyPolicy.profile(id)
         val seed = seed(id)
-        check(layout(id).id.substringBefore('-') in profile.allowedFamilies)
+        check(layout(id).id.substringBefore('-') in AdvancedLayouts.families)
         check(layout(id).slots.all { it.layer in profile.allowedLayers })
         val quality = mutableListOf<CandidateQuality>()
         var best: LevelDefinition? = null
         var bestScore = Int.MIN_VALUE
         var bestIndex = 0
+        val recent = (maxOf(6L, id - RECENT_WINDOW) until id).flatMap { previous ->
+            (0 until profile.candidateBudget).map { AdvancedLayouts.layout(previous, it) }
+        }
         repeat(if (forceFallback) 1 else profile.candidateBudget) { index ->
-            val layout = AdvancedLayouts.layout(id, index)
-            val built = if (forceFallback) fallback(id, seed, layout) else runCatching {
+            val proposed = AdvancedLayouts.layout(id, index)
+            val layout = if (!recent.any { AdvancedLayouts.fingerprint(it) == AdvancedLayouts.fingerprint(proposed) }) proposed else
+                (0 until profile.candidateBudget).map { AdvancedLayouts.layout(id, it) }
+                    .firstOrNull { recent.none { previous -> AdvancedLayouts.fingerprint(previous) == AdvancedLayouts.fingerprint(it) } } ?: proposed
+            val built = if (forceFallback || index == profile.candidateBudget - 1) fallback(id, seed, layout) else runCatching {
                 LevelGenerator.generate(id, seed + index * 7919L, layout, version = 1)
             }.getOrElse { fallback(id, seed, layout) }
             val catalog = DifficultyPolicy.symbols(id)
@@ -53,9 +59,11 @@ object EndlessGenerator {
             LevelValidator.validate(candidate)
             val a = PuzzleAnalyzer.analyze(candidate, if (forceFallback) 0 else profile.analysisBudget)
             val tray = TrayPressure.measure(candidate)
+            val geometry = GeometryMetrics.measure(candidate.tiles)
             val met = !forceFallback && a.complete && a.consequenceChoiceStates >= profile.meaningfulChoices &&
                 a.initialBlocked >= profile.targetBlocked && a.layers >= minOf(4, profile.tierIndex.toInt() + 2) &&
-                GeometryMetrics.measure(candidate.tiles).overlapRelationships >= profile.targetBlocked &&
+                geometry.overlapRelationships >= maxOf(profile.targetBlocked, if (profile.tierIndex == 3L) 70 else 0) &&
+                (profile.tierIndex == 0L || geometry.coveredPositions >= 18) &&
                 a.forced <= a.pairRemovals / 2 && (profile.tierIndex == 0L || tray.threeHeldStates >= 6)
             // Reward unlock differences and safe alternatives; penalize traps and unresolved analysis.
             val score = minOf(30, tray.threeHeldStates) + a.consequenceChoiceStates * (12 + profile.strategicEmphasis) + a.upperUnlockMoves * (2 + profile.strategicEmphasis) + a.multiple * 2 -
@@ -68,6 +76,8 @@ object EndlessGenerator {
         }
         return checkNotNull(best).copy(attempts = checkNotNull(best).attempts,
             qualityTargetMet = quality.first { it.index == bestIndex }.targetMet, candidatesEvaluated = quality.size,
-            candidateQuality = quality).also(LevelValidator::validate)
+            candidateQuality = quality, noveltyLimited = recent.any {
+                AdvancedLayouts.fingerprint(it) == AdvancedLayouts.fingerprint(checkNotNull(best).layout)
+            }).also(LevelValidator::validate)
     }
 }

@@ -13,6 +13,8 @@ import com.tilebloom.game.presentation.board.*
 import kotlin.math.*
 
 class MahjongBoardView(context: Context, private var game: Game, private val changed: () -> Unit) : View(context) {
+    var theme = GardenTheme.forLevel(1)
+        set(value) { field = value; invalidate() }
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val effects = MatchEffects()
     private val hintEffect = HintPresentation()
@@ -61,6 +63,9 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
     private fun BoardRect.android() = RectF(left, top, right, bottom)
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        paint.shader = LinearGradient(0f, 0f, width.toFloat(), height.toFloat(), theme.glow, theme.background, Shader.TileMode.CLAMP)
+        canvas.drawRoundRect(0f, 0f, width.toFloat(), height.toFloat(), 24f, 24f, paint)
+        paint.shader = null
         val layout = geometry()
         val scale = layout.scale
         if (scale <= 0f) return
@@ -86,20 +91,24 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             val selected = available && game.selected == tile.id
             paint.style = Paint.Style.FILL
             // Two offset shadow bands: soft penumbra and a stronger contact shadow.
-            paint.color = Color.argb(if (tile.layer > 0) 48 else 28, 3, 20, 15)
+            paint.color = Color.argb(if (tile.layer > 0) 62 else 34, 3, 20, 15)
             canvas.drawRoundRect(layout.shadow(tile).offset(scale * .045f).android(), layout.radius * 1.2f, layout.radius * 1.2f, paint)
-            paint.color = Color.argb(if (tile.layer > 0) 115 else 75, 3, 20, 15)
+            paint.color = Color.argb(if (tile.layer > 0) 136 else 88, 3, 20, 15)
             canvas.drawRoundRect(layout.shadow(tile).android(), layout.radius, layout.radius, paint)
-            paint.color = Color.rgb(151, 139, 108)
+            paint.color = theme.accent
             canvas.drawRoundRect(layout.body(tile).android(), layout.radius, layout.radius, paint)
-            paint.color = Color.rgb(208, 197, 163)
+            paint.color = GardenTheme.gold
             canvas.drawRoundRect(layout.edge(tile).android(), layout.radius, layout.radius, paint)
-            paint.color = if (available) Color.rgb(250, 244, 224) else Color.rgb(153, 163, 139)
+            paint.color = if (available) GardenTheme.ivory else theme.ceramic
+            paint.shader = LinearGradient(face.left, face.top, face.right, face.bottom,
+                if (available) GardenTheme.ivory else theme.ceramic,
+                if (available) Color.rgb(238, 224, 192) else theme.accent, Shader.TileMode.CLAMP)
             canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
+            paint.shader = null
             // Inset ceramic rim and top highlight stay inside the established face.
             paint.style = Paint.Style.STROKE
             paint.strokeWidth = scale * .018f
-            paint.color = if (available) Color.rgb(255, 253, 240) else Color.rgb(182, 190, 164)
+            paint.color = if (available) Color.rgb(255, 253, 240) else GardenTheme.ivory
             canvas.drawRoundRect(face.inset(scale * .035f).android(), layout.radius * .8f, layout.radius * .8f, paint)
             // Keep all border strokes inside the physical face so selection never changes hit bounds.
             paint.style = Paint.Style.STROKE
@@ -125,13 +134,13 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
                 BotanicalSymbols.draw(canvas, paint, tile.symbol)
                 canvas.restore()
                 if (!available) {
-                    paint.color = Color.argb(65, 100, 115, 89)
+                    paint.color = Color.argb(28, 40, 65, 50)
                     canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
                 }
             }
             if (!available) {
                 // Engraved corner bars distinguish blocking without relying on color.
-                paint.color = Color.rgb(103, 113, 91); paint.strokeWidth = scale * .025f
+                paint.color = theme.background; paint.strokeWidth = scale * .025f
                 canvas.drawLine(face.left + scale * .12f, face.top + scale * .12f, face.left + scale * .25f, face.top + scale * .12f, paint)
                 canvas.drawLine(face.right - scale * .25f, face.top + scale * .12f, face.right - scale * .12f, face.top + scale * .12f, paint)
             }

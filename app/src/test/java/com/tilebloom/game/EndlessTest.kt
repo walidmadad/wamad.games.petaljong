@@ -9,18 +9,26 @@ class EndlessTest {
         ids.forEach { id ->
             val start=System.nanoTime(); val l=Levels.get(id); LevelValidator.validate(l)
             println("Generation HOST JVM level=$id ms=${(System.nanoTime()-start)/1000000} tiles=${l.tiles.size} quality=${l.qualityTargetMet}")
-            assertEquals(l,Levels.get(id)); assertEquals(id,l.id); assertTrue(l.tiles.size in 24..48)
+            assertEquals(l,Levels.get(id)); assertEquals(id,l.id); assertTrue(l.tiles.size in if (id >= 6) DifficultyPolicy.profile(id).targetTiles else 24..48)
             assertTrue(l.attempts<=64); if(id>=6) assertTrue(l.candidatesEvaluated<=6)
-            assertTrue(l.candidateQuality.all { it.searchNodes<=5000 })
+            assertTrue(l.candidateQuality.all { it.searchNodes <= (if (id >= 6) DifficultyPolicy.profile(id).analysisBudget else 5000) })
             val g=Game(l.tiles); l.witness.forEach { assertTrue(g.match(it.first,it.second)) }; assertEquals(Status.WON,g.status)
         }
     }
     @Test fun recentGeometryAndBoardsVary() {
-        for(id in 10L..60L) { val l=EndlessGenerator.layout(id); for(d in 1..4) assertNotEquals(EndlessGenerator.geometryFingerprint(l),EndlessGenerator.geometryFingerprint(EndlessGenerator.layout(id-d))) }
-        assertEquals(2,(6L..13L).map { EndlessGenerator.layout(it).id.substringBefore('-') }.toSet().size)
+        for(id in 16L..60L) { val l=EndlessGenerator.layout(id); for(d in 1..10) assertNotEquals(EndlessGenerator.geometryFingerprint(l),EndlessGenerator.geometryFingerprint(EndlessGenerator.layout(id-d))) }
+        val sample = EndlessGenerator.layout(31)
+        assertTrue(AdvancedLayouts.recentDuplicate(sample, listOf(sample)))
+        val translated = sample.copy(slots = sample.slots.map { it.copy(x = it.x + 12.0, y = it.y - 4.0) })
+        assertEquals(EndlessGenerator.geometryFingerprint(sample), EndlessGenerator.geometryFingerprint(translated))
+        assertTrue(AdvancedLayouts.recentDuplicate(translated, listOf(sample)))
+        assertEquals(8,(6L..13L).map { EndlessGenerator.layout(it).id.substringBefore('-') }.toSet().size)
         assertEquals(12,(6L..17L).map { Levels.get(it).tiles }.toSet().size)
     }
-    @Test fun fallbackIsVerifiedAndReproducible() { val a=EndlessGenerator.generate(100,true); assertEquals(a,EndlessGenerator.generate(100,true)); LevelValidator.validate(a); assertFalse(a.qualityTargetMet); assertEquals(EndlessGenerator.VERSION,a.version) }
+    @Test fun fallbackIsVerifiedAndReproducible() { val a=EndlessGenerator.generate(100,true); assertEquals(a,EndlessGenerator.generate(100,true)); LevelValidator.validate(a); assertFalse(a.qualityTargetMet); assertEquals(EndlessGenerator.VERSION,a.version)
+        val other = EndlessGenerator.generate(101,true)
+        assertNotEquals(EndlessGenerator.geometryFingerprint(a.layout),EndlessGenerator.geometryFingerprint(other.layout))
+    }
     @Test fun invalidIdsRejected() { assertThrows(IllegalArgumentException::class.java) { Levels.get(0) }; assertThrows(IllegalArgumentException::class.java) { Levels.get(-1) } }
     @Test fun geometryAndHitTestingAllVariants() {
         (6L..37L).forEach { id -> val l=Levels.get(id)

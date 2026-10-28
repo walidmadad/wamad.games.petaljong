@@ -14,8 +14,8 @@ import java.io.File
 @Suppress("DEPRECATION")
 class AdvancedBoardVisualTest : InstrumentationTestCase() {
     fun testCaptureStagesFamiliesAndUpperRemovalAtPortraitWidths() {
-        val directory = File(instrumentation.targetContext.filesDir,"codex29-visual").apply { mkdirs() }
-        for(levelId in listOf(1L,8,16,31,32)) {
+        val directory = File(instrumentation.targetContext.filesDir,"codex30-visual").apply { mkdirs() }
+        for(levelId in (6L..20L).toList() + listOf(31L,32L,100L)) {
             val level = Levels.get(levelId)
             for(widthDp in listOf(320,360,400,600)) {
                 instrumentation.runOnMainSync {
@@ -24,6 +24,7 @@ class AdvancedBoardVisualTest : InstrumentationTestCase() {
                     val width = ((widthDp-32)*density).toInt(); val height = (480*density).toInt()
                     val game = Game(level.tiles)
                     val view = MahjongBoardView(context,game) {}
+                    view.theme = GardenTheme.forLevel(levelId)
                     view.measure(View.MeasureSpec.makeMeasureSpec(width,View.MeasureSpec.EXACTLY),
                         View.MeasureSpec.makeMeasureSpec(height,View.MeasureSpec.EXACTLY))
                     view.layout(0,0,width,height)

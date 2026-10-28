@@ -112,6 +112,16 @@ See [CODEX_25_REPORT.md](CODEX_25_REPORT.md) for acceptance results and limitati
 
 ## CODEX 29: advanced Mahjong
 
-New puzzles use generator v7: Normal 1–7, Hard 8–15, Very Hard 16–30, Expert 31+. Alternating classic side-terrace and compact center-stack families reach four real blocking layers with at most 48 botanical tiles. Six bounded candidates combine pair-choice analysis and actual four-slot tray probes; every returned board replays a complete winning witness through Game. Old in-progress v4/v5/v6 puzzles reconstruct with historical definitions. Blocked faces are darker; overhead coverage hides artwork; ceramic edges and shadows are deeper.
+The historical CODEX 29 baseline used generator v7: Normal 1–7, Hard 8–15, Very Hard 16–30, Expert 31+. Alternating classic side-terrace and compact center-stack families reach four real blocking layers with at most 48 botanical tiles. Six bounded candidates combine pair-choice analysis and actual four-slot tray probes; every returned board replays a complete winning witness through Game. Old in-progress v4/v5/v6 puzzles reconstruct with historical definitions. Blocked faces are darker; overhead coverage hides artwork; ceramic edges and shadows are deeper.
 
-See [CODEX_29_REPORT.md](CODEX_29_REPORT.md) for measured baseline, targets, compatibility and limitations. Android visual acceptance and a fresh APK remain pending because Gradle/ADB are blocked in this environment. `tools/benchmark29.py historical` measures frozen v6; omit the argument for v7 (Java 17 required). AdvancedBoardVisualTest prepares Android board captures without touching saved progress.
+See [CODEX_29_REPORT.md](CODEX_29_REPORT.md) for measured baseline, targets, compatibility and limitations. Android visual acceptance and a fresh APK remain pending because Gradle/ADB are blocked in this environment. `tools/benchmark29.py historical` measures frozen v6; omit the argument for the current generator (Java 17 required). AdvancedBoardVisualTest prepares Android board captures without touching saved progress.
+
+## CODEX 30 garden layouts and themes
+
+New endless puzzles use generator v8 with eight scheduled footprints: turtle, butterfly, flower, pyramid, bridge, spiral, crescent and islands. Branch relocations and supported terrace arrangements vary deterministically. Ten-level geometry lookback compares normalized coordinates, independently of symbols; bounded generation reports novelty limitations rather than claiming global uniqueness. Historical v4–v7 puzzles remain reconstructible, including active tray/history state.
+
+Five stable garden themes tint ceramic surfaces, board gradients and tray containers. Available faces remain ivory; blocked faces use lit theme ceramics, opaque upper tiles retain symbol privacy, and rendering continues to use the shared touch transform. Difficulty boundaries remain 1–7 / 8–15 / 16–30 / 31+.
+
+See [CODEX_30_REPORT.md](CODEX_30_REPORT.md) for measured results and limitations, and [host commands](docs/codex30/HOST_COMMANDS.md) for standard Android verification. A source/diagnostic check is not a fresh verified APK.
+
+CODEX 30 final diagnostic result: **244/244 JVM tests PASS**, plus **6/6 focused Endless reruns PASS** after stricter duplicate/normalization assertions. Main and instrumentation sources compile against cached Android dependencies. The 77-board matrix has 77 validated wins, eight families and zero observed exact duplicates within ten levels; strategic targets are met on 75/77 (21 and 29 miss). Actual Android screenshots, Gradle/Lint, fresh APK and signer verification remain blocked. See CODEX_30_REPORT.md and docs/codex30 for evidence.

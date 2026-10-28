@@ -584,6 +584,8 @@ class MainActivity : Activity() {
         gameplay?.visibility = if (showingGame) View.VISIBLE else View.GONE
         gameplay?.importantForAccessibility = if (showConnection) View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS else View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
         if (!showingGame) return
+        board.theme = GardenTheme.forLevel(session.level.id)
+        tray.theme = board.theme
         levelLabel.text = getString(R.string.level_number, session.level.id)
         counter.text = getString(R.string.pairs, game.remainingPairs)
         val presentation = ScreenPresentation.forStatus(game.status, session.canAdvance)
