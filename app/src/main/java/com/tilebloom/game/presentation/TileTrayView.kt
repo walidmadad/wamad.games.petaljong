@@ -40,7 +40,10 @@ class TileTrayView(context: Context, private val tiles: () -> List<Tile>) : View
         val slots = slotBounds()
         val size = slots.first().width()
         ink.style = Paint.Style.FILL; ink.color = Color.rgb(22, 55, 43)
-        c.drawRoundRect(0f, 0f, width.toFloat(), height.toFloat(), gap, gap, ink)
+        c.drawRoundRect(0f, 0f, width.toFloat(), height.toFloat(), gap * 1.6f, gap * 1.6f, ink)
+        ink.style = Paint.Style.STROKE; ink.strokeWidth = resources.displayMetrics.density
+        ink.color = Color.rgb(67, 91, 65)
+        c.drawRoundRect(1f, 1f, width - 1f, height - 1f, gap * 1.6f, gap * 1.6f, ink)
         repeat(4) { i ->
             val r = slots[i]
             val tile = tiles().getOrNull(i)
@@ -48,7 +51,7 @@ class TileTrayView(context: Context, private val tiles: () -> List<Tile>) : View
             ink.color = if (tile == null) Color.rgb(16, 40, 32) else Color.rgb(250, 244, 224)
             c.drawRoundRect(r, gap, gap, ink)
             ink.style = Paint.Style.STROKE; ink.strokeWidth = resources.displayMetrics.density
-            ink.color = if (tiles().size == 4) Color.rgb(199, 126, 94) else Color.rgb(184, 163, 107)
+            ink.color = if (tiles().size == 4) Color.rgb(199, 126, 94) else if (tile == null) Color.rgb(102, 119, 83) else Color.rgb(184, 163, 107)
             c.drawRoundRect(r, gap, gap, ink)
             tile?.let {
                 c.save(); c.translate(r.centerX(), r.centerY()); c.scale(size * .34f, size * .34f)

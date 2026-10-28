@@ -759,3 +759,13 @@ SHA-256: `7c261fc59eb9496417d7b3c96f7acc097b76823490429accde62acb5eebd0104`.
 DEX startup/navigation/control classes and all five compiled vector resources verified.
 The APK is newer than every production Kotlin/XML file. Verification evidence is saved
 in `docs/codex16/apk-verification.txt`. No Android runtime success is claimed.
+
+## CODEX 25 verification
+
+Evidence: `docs/codex25/`. Requested standard Gradle unit-test, assembleDebug and lintDebug commands were attempted; each fails at the read-only wrapper lock. Java 17 / installed Gradle 8.13 / writable temporary user-home retry fails at wildcard IP initialization. These are prerequisite failures, not task success. ADB cannot bind its server socket, so instrumentation and manual Android verification are NOT VERIFIED. No fresh APK was generated; its timestamp, size, SHA-256, package contents, alignment and signature are unavailable.
+
+Cached Kotlin/JUnit verifies generator v6, full production witnesses, new-symbol pairs/Hint/Undo, historical/current save restoration, progression and the capability/600ms handover state policy. Main and Android test sources also compile diagnostically with cached official SDK dependencies and metadata checking bypassed; this does not replace Gradle or Lint. Historical v5 level fingerprints match the pre-change compiled generator for 6, 11, 21, 41, 101 and 10000. The existing locally configured certificate matches the required fc1828f63432530e788baa4d69c70594157dfad0312a977e710158393e4110f6; no fresh signed artifact is claimed.
+
+`ConnectivityInteractionTest` adds offline home/Play, consent-independent online access, action guards, tray/credit preservation, reconnect, victory gating, recreation and renderer-scale coverage. Tests are updated and compiled, not run. Real Wi-Fi/mobile, captive network, handover, callback registration under recreation, compact/large-font layout and optional rewarded-ad playback remain pending. See CODEX_25_REPORT.md for the 30-item acceptance matrix.
+
+Final CODEX 25 JVM result: **216 tests, 0 failures**, 30.099 seconds. Diagnostic main/Android test compilation: PASS. Standard Gradle, Lint, emulator and fresh APK remain unverified/blocked as described above.

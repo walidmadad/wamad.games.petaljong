@@ -20,11 +20,11 @@ object GameStore {
     /** Returns the controller and whether saved Activity navigation must be discarded.
      * A live process plus saved GAME is recreation; a cold process is application entry.
      */
-    @Synchronized fun enter(context: Context, freshEntry: Boolean): Pair<ProgressController, Boolean> {
+    @Synchronized fun enter(context: Context, freshEntry: Boolean, allowAdvance: Boolean = true): Pair<ProgressController, Boolean> {
         val coldEntry = controller == null
         val state = get(context)
         val previous = state.session.level.id
-        if (freshEntry || coldEntry) check(state.finalizeCompletedEntry { persistTransition(context, it) }) {
+        if (allowAdvance && (freshEntry || coldEntry)) check(state.finalizeCompletedEntry { persistTransition(context, it) }) {
             "Completed level transition was not saved"
         }
         return state to (coldEntry || state.session.level.id != previous)

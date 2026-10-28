@@ -20,7 +20,7 @@ class EndlessTest {
         assertEquals(8,(6L..13L).map { EndlessGenerator.layout(it).id.substringBefore('-') }.toSet().size)
         assertEquals(12,(6L..17L).map { Levels.get(it).tiles }.toSet().size)
     }
-    @Test fun fallbackIsVerifiedAndReproducible() { val a=EndlessGenerator.generate(100,true); assertEquals(a,EndlessGenerator.generate(100,true)); LevelValidator.validate(a); assertFalse(a.qualityTargetMet); assertEquals(5,a.version) }
+    @Test fun fallbackIsVerifiedAndReproducible() { val a=EndlessGenerator.generate(100,true); assertEquals(a,EndlessGenerator.generate(100,true)); LevelValidator.validate(a); assertFalse(a.qualityTargetMet); assertEquals(EndlessGenerator.VERSION,a.version) }
     @Test fun invalidIdsRejected() { assertThrows(IllegalArgumentException::class.java) { Levels.get(0) }; assertThrows(IllegalArgumentException::class.java) { Levels.get(-1) } }
     @Test fun geometryAndHitTestingAllVariants() {
         (6L..37L).forEach { id -> val l=Levels.get(id)

@@ -1,0 +1,3 @@
+Existing configured local certificate SHA-256: fc1828f63432530e788baa4d69c70594157dfad0312a977e710158393e4110f6
+Expected certificate matches: True
+No fresh APK signing verification was possible.

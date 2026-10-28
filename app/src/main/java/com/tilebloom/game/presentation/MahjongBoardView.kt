@@ -171,6 +171,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         paint.style = Paint.Style.FILL
     }
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (!isEnabled) { gesture.cancel(); return true }
         // Batched movement can accompany the final UP as well as MOVE.
         // Check every sample before completing a tap, including an out-and-back drag.
         if (event.actionMasked == MotionEvent.ACTION_MOVE || event.actionMasked == MotionEvent.ACTION_UP) {
@@ -248,6 +249,10 @@ internal object BotanicalSymbols {
         Symbol.GINKGO_LEAF -> R.string.symbol_ginkgo_leaf
         Symbol.CHERRY_BLOSSOM -> R.string.symbol_cherry_blossom
         Symbol.DRAGONFLY -> R.string.symbol_dragonfly
+        Symbol.CACTUS -> R.string.symbol_cactus
+        Symbol.LAVENDER -> R.string.symbol_lavender
+        Symbol.LADYBUG -> R.string.symbol_ladybug
+        Symbol.SNAIL -> R.string.symbol_snail
     })
     fun draw(c: Canvas, p: Paint, symbol: Symbol) {
         p.color = green; p.style = Paint.Style.FILL
@@ -363,6 +368,52 @@ internal object BotanicalSymbols {
                     cubicTo(.45f, -1.1f, .8f, -.35f, 0f, .05f); close() }
                 repeat(5) { c.save(); c.rotate(it * 72f); c.drawPath(petal, p); c.restore() }
                 p.color = Color.rgb(246, 213, 151); c.drawCircle(0f, 0f, .15f, p)
+            }
+            Symbol.CACTUS -> {
+                c.drawRoundRect(-.25f, -.95f, .25f, .9f, .24f, .24f, p)
+                p.style = Paint.Style.STROKE; p.strokeWidth = .29f; p.strokeCap = Paint.Cap.ROUND
+                val arms = Path().apply { moveTo(-.15f, .2f); lineTo(-.66f, .2f); lineTo(-.66f, -.5f)
+                    moveTo(.15f, -.1f); lineTo(.65f, -.1f); lineTo(.65f, -.7f) }
+                c.drawPath(arms, p)
+                p.strokeCap = Paint.Cap.BUTT; p.strokeWidth = .06f; p.color = Color.rgb(179, 195, 128)
+                c.drawLine(0f, -.65f, 0f, .65f, p)
+                p.style = Paint.Style.FILL; p.color = Color.rgb(160, 110, 74)
+                c.drawRoundRect(-.45f, .65f, .45f, 1f, .08f, .08f, p)
+            }
+            Symbol.LAVENDER -> {
+                p.strokeWidth = .1f; c.drawLine(0f, -.9f, 0f, 1f, p)
+                c.drawOval(-.55f, .45f, 0f, .7f, p); c.drawOval(0f, .2f, .5f, .45f, p)
+                p.color = Color.rgb(119, 89, 150)
+                for (i in 0..3) {
+                    val y = -.75f + i * .3f
+                    c.drawOval(-.4f, y - .19f, -.02f, y + .12f, p)
+                    c.drawOval(.02f, y - .19f, .4f, y + .12f, p)
+                }
+                c.drawOval(-.16f, -1.05f, .16f, -.65f, p)
+            }
+            Symbol.LADYBUG -> {
+                p.color = Color.rgb(49, 58, 43); p.strokeWidth = .1f
+                for (y in listOf(-.3f, .15f, .55f)) c.drawLine(-.9f, y, .9f, y + .12f, p)
+                c.drawCircle(0f, -.7f, .32f, p)
+                c.drawLine(-.13f, -.8f, -.35f, -1f, p); c.drawLine(.13f, -.8f, .35f, -1f, p)
+                p.color = Color.rgb(174, 65, 53); c.drawOval(-.7f, -.65f, .7f, .95f, p)
+                p.color = Color.rgb(49, 58, 43); p.strokeWidth = .09f; c.drawLine(0f, -.62f, 0f, .9f, p)
+                for (x in listOf(-.33f, .33f)) for (y in listOf(-.2f, .4f)) c.drawCircle(x, y, .15f, p)
+            }
+            Symbol.SNAIL -> {
+                p.color = Color.rgb(95, 123, 68); c.drawRoundRect(-.95f, .45f, .95f, .85f, .2f, .2f, p)
+                c.drawOval(.5f, -.05f, .88f, .75f, p); p.strokeWidth = .08f
+                c.drawLine(.63f, .12f, .49f, -.3f, p); c.drawLine(.8f, .1f, .95f, -.3f, p)
+                c.drawCircle(.49f, -.3f, .1f, p); c.drawCircle(.95f, -.3f, .1f, p)
+                p.color = Color.rgb(181, 133, 77); c.drawCircle(-.22f, -.08f, .68f, p)
+                p.color = Color.rgb(102, 73, 47); p.style = Paint.Style.STROKE; p.strokeWidth = .11f
+                val spiral = Path()
+                for (i in 0..48) {
+                    val angle = i * .22; val r = .55 * (1 - i / 56.0)
+                    val x = (-.22 + cos(angle) * r).toFloat(); val y = (-.08 + sin(angle) * r).toFloat()
+                    if (i == 0) spiral.moveTo(x, y) else spiral.lineTo(x, y)
+                }
+                c.drawPath(spiral, p); p.style = Paint.Style.FILL
             }
             Symbol.DRAGONFLY -> {
                 p.color = Color.rgb(111, 154, 154)

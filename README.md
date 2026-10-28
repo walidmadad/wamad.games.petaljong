@@ -101,3 +101,11 @@ Save schema 4/gameplay rules 2 remain unchanged. Navigation is separate presenta
 state, so no new save migration or puzzle generation version is needed. All domain
 engine, generator, tiers, symbols, wallet and repository logic are retained. See the
 CODEX 16 report for exact test/APK evidence and pending Android playtests.
+
+## CODEX 25 — online garden and botanical expansion
+
+Gameplay now requires Android's default network to have both INTERNET and VALIDATED capabilities. A lifecycle-managed callback suspends input immediately on validation loss; a 600ms handover window stabilizes the connection panel. Retry and Network Settings are available. Home keeps the saved level and privacy entry visible. Reconnection resumes the same board/tray and credits without restarting. This is local connectivity detection, not remote authentication or a tamper-proof policy. Consent and ad availability never unlock or block gameplay.
+
+New v6 boards introduce Cactus (ID 16) at level 6, Lavender (17) at 11, Ladybug (18) at 21 and Snail (19) at 41. All eligible new types receive real witness pairs. Existing IDs, levels 1–5, 20-level tiers and four-slot rules remain. Historical generator v4/v5 saves restore their original boards; schema 5 and balances are unchanged. Home spacing, the secondary privacy action, tray outlines and control badge separation are refined.
+
+See [CODEX_25_REPORT.md](CODEX_25_REPORT.md) for acceptance results and limitations. Cached JVM and diagnostic compilation checks are available; normal Gradle and ADB are blocked by host restrictions. **No fresh CODEX 25 APK or emulator verification is available.** Existing APKs must not be treated as this delivery.

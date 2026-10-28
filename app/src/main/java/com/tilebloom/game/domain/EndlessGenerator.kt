@@ -2,9 +2,9 @@ package com.tilebloom.game.domain
 
 import java.util.Random
 
-/** v4 remains reconstructible; v5 changes geometry, symbol assignment and quality selection. */
+/** v6 introduces four symbols; historical v4 and v5 definitions remain reconstructible. */
 object EndlessGenerator {
-    const val VERSION = 5
+    const val VERSION = 6
     const val RECENT_WINDOW = 4
     fun seed(id: Long) = LegacyEndlessGenerator.seed(id) xor 4L xor VERSION.toLong()
     fun layout(id: Long): BoardLayout {
@@ -49,7 +49,9 @@ object EndlessGenerator {
             }.getOrElse { fallback(id, seed, layout) }
             val catalog = DifficultyPolicy.symbols(id)
             val offset = ((id - 1) % catalog.size).toInt()
-            val active = List(minOf(profile.activeSymbols, built.witness.size)) { catalog[(it + offset) % catalog.size] }
+            val required = catalog.filter { it.introducedAt == id } + catalog.filter { it.stableId >= 16 }
+            val active = (required + List(catalog.size) { catalog[(it + offset) % catalog.size] })
+                .distinct().take(minOf(profile.activeSymbols, built.witness.size))
             // Every active type receives a complete witness pair, including all milestone unlocks.
             val assignments = MutableList(built.witness.size) { active[it % active.size] }
             java.util.Collections.shuffle(assignments, Random(seed + index))

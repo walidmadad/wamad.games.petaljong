@@ -360,3 +360,19 @@ and 200%. Check gesture and three-button navigation, display cutouts and system 
 
 No device/emulator success is claimed in this environment. Instrumentation source
 compilation and JVM navigation checks do not replace these pending runtime checks.
+
+## CODEX 25 — pending Android session
+
+Status: NOT EXECUTED. ADB server socket is denied in this environment. Use only a freshly generated standard Gradle APK; verify signing certificate before `adb install -r`. Never uninstall or clear the existing player's data.
+
+1. Launch online and confirm saved level, centered Play, readable secondary privacy action and normal board entry. Deny personalized consent or make ad inventory unavailable; gameplay must still work.
+2. Disable both radios. Home must retain level/privacy access, disable Play and show Retry/Network Settings. Retry repeatedly must not produce dialog loops.
+3. Use Wi-Fi without validated Internet, then validated mobile data. Only the latter may unlock play. Switch between working Wi-Fi/mobile and inspect panel stabilization.
+4. Collect an unmatched tile; record the tray, level, move history and both credit balances. Disconnect. Attempt board taps, Hint, Undo, Restart, Home/Back and Next. State must remain unchanged. Reconnect without relaunching and compare exact state; no replayed removal effects.
+5. Reach victory and disconnect before Next. No offline advancement may occur. Relaunch offline with pending victory and verify it is retained. Retry online and advance once.
+6. Rotate/recreate with an offline active board (instrumentation recreation is available despite portrait lock); reconnect and compare tray/credits. Repeat lifecycle/settings transitions and check for callback leaks/crashes.
+7. Inspect new v6 levels 6/11/21/41 and later boards. Verify cactus arms, lavender sprig, spotted ladybug and spiral snail at board and tray scale, including matching, Undo and Hint. Resume a saved v5 puzzle and confirm identical assignments.
+8. Inspect 320dp compact portrait and large fonts: connection panel, level visibility on home (scroll as needed), exactly four portrait slots, gold outlines and dock badge legibility. Test TalkBack focus and settings/privacy discoverability.
+9. With consent/availability permitting, verify optional Google test rewarded ads, earned +1 credits, canceled-ad zero reward and duplicate protection. Ads must not be mandatory.
+
+Run `ConnectivityInteractionTest` and the existing Android suite, then record actual results/screenshots here. No Android PASS is claimed by this checklist. Local validation is a platform connectivity signal, not authenticated server enforcement.

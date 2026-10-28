@@ -87,7 +87,9 @@ class GardenIconButton(context: Context, iconResource: Int, private val iconTint
             val right = width - d; val top = 0f
             ink.color = GardenStyle.gold
             canvas.drawRoundRect(right - w, top, right, h, h / 2, h / 2, ink)
-            ink.color = GardenStyle.forest
+            ink.style = Paint.Style.STROKE; ink.strokeWidth = 1.5f * d; ink.color = GardenStyle.forest
+            canvas.drawRoundRect(right - w, top, right, h, h / 2, h / 2, ink)
+            ink.style = Paint.Style.FILL
             canvas.drawText(it.toString(), right - w / 2 - ink.measureText(it.toString()) / 2,
                 h / 2 - (ink.ascent() + ink.descent()) / 2, ink)
         }
@@ -101,6 +103,9 @@ class GardenIconButton(context: Context, iconResource: Int, private val iconTint
             val left = cx - w / 2; val top = height - h
             ink.color = GardenStyle.gold
             canvas.drawRoundRect(left, top, left + w, height.toFloat(), h / 2, h / 2, ink)
+            ink.style = Paint.Style.STROKE; ink.strokeWidth = 1.5f * d; ink.color = GardenStyle.forest
+            canvas.drawRoundRect(left, top, left + w, height.toFloat(), h / 2, h / 2, ink)
+            ink.style = Paint.Style.FILL
             video.setTint(GardenStyle.forest)
             video.setBounds((left + 3*d).toInt(), (top + (h-videoSize)/2).toInt(),
                 (left + 3*d + videoSize).toInt(), (top + (h+videoSize)/2).toInt())

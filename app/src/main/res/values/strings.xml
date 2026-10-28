@@ -94,4 +94,13 @@
     <string name="ad_unavailable_short">Ad unavailable</string>
     <string name="ad_ready">Ad ready</string>
     <string name="ad_retry">Retry</string>
+    <string name="symbol_cactus">Cactus</string>
+    <string name="symbol_lavender">Lavender</string>
+    <string name="symbol_ladybug">Ladybug</string>
+    <string name="symbol_snail">Snail</string>
+    <string name="no_connection">NO INTERNET CONNECTION</string>
+    <string name="connect_continue">Connect to the internet to continue.</string>
+    <string name="connection_retry">Retry</string>
+    <string name="network_settings">Open Network Settings</string>
+    <string name="privacy_short">Privacy options</string>
 </resources>

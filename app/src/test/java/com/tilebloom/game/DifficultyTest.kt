@@ -17,11 +17,11 @@ class DifficultyTest {
         assertEquals(2L,DifficultyPolicy.tier(41)); assertEquals(6L,DifficultyPolicy.tier(121))
     }
     @Test fun stableCatalogAndMilestones() {
-        assertEquals((0..15).toList(),Symbol.entries.map { it.stableId })
+        assertEquals((0..19).toList(),Symbol.entries.map { it.stableId })
         assertEquals(listOf(Symbol.LEAF,Symbol.LOTUS,Symbol.FERN,Symbol.FLOWER,Symbol.BERRIES,Symbol.SUNFLOWER),Symbol.entries.take(6))
-        (1L..20).forEach { assertEquals(Symbol.entries.take(6),DifficultyPolicy.symbols(it)) }
+        (1L..5).forEach { assertEquals(Symbol.entries.take(6),DifficultyPolicy.symbols(it)) }
         listOf(21L,41,61,81,101).forEachIndexed { i,id ->
-            assertEquals(Symbol.entries.slice(6+i*2..7+i*2),DifficultyPolicy.introduced(id))
+            assertTrue(DifficultyPolicy.introduced(id).containsAll(Symbol.entries.slice(6+i*2..7+i*2)))
             val level=Levels.get(id)
             DifficultyPolicy.introduced(id).forEach { symbol -> assertTrue(level.tiles.count { it.symbol==symbol } >= 2) }
         }

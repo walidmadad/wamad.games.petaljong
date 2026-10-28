@@ -179,7 +179,7 @@ class GardenSession {
     fun restore(saved: SessionSnapshot): Boolean {
         // Restoration may resume this board or a later one, never an earlier board.
         if (saved.id < level.id) return false
-        val candidate = try { if (saved.id >= 6 && saved.version == 4) LegacyEndlessGenerator.generate(saved.id) else Levels.get(saved.id) } catch (_: Exception) { return false }
+        val candidate = try { if (saved.id >= 6 && saved.version == 4) LegacyEndlessGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 5) VersionFiveGenerator.generate(saved.id) else Levels.get(saved.id) } catch (_: Exception) { return false }
         if (candidate.seed != saved.seed || candidate.version != saved.version) return false
         val restored = Game(candidate.tiles)
         if (!restored.restore(saved.game)) return false
