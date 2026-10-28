@@ -121,12 +121,12 @@ class HintInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(MainA
             assertEquals(2, state.hintCredits)
         }
     }
-    fun testZeroRemainsDisabledAfterRestore() {
+    fun testZeroOffersRewardAfterRestore() {
         File(instrumentation.targetContext.filesDir, storage).writeText(ProgressCodec.encode(PlayerProgress(hintCredits = 0)))
         val screen = activity; enter(screen)
         ui {
             val button = screen.findViewById<GardenIconButton>(R.id.hint)
-            assertEquals(0, button.badge); assertFalse(button.isEnabled)
+            assertEquals(0, button.badge); assertTrue(button.isEnabled)
             button.performClick()
             assertNull(screen.findViewById<MahjongBoardView>(R.id.board).hintedTileId)
         }

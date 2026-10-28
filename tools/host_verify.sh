@@ -99,6 +99,7 @@ fi
 # every task. Independent task failures below are all recorded.
 if ! run gradle-version ./gradlew --version; then finish; fi
 run jvm-tests ./gradlew --console=plain :app:testDebugUnitTest
+touch "$evidence/build-start"
 build_code=0
 run assemble-debug ./gradlew --console=plain :app:assembleDebug || build_code=$?
 run lint-debug ./gradlew --console=plain :app:lintDebug
@@ -109,6 +110,11 @@ apk="$project_root/app/build/outputs/apk/debug/app-debug.apk"
 if [[ $build_code -eq 0 ]]; then
     if run apk-exists test -s "$apk"; then
         apk_status="Standard Gradle output: $apk"
+        run apk-fresh test "$apk" -nt "$evidence/build-start"
+        run apk-timestamp stat -c '%y' "$apk"
+        run apk-ad-integrations python3 tools/check_ads_apk.py "$apk"
+        run apk-manifest "$build_tools/aapt2" dump xmltree "$apk" --file AndroidManifest.xml
+        run apk-admob-id grep -Fq 'ca-app-pub-3940256099942544~3347511713' "$evidence/apk-manifest.log"
         run apk-size stat -c '%s bytes' "$apk"
         run apk-sha256 sha256sum "$apk"
         run apk-metadata "$build_tools/aapt2" dump badging "$apk"

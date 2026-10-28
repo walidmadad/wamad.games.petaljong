@@ -15,6 +15,7 @@ class HostVerifyTest(unittest.TestCase):
         self.root = Path(self.temp.name) / 'project with spaces'
         (self.root / 'tools').mkdir(parents=True)
         shutil.copy2(Path(__file__).with_name('host_verify.sh'), self.root / 'tools/host_verify.sh')
+        shutil.copy2(Path(__file__).with_name('check_ads_apk.py'), self.root / 'tools/check_ads_apk.py')
         self.sdk = Path(self.temp.name) / 'sdk with spaces'
         platform = self.sdk / 'platforms/android-36/android.jar'
         platform.parent.mkdir(parents=True)
@@ -30,7 +31,11 @@ case "$*" in
     if [[ ${BUILD_EXIT:-0} != 0 ]]; then exit "$BUILD_EXIT"; fi
     if [[ ${MISSING_APK:-0} == 0 ]]; then
       mkdir -p app/build/outputs/apk/debug
-      echo 'fixture only, not an APK' > app/build/outputs/apk/debug/app-debug.apk
+      python3 - <<'FIXTURE'
+import zipfile
+with zipfile.ZipFile('app/build/outputs/apk/debug/app-debug.apk', 'w') as apk:
+    apk.writestr('classes.dex', b'Lcom/google/android/gms/ads/rewarded/RewardedAd;Lcom/google/android/ump/UserMessagingPlatform;')
+FIXTURE
     fi ;;
   *lintDebug*) exit "${LINT_EXIT:-0}" ;;
   *) exit 99 ;;
@@ -42,6 +47,7 @@ esac
         (wrapper / 'gradle-wrapper.properties').write_text('fixture only')
         bt = self.sdk / 'build-tools/35.0.0'
         self.executable(bt / 'aapt2', '''cat <<'META'
+ca-app-pub-3940256099942544~3347511713
 package: name='com.tilebloom.game' versionCode='1'
 minSdkVersion:'26'
 targetSdkVersion:'36'

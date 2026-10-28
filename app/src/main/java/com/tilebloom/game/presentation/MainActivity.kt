@@ -1,6 +1,9 @@
 package com.tilebloom.game.presentation
 
 import android.app.Activity
+import android.app.AlertDialog
+import com.tilebloom.game.ads.RewardedAdManager
+import com.tilebloom.game.ads.AdvertisingService
 import android.os.Bundle
 import android.os.Build
 import android.view.WindowInsets
@@ -35,6 +38,7 @@ class MainActivity : Activity() {
     private lateinit var outcomeDetail: TextView
     private lateinit var next: Button
     private lateinit var hint: GardenIconButton
+    private var rewardDialog: AlertDialog? = null
     private var hintPending = false
     private var hintRequest = 0
     private lateinit var undo: GardenIconButton
@@ -64,6 +68,7 @@ class MainActivity : Activity() {
         val metadata = ProgressRepository.load(applicationContext)
         previewLevel = metadata.highestUnlocked
         createContent()
+        AdvertisingService.provider.attach(this)
         Thread {
             val loaded = runCatching { GameStore.enter(applicationContext, savedInstanceState?.getString("garden_screen") != GardenScreen.GAME.name) }
             runOnUiThread {
@@ -166,6 +171,14 @@ class MainActivity : Activity() {
             }
         }
         add(play, 20)
+        add(Button(this).apply {
+            id = R.id.privacy_options
+            setText(R.string.privacy_options); GardenStyle.button(this, false)
+            setOnClickListener {
+                if (AdvertisingService.provider.privacyRequired) AdvertisingService.provider.privacyOptions(this@MainActivity)
+                else Toast.makeText(this@MainActivity, R.string.privacy_not_required, Toast.LENGTH_SHORT).show()
+            }
+        }, 8)
         // Cap the welcoming composition on wider devices; scroll protects large-font navigation.
         val frame = FrameLayout(this)
         frame.addView(content, FrameLayout.LayoutParams(if (resources.configuration.screenWidthDp > 480) dp(420) else -1, -2, Gravity.CENTER))
@@ -224,6 +237,7 @@ class MainActivity : Activity() {
         hint = GardenIconButton(this, R.drawable.ic_hint, GardenStyle.gold).apply {
             id = R.id.hint
             setOnClickListener {
+                if (progress.hintCredits == 0) { requestReward(RewardPurpose.HINT); return@setOnClickListener }
                 if (!hintPending && board.hintedTileId == null && !GameStore.transitioning && game.status == Status.PLAYING && progress.hintCredits > 0) {
                     hintPending = true
                     val request = ++hintRequest
@@ -255,6 +269,7 @@ class MainActivity : Activity() {
         undo = GardenIconButton(this, R.drawable.ic_undo).apply {
             id = R.id.undo
             setOnClickListener {
+                if (progress.wallet.balance == 0) { requestReward(RewardPurpose.UNDO); return@setOnClickListener }
                 if (!GameStore.transitioning && progress.undo()) {
                     hintRequest++; hintPending = false; board.clearFeedback(); tray.clearFeedback(); update()
                 }
@@ -402,16 +417,34 @@ class MainActivity : Activity() {
         home.visibility = View.VISIBLE
         restart.visibility = View.VISIBLE
         hint.badge = progress.hintCredits
-        hint.contentDescription = getString(R.string.hint_description, progress.hintCredits)
+        hint.contentDescription = if (progress.hintCredits == 0) getString(R.string.watch_hint) else getString(R.string.hint_description, progress.hintCredits)
         hint.tooltipText = hint.contentDescription
-        hint.isEnabled = !hintPending && !GameStore.transitioning && game.status == Status.PLAYING && progress.hintCredits > 0
+        hint.isEnabled = !hintPending && !GameStore.transitioning && game.status == Status.PLAYING
         home.isEnabled = !GameStore.transitioning
         restart.isEnabled = !GameStore.transitioning && game.status != Status.WON
-        undo.isEnabled = !GameStore.transitioning && game.canUndo && progress.wallet.balance > 0
+        undo.isEnabled = !GameStore.transitioning && (progress.wallet.balance == 0 || game.canUndo)
         undo.badge = progress.wallet.balance
-        undo.contentDescription = getString(R.string.undo_description, progress.wallet.balance)
+        undo.contentDescription = if (progress.wallet.balance == 0) getString(R.string.watch_undo) else getString(R.string.undo_description, progress.wallet.balance)
         undo.tooltipText = undo.contentDescription
         board.refresh(); tray.refresh()
+    }
+
+    private fun requestReward(purpose: RewardPurpose) {
+        if (GameStore.transitioning || rewardDialog?.isShowing == true || AdvertisingService.provider.state == RewardedAdManager.State.SHOWING) return
+        rewardDialog = AlertDialog.Builder(this)
+            .setTitle(if (purpose == RewardPurpose.HINT) R.string.need_hint else R.string.need_undo)
+            .setMessage(if (purpose == RewardPurpose.HINT) R.string.watch_hint else R.string.watch_undo)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.watch_ad) { _, _ ->
+                if (!AdvertisingService.provider.show(this, purpose)) {
+                    Toast.makeText(this, if (AdvertisingService.provider.state == RewardedAdManager.State.LOADING) R.string.ad_loading else R.string.ad_unavailable, Toast.LENGTH_LONG).show()
+                }
+            }.create().also { dialog ->
+                dialog.show()
+                dialog.window?.setBackgroundDrawable(GardenStyle.surface(this, GardenStyle.panel))
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(GardenStyle.gold)
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(GardenStyle.ivory)
+            }
     }
 
     private fun returnHomeFromBack() {
@@ -453,6 +486,8 @@ class MainActivity : Activity() {
         ProgressRepository.awaitWrites()
     }
     override fun onDestroy() {
+        rewardDialog?.dismiss()
+        AdvertisingService.provider.detach(this)
         hintRequest++
         if (::board.isInitialized) board.clearFeedback()
         updateBackCallback(false)

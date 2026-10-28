@@ -72,4 +72,16 @@
     <string name="collection_board_description">%1$d board tiles. %2$d tray tiles. Tap an available tile to collect it.</string>
 <string name="hint_description">Hint, %1$d credits remaining.</string>
 <string name="no_safe_hint">No safe hint available.</string>
+    <string name="watch_ad">Watch Ad</string>
+    <string name="watch_hint">Watch an ad to earn 1 Hint.</string>
+    <string name="watch_undo">Watch an ad to earn 1 Undo.</string>
+    <string name="need_hint">Need another Hint?</string>
+    <string name="need_undo">Need another Undo?</string>
+    <string name="ad_loading">Ad loading. Please try again shortly.</string>
+    <string name="ad_unavailable">Ad unavailable. Please try again later.</string>
+    <string name="reward_saved">1 credit earned and saved.</string>
+    <string name="reward_save_failed">Could not save the reward. Please check device storage.</string>
+    <string name="privacy_options">Advertising privacy options</string>
+    <string name="privacy_not_required">No advertising privacy form is currently required.</string>
+    <string name="privacy_unavailable">Privacy options unavailable. Please try again later.</string>
 </resources>

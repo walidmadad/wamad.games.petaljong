@@ -29,6 +29,13 @@ object GameStore {
         }
         return state to (coldEntry || state.session.level.id != previous)
     }
+    fun reward(context: Context, purpose: com.tilebloom.game.domain.RewardPurpose): Boolean {
+        check(android.os.Looper.myLooper() == android.os.Looper.getMainLooper())
+        if (transitioning) return false
+        val saved = get(context).grantReward(purpose) { persistTransition(context, it) }
+        if (saved) onChanged?.invoke()
+        return saved
+    }
     fun persist(context: Context) {
         if (transitioning) return
         val state = get(context).capture()

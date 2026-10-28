@@ -5,6 +5,8 @@ The standard supported build remains ./gradlew; this does not run Android Lint.
 """
 from pathlib import Path
 import glob, os, shutil, subprocess, zipfile, sys
+if '--jvm-only' not in sys.argv:
+    sys.exit('AdMob/UMP require standard Gradle. Diagnostic APK building is disabled; use tools/host_verify.sh.')
 ROOT = Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
 SDK = Path(os.environ.get('ANDROID_HOME') or os.environ.get('ANDROID_SDK_ROOT') or Path.home() / 'Android/Sdk')

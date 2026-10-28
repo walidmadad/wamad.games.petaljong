@@ -47,6 +47,20 @@ class ProgressController(saved: PlayerProgress = PlayerProgress()) {
     val session = GardenSession()
     val wallet = UndoCreditWallet(saved.undoCredits)
     var hintCredits = saved.hintCredits; private set
+    /** Candidate is persisted before either live wallet is changed. Main-thread transaction. */
+    fun grantReward(purpose: RewardPurpose, save: (PlayerProgress) -> Boolean): Boolean {
+        val current = capture()
+        val candidate = when (purpose) {
+            RewardPurpose.UNDO -> if (wallet.balance == 0) current.copy(undoCredits = 1) else return false
+            RewardPurpose.HINT -> if (hintCredits == 0) current.copy(hintCredits = 1) else return false
+        }
+        if (!save(candidate)) return false
+        when (purpose) {
+            RewardPurpose.UNDO -> wallet.rewardTicket().earned()
+            RewardPurpose.HINT -> hintCredits++
+        }
+        return true
+    }
     fun acceptHint(id: Int, expected: GameSnapshot): Boolean {
         if (hintCredits <= 0 || session.game.snapshot() != expected || session.game.status != Status.PLAYING || !session.game.isAvailable(id)) return false
         val candidate = Game(session.level.tiles)
