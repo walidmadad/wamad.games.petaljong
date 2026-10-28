@@ -24,14 +24,25 @@ class TileTrayView(context: Context, private val tiles: () -> List<Tile>) : View
     }
     fun clearFeedback() { pulseUntil = 0; ghosts = emptyList(); lastTiles = tiles().toList(); previous = lastTiles.map { it.id }; invalidate() }
     override fun onDetachedFromWindow() { clearFeedback(); super.onDetachedFromWindow() }
+    companion object { const val SLOT_ASPECT = .72f }
+    /** Equal portrait holders, constrained by both available axes. */
+    fun slotBounds(): List<RectF> {
+        val gap = height * .1f
+        val slotHeight = minOf(height - gap * 2, (width - gap * 5) / (4 * SLOT_ASPECT))
+        val slotWidth = slotHeight * SLOT_ASPECT
+        val left = (width - slotWidth * 4 - gap * 3) / 2
+        val top = (height - slotHeight) / 2
+        return List(4) { i -> RectF(left + i * (slotWidth + gap), top,
+            left + i * (slotWidth + gap) + slotWidth, top + slotHeight) }
+    }
     override fun onDraw(c: Canvas) {
         val gap = height * .1f
-        val size = minOf((width - gap * 5) / 4f, height - gap * 2)
-        val left = (width - size * 4 - gap * 3) / 2
+        val slots = slotBounds()
+        val size = slots.first().width()
         ink.style = Paint.Style.FILL; ink.color = Color.rgb(22, 55, 43)
         c.drawRoundRect(0f, 0f, width.toFloat(), height.toFloat(), gap, gap, ink)
         repeat(4) { i ->
-            val r = RectF(left + i * (size + gap), gap, left + i * (size + gap) + size, gap + size)
+            val r = slots[i]
             val tile = tiles().getOrNull(i)
             ink.style = Paint.Style.FILL
             ink.color = if (tile == null) Color.rgb(16, 40, 32) else Color.rgb(250, 244, 224)

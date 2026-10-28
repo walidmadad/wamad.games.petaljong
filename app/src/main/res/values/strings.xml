@@ -64,7 +64,7 @@
     <string name="level_complete">Beautifully done.\nLevel %1$d complete</string>
     <string name="level_limit">Level number limit reached. Progress saved.</string>
     <string name="tray_full">Tray Full!</string>
-    <string name="tray_full_detail">Four different tiles.\nUndo the last tile or restart.</string>
+    <string name="tray_full_detail">Four different tiles.\nTry another approach.</string>
     <string name="unrecoverable">Garden Paused</string>
     <string name="unrecoverable_detail">No legal continuation.\nUndo the last tile or restart.</string>
     <string name="defeat_hint">Undo or restart this garden.</string>

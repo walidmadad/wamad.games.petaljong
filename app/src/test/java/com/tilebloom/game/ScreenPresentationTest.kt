@@ -6,7 +6,8 @@ import org.junit.Test
 class ScreenPresentationTest {
     @Test fun mutuallyExclusive() { Status.entries.forEach { status ->
         val p=ScreenPresentation.forStatus(status,true)
-        assertNotEquals(p.victory,p.footer); assertEquals(p.footer,p.restart)
+        assertFalse(p.victory && p.footer); assertEquals(status==Status.PLAYING,p.footer)
+        assertEquals(status!=Status.WON,p.restart)
         assertEquals(status==Status.WON,p.advance)
     } }
     @Test fun transitionsReset() { listOf(Status.WON,Status.PLAYING,Status.NO_MOVES,Status.PLAYING,Status.WON).forEach {

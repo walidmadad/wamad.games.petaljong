@@ -7,7 +7,7 @@ data class ScreenPresentation(val victory: Boolean, val footer: Boolean, val res
     companion object {
         fun forStatus(status: Status, hasNext: Boolean) = ScreenPresentation(
             victory = status == Status.WON,
-            footer = status != Status.WON,
+            footer = status == Status.PLAYING,
             restart = status != Status.WON,
             advance = status == Status.WON && hasNext
         )

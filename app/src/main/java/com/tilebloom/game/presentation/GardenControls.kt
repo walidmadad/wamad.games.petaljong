@@ -37,8 +37,11 @@ internal object GardenStyle {
         val icon = button.context.getDrawable(resource)!!.mutate()
         icon.setTint(forest)
         val size = dp(button.context, 24); icon.setBounds(0, 0, size, size)
-        button.setCompoundDrawablesRelative(icon, null, null, null)
-        button.compoundDrawablePadding = dp(button.context, 12)
+        // An inline image belongs to the centered text run, rather than the button edge.
+        val group = android.text.SpannableString("\uFFFC  " + button.text)
+        group.setSpan(CenteredIconSpan(icon),
+            0, 1, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        button.text = group
     }
 }
 
@@ -75,5 +78,17 @@ class GardenIconButton(context: Context, iconResource: Int) : Button(context) {
             canvas.drawText(number, right - w / 2 - ink.measureText(number) / 2,
                 top + h / 2 - (ink.ascent() + ink.descent()) / 2, ink)
         }
+    }
+}
+
+/** Align fixed-size vector art to the label's typographic center at every font scale. */
+private class CenteredIconSpan(drawable: android.graphics.drawable.Drawable) : android.text.style.ImageSpan(drawable) {
+    override fun draw(canvas: Canvas, text: CharSequence, start: Int, end: Int,
+        x: Float, top: Int, y: Int, bottom: Int, paint: Paint) {
+        val fm = paint.fontMetricsInt
+        canvas.save()
+        canvas.translate(x, y + (fm.ascent + fm.descent - drawable.bounds.height()) / 2f)
+        drawable.draw(canvas)
+        canvas.restore()
     }
 }

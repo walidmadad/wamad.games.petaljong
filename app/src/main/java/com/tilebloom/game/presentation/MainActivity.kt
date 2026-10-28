@@ -36,6 +36,11 @@ class MainActivity : Activity() {
     private lateinit var next: Button
     private lateinit var undo: GardenIconButton
     private lateinit var restart: GardenIconButton
+    private lateinit var controls: LinearLayout
+    private lateinit var defeatActions: LinearLayout
+    private var pendingPlay = false
+    val isPuzzleReady get() = ::navigation.isInitialized
+    private var previewLevel = 1L
     private lateinit var home: GardenIconButton
     private lateinit var feedback: TextView
     private val compact get() = resources.configuration.screenHeightDp < 740 || resources.configuration.fontScale > 1.3f
@@ -49,32 +54,35 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(TextView(this).apply {
-            setText(R.string.preparing_garden); gravity = Gravity.CENTER
-            setTextColor(GardenStyle.ivory); setBackgroundColor(GardenStyle.forest)
-        })
+        // Decode only the bounded save envelope; generation/restoration stays off the UI thread.
+        pendingPlay = savedInstanceState?.getBoolean("pending_play") ?: false
+        val metadata = ProgressRepository.load(applicationContext)
+        previewLevel = metadata.active?.takeIf { it.id == metadata.frontier }?.id ?: metadata.highestUnlocked
+        createContent()
         Thread {
             val loaded = runCatching { GameStore.get(applicationContext) }
             runOnUiThread {
                 if (!isDestroyed) loaded.onSuccess {
                     progress = it
+                    if (progress.recovered) android.util.Log.w("TileBloomSave", "Board snapshot rejected; completion retained")
                     val restored = savedInstanceState?.let { saved ->
                         val screen = runCatching { GardenScreen.valueOf(saved.getString("garden_screen").orEmpty()) }.getOrNull()
                         screen?.let { NavigationState(saved.getLong("garden_level"), it) }
                     }
                     navigation = LevelNavigation(session.level.id, restored)
-                    createContent()
+                    if (pendingPlay) navigation.play(session.level.id)
+                    update()
                 }.onFailure {
-                    setContentView(Button(this).apply {
-                        setText(R.string.load_retry); setOnClickListener { recreate() }
-                    })
+                    pendingPlay = false
+                    play.isEnabled = true
+                    startHint.setText(R.string.load_retry)
+                    play.setOnClickListener { recreate() }
                 }
             }
         }.start()
     }
 
     private fun createContent() {
-        if (progress.recovered) android.util.Log.w("TileBloomSave", "Board snapshot rejected; completion retained")
         root = FrameLayout(this).apply {
             background = android.graphics.drawable.GradientDrawable(
                 android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
@@ -94,6 +102,7 @@ class MainActivity : Activity() {
         createStartScreen()
         setContentView(root)
         root.requestApplyInsets()
+        play.isEnabled = !pendingPlay
         GameStore.onChanged = refreshListener
         update()
     }
@@ -141,7 +150,11 @@ class MainActivity : Activity() {
             minimumHeight = dp(64); letterSpacing = .08f
             GardenStyle.primaryIcon(this, R.drawable.ic_play)
             setOnClickListener {
-                if (!GameStore.transitioning && navigation.state.screen == GardenScreen.START) {
+                if (!::navigation.isInitialized) {
+                    pendingPlay = true
+                    play.isEnabled = false
+                    startHint.setText(R.string.preparing_garden)
+                } else if (!GameStore.transitioning && navigation.state.screen == GardenScreen.START) {
                     navigation.play(session.level.id)
                     update()
                 }
@@ -182,7 +195,7 @@ class MainActivity : Activity() {
         status.addView(counter, LinearLayout.LayoutParams(-1, -2))
         column.addView(status, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(6); bottomMargin = dp(8) })
         tray = TileTrayView(this) { game.tray }.apply { id = R.id.tray }
-        column.addView(tray, LinearLayout.LayoutParams(-1, dp(if (compact) 58 else 72)))
+        column.addView(tray, LinearLayout.LayoutParams(-1, dp(if (compact) 76 else 84)))
         board = MahjongBoardView(this, game) { update() }.apply { id = R.id.board }
         val area = FrameLayout(this)
         column.addView(area, LinearLayout.LayoutParams(-1, 0, 1f).apply { topMargin = dp(4) })
@@ -193,7 +206,7 @@ class MainActivity : Activity() {
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
         column.addView(feedback, LinearLayout.LayoutParams(-1, -2))
-        val controls = LinearLayout(this).apply { gravity = Gravity.CENTER; orientation = LinearLayout.HORIZONTAL }
+        controls = LinearLayout(this).apply { gravity = Gravity.CENTER; orientation = LinearLayout.HORIZONTAL }
         home = GardenIconButton(this, R.drawable.ic_home).apply {
             id = R.id.home; contentDescription = getString(R.string.home_description); tooltipText = contentDescription
             setOnClickListener {
@@ -246,12 +259,18 @@ class MainActivity : Activity() {
             setOnClickListener { advance() }
         }
         outcome.addView(next, LinearLayout.LayoutParams(-1, -2))
+        defeatActions = LinearLayout(this).apply {
+            gravity = Gravity.CENTER
+            orientation = LinearLayout.HORIZONTAL
+        }
+        outcome.addView(defeatActions, LinearLayout.LayoutParams(-1, -2))
+        if (Build.VERSION.SDK_INT >= 28) outcomeTitle.isAccessibilityHeading = true
         val center = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
             setPadding(dp(4), dp(12), dp(4), dp(12))
         }
         center.addView(outcome, LinearLayout.LayoutParams(-1, -2))
-        outcomeScroll = ScrollView(this).apply { isFillViewport = true; visibility = View.GONE }
+        outcomeScroll = ScrollView(this).apply { isFillViewport = true; visibility = View.GONE; isClickable = true }
         outcomeScroll.addView(center, FrameLayout.LayoutParams(-1, -2))
         area.addView(outcomeScroll, FrameLayout.LayoutParams(-1, -1))
     }
@@ -284,6 +303,11 @@ class MainActivity : Activity() {
     }
 
     private fun update() {
+        if (!::navigation.isInitialized) {
+            startLevel.text = getString(R.string.start_level, previewLevel)
+            startHint.setText(if (pendingPlay) R.string.preparing_garden else R.string.ready_garden)
+            return
+        }
         navigation.synchronize(session.level.id)
         GameStore.persist(this)
         val showingGame = navigation.state.screen == GardenScreen.GAME
@@ -303,6 +327,7 @@ class MainActivity : Activity() {
         counter.text = getString(R.string.pairs, game.remainingPairs)
         val presentation = ScreenPresentation.forStatus(game.status, session.canAdvance)
         val terminal = presentation.victory || game.status == Status.LOST
+        board.importantForAccessibility = if (terminal) View.IMPORTANT_FOR_ACCESSIBILITY_NO else View.IMPORTANT_FOR_ACCESSIBILITY_YES
         val enteringOutcome = terminal && outcome.visibility != View.VISIBLE
         outcome.animate().cancel(); outcome.alpha = 1f
         outcome.visibility = if (terminal) View.VISIBLE else View.GONE
@@ -318,10 +343,24 @@ class MainActivity : Activity() {
         next.visibility = if (presentation.advance) View.VISIBLE else View.GONE
         next.isEnabled = !GameStore.transitioning
         next.setText(if (GameStore.transitioning) R.string.preparing_garden else R.string.next_level)
-        feedback.visibility = if (game.status == Status.WON) View.GONE else View.VISIBLE
+        GardenStyle.primaryIcon(next, R.drawable.ic_next)
+        feedback.visibility = if (terminal) View.GONE else View.VISIBLE
         feedback.setText(if (game.status == Status.LOST) R.string.defeat_hint else R.string.instruction)
-        home.visibility = if (game.status == Status.WON) View.GONE else View.VISIBLE
-        restart.visibility = home.visibility
+        val lost = game.status == Status.LOST
+        // Move the same controls: one action, one listener, one wallet source.
+        val destination = if (lost) defeatActions else controls
+        listOf(undo, restart).forEach { button ->
+            if (button.parent !== destination) {
+                (button.parent as? android.view.ViewGroup)?.removeView(button)
+                destination.addView(button, LinearLayout.LayoutParams(dp(64), dp(56)).apply {
+                    marginStart = dp(8); marginEnd = dp(8)
+                })
+            }
+        }
+        defeatActions.visibility = if (lost) View.VISIBLE else View.GONE
+        controls.visibility = if (presentation.footer) View.VISIBLE else View.GONE
+        home.visibility = View.VISIBLE
+        restart.visibility = View.VISIBLE
         home.isEnabled = !GameStore.transitioning
         restart.isEnabled = !GameStore.transitioning && game.status != Status.WON
         undo.isEnabled = !GameStore.transitioning && game.canUndo && progress.wallet.balance > 0
@@ -333,6 +372,7 @@ class MainActivity : Activity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
+        outState.putBoolean("pending_play", pendingPlay && !::navigation.isInitialized)
         if (::navigation.isInitialized) {
             outState.putString("garden_screen", navigation.state.screen.name)
             outState.putLong("garden_level", navigation.state.levelId)

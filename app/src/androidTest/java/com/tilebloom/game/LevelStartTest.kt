@@ -37,7 +37,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         val until=SystemClock.uptimeMillis()+30000
         while(SystemClock.uptimeMillis()<until) {
             var ready=false
-            ui { ready=screen.findViewById<View>(id)?.let { it.isShown && it.width>0 }==true }
+            ui { ready=(id != R.id.play || screen.isPuzzleReady) && screen.findViewById<View>(id)?.let { it.isShown && it.width>0 }==true }
             if(ready) { instrumentation.waitForIdleSync(); return }
             SystemClock.sleep(20)
         }
@@ -61,13 +61,48 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         }
         instrumentation.waitForIdleSync()
     }
+    fun testPortraitTrayFitsRepresentativeWidthsAndRendersTile() {
+        val screen = activity
+        ui {
+            assertNotNull(screen.findViewById<View>(R.id.level_start))
+            val tile = Levels.get(1).tiles.first()
+            val tray = TileTrayView(screen) { listOf(tile) }
+            val density = screen.resources.displayMetrics.density
+            for (widthDp in listOf(320,360,400,480)) {
+                val w = ((widthDp - 32) * density).toInt()
+                val h = (76 * density).toInt()
+                tray.measure(View.MeasureSpec.makeMeasureSpec(w,View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(h,View.MeasureSpec.EXACTLY))
+                tray.layout(0,0,w,h)
+                val slots = tray.slotBounds()
+                assertEquals(4,slots.size)
+                slots.forEachIndexed { index, r ->
+                    assertEquals(.72f,r.width()/r.height(),.001f)
+                    assertTrue(r.left>=0 && r.right<=w && r.top>=0 && r.bottom<=h)
+                    if (index>0) assertTrue(slots[index-1].right<r.left)
+                }
+                val bitmap = android.graphics.Bitmap.createBitmap(w,h,android.graphics.Bitmap.Config.ARGB_8888)
+                tray.draw(android.graphics.Canvas(bitmap))
+                val filled = slots[0]; val empty = slots[1]
+                assertTrue(bitmap.getPixel((filled.left+3*density).toInt(),filled.centerY().toInt()) !=
+                    bitmap.getPixel((empty.left+3*density).toInt(),empty.centerY().toInt()))
+                bitmap.recycle()
+            }
+        }
+    }
     fun testFreshEntryRequiresPlayAndInitializesOnlyOnce() {
         val screen=activity; waitVisible(screen,R.id.play)
         ui {
             assertEquals(screen.getString(R.string.start_level,1L),screen.findViewById<TextView>(R.id.start_level).text.toString())
             assertNull(screen.findViewById<MahjongBoardView>(R.id.board))
             val play=screen.findViewById<Button>(R.id.play)
-            assertNotNull(play.compoundDrawablesRelative[0]); assertTrue(play.isEnabled)
+            assertTrue(play.text is android.text.Spanned); assertTrue(play.isEnabled)
+            val textCenter = (play.layout.getLineLeft(0) + play.layout.getLineRight(0)) / 2 + play.totalPaddingLeft
+            assertEquals(play.width / 2f, textCenter, 2f)
+            val level = screen.findViewById<View>(R.id.start_level)
+            val p = IntArray(2); val l = IntArray(2)
+            play.getLocationOnScreen(p); level.getLocationOnScreen(l)
+            assertEquals(l[0]+level.width/2f,p[0]+play.width/2f,2f)
             play.performClick(); val board=screen.findViewById<MahjongBoardView>(R.id.board)
             play.performClick(); assertSame(board,screen.findViewById<MahjongBoardView>(R.id.board))
         }
@@ -154,10 +189,42 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         ui {
             assertTrue(screen.findViewById<View>(R.id.tray).isShown)
             assertFalse(screen.findViewById<View>(R.id.next_level).isShown)
-            screen.findViewById<Button>(R.id.undo).performClick()
+            val card = screen.findViewById<View>(R.id.outcome)
+            val undo = screen.findViewById<Button>(R.id.undo)
+            val restart = screen.findViewById<Button>(R.id.restart)
+            assertTrue((undo.parent as View).parent === card)
+            assertSame(undo.parent, restart.parent)
+            assertFalse(screen.findViewById<View>(R.id.home).isShown)
+            val tray = screen.findViewById<TileTrayView>(R.id.tray)
+            val slots = tray.slotBounds()
+            assertEquals(4, slots.size)
+            slots.forEach {
+                assertTrue(it.height() > it.width())
+                assertEquals(.72f, it.width() / it.height(), .001f)
+                assertEquals(slots.first().width(), it.width(), .01f)
+                assertTrue(it.left >= 0 && it.right <= tray.width)
+            }
+            assertEquals(4, state().session.game.tray.size)
+            undo.performClick()
         }
         assertEquals(Status.PLAYING,state().session.game.status); assertEquals(1,state().wallet.balance)
         assertEquals(3,state().session.game.tray.size)
+    }
+    fun testZeroCreditDefeatRestartPreservesIdentityAndWallet() {
+        val c = ProgressController(PlayerProgress(undoCredits=0))
+        listOf(23,21,18,20).forEach { check(c.session.game.select(it)) }; seed(c)
+        val screen = activity; enter(screen); waitVisible(screen,R.id.outcome)
+        val identity = state().session.level
+        ui {
+            val undo = screen.findViewById<GardenIconButton>(R.id.undo)
+            assertFalse(undo.isEnabled); assertEquals(0, undo.badge)
+            screen.findViewById<Button>(R.id.restart).performClick()
+            assertFalse(screen.findViewById<View>(R.id.outcome).isShown)
+            assertTrue(screen.findViewById<View>(R.id.home).isShown)
+        }
+        assertEquals(identity, state().session.level)
+        assertTrue(state().session.game.tray.isEmpty())
+        assertEquals(0, state().wallet.balance)
     }
     fun testSavedPendingVictoryOpensOutcomeAndAdvancesOnce() {
         val c=ProgressController(PlayerProgress(highestCompleted=19,undoCredits=1))
