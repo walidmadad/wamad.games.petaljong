@@ -74,7 +74,7 @@ No serialization, seeds, versions, move history, tray rules, progression, credit
 
 ## P. Git
 
-Existing `.tilebloom-git` history is used because this workspace's `.git` is a read-only placeholder. Changes are committed without reinitializing, rewriting or pushing. Unrelated pre-existing untracked CODEX_18_REPORT.md and docs/codex26 are excluded. Final commit identifier is supplied in the delivery message.
+Existing `.tilebloom-git` history is used because this workspace's `.git` is a read-only placeholder. Changes are committed without reinitializing, rewriting or pushing. Unrelated pre-existing untracked CODEX_18_REPORT.md and docs/codex26 are excluded. Implementation commit: `dd3c8ee` (`feat: unify garden themes and improve Mahjong tile visibility`). Final evidence formatting is recorded in a subsequent documentation commit.
 
 ## Q. Acceptance matrix
 
