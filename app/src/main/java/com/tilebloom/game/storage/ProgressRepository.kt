@@ -28,10 +28,14 @@ object ProgressRepository {
             Log.w("TileBloomSave", "Invalid save envelope; attempting conservative credit recovery", it)
             // A malformed schema-2 balance is never interpreted as a new introductory allocation.
             val lines = raw.split('\n').toMutableList()
-            if (lines.firstOrNull() in listOf("2", "3", "4") && raw.length <= 8192) {
+            if (lines.firstOrNull() in listOf("2", "3", "4", "5") && raw.length <= 8192) {
                 while (lines.size < 5) lines.add("")
-                lines[4] = "0"
-                runCatching { ProgressCodec.decode(lines.joinToString("\n")) }.getOrElse { PlayerProgress(undoCredits = 0) }
+                lines[4] = lines[4].toIntOrNull()?.takeIf { it >= 0 }?.toString() ?: "0"
+                if (lines[0] == "5") {
+                    while (lines.size < 6) lines.add("")
+                    lines[5] = lines[5].toIntOrNull()?.takeIf { it in 0..3 }?.toString() ?: "0"
+                }
+                runCatching { ProgressCodec.decode(lines.joinToString("\n")) }.getOrElse { PlayerProgress(undoCredits = 0, hintCredits = 0) }
             } else PlayerProgress()
         } } ?: PlayerProgress()
     }

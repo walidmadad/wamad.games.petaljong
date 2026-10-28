@@ -34,6 +34,9 @@ class MainActivity : Activity() {
     private lateinit var outcomeTitle: TextView
     private lateinit var outcomeDetail: TextView
     private lateinit var next: Button
+    private lateinit var hint: GardenIconButton
+    private var hintPending = false
+    private var hintRequest = 0
     private lateinit var undo: GardenIconButton
     private lateinit var restart: GardenIconButton
     private lateinit var controls: LinearLayout
@@ -211,8 +214,39 @@ class MainActivity : Activity() {
             id = R.id.home; contentDescription = getString(R.string.home_description); tooltipText = contentDescription
             setOnClickListener {
                 if (game.status != Status.WON && !GameStore.transitioning) {
-                    board.clearFeedback(); tray.clearFeedback()
+                    hintRequest++; hintPending = false; board.clearFeedback(); tray.clearFeedback()
                     navigation.home(session.level.id); update()
+                }
+            }
+        }
+        hint = GardenIconButton(this, R.drawable.ic_hint, GardenStyle.gold).apply {
+            id = R.id.hint
+            setOnClickListener {
+                if (!hintPending && board.hintedTileId == null && !GameStore.transitioning && game.status == Status.PLAYING && progress.hintCredits > 0) {
+                    hintPending = true
+                    val request = ++hintRequest
+                    val expected = game.snapshot()
+                    val identity = session.level.id
+                    val tiles = session.level.tiles
+                    this@MainActivity.hint.isEnabled = false
+                    Thread {
+                        val result = runCatching { HintPolicy.suggest(tiles, expected) }.getOrNull()
+                        runOnUiThread {
+                            if (!isDestroyed && request == hintRequest) {
+                                hintPending = false
+                                if (navigation.state.screen == GardenScreen.GAME && session.level.id == identity && game.snapshot() == expected) {
+                                    val id = result?.id
+                                    if (id != null && progress.acceptHint(id, expected)) {
+                                        board.showHint(id)
+                                        update()
+                                    } else {
+                                        update()
+                                        Toast.makeText(this@MainActivity, R.string.no_safe_hint, Toast.LENGTH_SHORT).show()
+                                    }
+                                } else update()
+                            }
+                        }
+                    }.start()
                 }
             }
         }
@@ -220,7 +254,7 @@ class MainActivity : Activity() {
             id = R.id.undo
             setOnClickListener {
                 if (!GameStore.transitioning && progress.undo()) {
-                    board.clearFeedback(); tray.clearFeedback(); update()
+                    hintRequest++; hintPending = false; board.clearFeedback(); tray.clearFeedback(); update()
                 }
             }
         }
@@ -228,13 +262,13 @@ class MainActivity : Activity() {
             id = R.id.restart; contentDescription = getString(R.string.restart_description); tooltipText = contentDescription
             setOnClickListener {
                 if (!GameStore.transitioning && session.restart()) {
-                    board.clearFeedback(); tray.clearFeedback(); update()
+                    hintRequest++; hintPending = false; board.clearFeedback(); tray.clearFeedback(); update()
                 }
             }
         }
-        listOf(home, undo, restart).forEach { button ->
-            controls.addView(button, LinearLayout.LayoutParams(dp(64), dp(56)).apply {
-                marginStart = dp(10); marginEnd = dp(10)
+        listOf(home, hint, undo, restart).forEach { button ->
+            controls.addView(button, LinearLayout.LayoutParams(0, dp(56), 1f).apply {
+                marginStart = dp(3); marginEnd = dp(3)
             })
         }
         column.addView(controls, LinearLayout.LayoutParams(-1, -2))
@@ -352,15 +386,22 @@ class MainActivity : Activity() {
         listOf(undo, restart).forEach { button ->
             if (button.parent !== destination) {
                 (button.parent as? android.view.ViewGroup)?.removeView(button)
-                destination.addView(button, LinearLayout.LayoutParams(dp(64), dp(56)).apply {
+                val params = if (destination === controls) LinearLayout.LayoutParams(0, dp(56), 1f).apply {
+                    marginStart = dp(3); marginEnd = dp(3)
+                } else LinearLayout.LayoutParams(dp(64), dp(56)).apply {
                     marginStart = dp(8); marginEnd = dp(8)
-                })
+                }
+                destination.addView(button, params)
             }
         }
         defeatActions.visibility = if (lost) View.VISIBLE else View.GONE
         controls.visibility = if (presentation.footer) View.VISIBLE else View.GONE
         home.visibility = View.VISIBLE
         restart.visibility = View.VISIBLE
+        hint.badge = progress.hintCredits
+        hint.contentDescription = getString(R.string.hint_description, progress.hintCredits)
+        hint.tooltipText = hint.contentDescription
+        hint.isEnabled = !hintPending && !GameStore.transitioning && game.status == Status.PLAYING && progress.hintCredits > 0
         home.isEnabled = !GameStore.transitioning
         restart.isEnabled = !GameStore.transitioning && game.status != Status.WON
         undo.isEnabled = !GameStore.transitioning && game.canUndo && progress.wallet.balance > 0
@@ -383,6 +424,8 @@ class MainActivity : Activity() {
         ProgressRepository.awaitWrites()
     }
     override fun onDestroy() {
+        hintRequest++
+        if (::board.isInitialized) board.clearFeedback()
         if (GameStore.onChanged === refreshListener) GameStore.onChanged = null
         super.onDestroy()
     }

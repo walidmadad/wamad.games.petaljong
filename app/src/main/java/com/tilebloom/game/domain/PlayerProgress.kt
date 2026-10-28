@@ -2,16 +2,16 @@ package com.tilebloom.game.domain
 
 /** completed is retained only as a five-level legacy adapter. The durable record is O(1). */
 data class PlayerProgress(val completed: Set<Int> = emptySet(), val active: SessionSnapshot? = null,
-    val undoCredits: Int = 3, val highestCompleted: Long = 0) {
+    val undoCredits: Int = 3, val highestCompleted: Long = 0, val hintCredits: Int = 3) {
     val frontier: Long get() = maxOf(highestCompleted, (1..5).takeWhile { it in completed }.size.toLong())
     val highestUnlocked: Long get() = if (frontier == Long.MAX_VALUE) frontier else frontier + 1
 }
 object ProgressCodec {
-    const val SCHEMA = 4
+    const val SCHEMA = 5
     fun encode(p: PlayerProgress): String {
         val s = p.active
         return listOf("$SCHEMA", p.frontier.toString(), s?.let { "${it.id},${it.seed},${it.version},2" } ?: "",
-            s?.game?.let { g -> (g.selections ?: g.moves.flatMap { listOf(it.first, it.second) }).joinToString(";") } ?: "", p.undoCredits.toString()).joinToString("\n")
+            s?.game?.let { g -> (g.selections ?: g.moves.flatMap { listOf(it.first, it.second) }).joinToString(";") } ?: "", p.undoCredits.toString(), p.hintCredits.toString()).joinToString("\n")
     }
     fun decode(raw: String): PlayerProgress {
         require(raw.length <= 8192)
@@ -24,9 +24,9 @@ object ProgressCodec {
         }
         val active = runCatching {
             val identity = lines[2].split(',')
-            require(identity.size == if (schema == 4) 4 else 3)
+            require(identity.size == if (schema >= 4) 4 else 3)
             val actions = lines.getOrNull(3).orEmpty().takeIf { it.isNotEmpty() }?.split(';').orEmpty()
-            val snapshot = if (schema == 4) {
+            val snapshot = if (schema >= 4) {
                 GameSnapshot(emptyList(), null, actions.map { it.toInt() }, identity[3].toInt())
             } else {
                 val pairs = actions.map {
@@ -38,12 +38,22 @@ object ProgressCodec {
             }
             SessionSnapshot(identity[0].toLong(), identity[1].toLong(), identity[2].toInt(), snapshot)
         }.getOrNull()
-        return PlayerProgress((1..minOf(5L, frontier).toInt()).toSet(), active, credits, frontier)
+        val hints = if (schema < 5) 3 else lines.getOrNull(5)?.toIntOrNull() ?: error("Missing hint credits")
+        require(hints in 0..3)
+        return PlayerProgress((1..minOf(5L, frontier).toInt()).toSet(), active, credits, frontier, hints)
     }
 }
 class ProgressController(saved: PlayerProgress = PlayerProgress()) {
     val session = GardenSession()
     val wallet = UndoCreditWallet(saved.undoCredits)
+    var hintCredits = saved.hintCredits; private set
+    fun acceptHint(id: Int, expected: GameSnapshot): Boolean {
+        if (hintCredits <= 0 || session.game.snapshot() != expected || session.game.status != Status.PLAYING || !session.game.isAvailable(id)) return false
+        val candidate = Game(session.level.tiles)
+        if (!candidate.restore(expected) || !candidate.select(id) || candidate.status == Status.LOST) return false
+        hintCredits--
+        return true
+    }
     private var completed = saved.frontier
     var recovered = false; private set
     val highestUnlocked get() = if (completed == Long.MAX_VALUE) completed else completed + 1
@@ -67,7 +77,7 @@ class ProgressController(saved: PlayerProgress = PlayerProgress()) {
     fun capture(): PlayerProgress {
         if (session.game.status == Status.WON) completed = maxOf(completed, session.level.id)
         return PlayerProgress((1..minOf(5L, completed).toInt()).toSet(),
-            session.snapshot().let { it.copy(game = it.game.copy(selectedId = null)) }, wallet.balance, completed)
+            session.snapshot().let { it.copy(game = it.game.copy(selectedId = null)) }, wallet.balance, completed, hintCredits)
     }
     /** No selection/navigation API can load any board, including an unlocked one. */
     fun select(id: Int): Boolean = id.toLong() == session.level.id && session.game.status != Status.WON

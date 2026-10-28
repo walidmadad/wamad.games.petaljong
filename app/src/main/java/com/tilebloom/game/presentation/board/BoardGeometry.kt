@@ -43,7 +43,8 @@ class BoardGeometry(width: Float, height: Float, padding: BoardPadding = BoardPa
     }
     fun face(tile: Tile) = footprint(tile).inset(scale * .035f)
     fun edge(tile: Tile) = face(tile).offset(scale * .045f)
-    fun shadow(tile: Tile) = face(tile).offset(scale * .09f)
+    fun body(tile: Tile) = face(tile).offset(scale * .085f)
+    fun shadow(tile: Tile) = face(tile).offset(scale * .14f)
     fun drawOrder(tiles: List<Tile>) = tiles.filterNot { it.removed }
         .sortedWith(compareBy<Tile> { it.layer }.thenBy { it.y }.thenBy { it.x }.thenBy { it.id })
     fun hitTest(tiles: List<Tile>, x: Float, y: Float): Tile? {

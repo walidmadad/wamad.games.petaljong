@@ -21,6 +21,13 @@ class BoardGeometryTest {
         val l = layout(); val t = tiles.first { it.id == 16 }; val f = l.face(t)
         assertNull(l.hitTest(listOf(t), f.left + l.scale * .001f, f.top + l.scale * .001f))
     }
+    @Test fun thickerBodyIsDecorativeAndTransformStable() {
+        val t = tiles.first { it.id == 16 }; val l = layout()
+        assertTrue(l.body(t).bottom > l.edge(t).bottom)
+        assertNull(l.hitTest(listOf(t), l.body(t).center.x, l.body(t).bottom - .001f))
+        assertEquals(l.face(t).right - l.face(t).left, l.body(t).right - l.body(t).left, .001f)
+        assertEquals(l.drawOrder(tiles), l.drawOrder(tiles.reversed()))
+    }
     @Test fun shadowIsNotInteractive() {
         val l = layout(); val t = tiles.first { it.id == 16 }; val s = l.shadow(t)
         assertNull(l.hitTest(listOf(t), s.center.x, s.bottom - l.scale * .005f))

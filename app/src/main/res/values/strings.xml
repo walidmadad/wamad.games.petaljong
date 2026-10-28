@@ -70,4 +70,6 @@
     <string name="defeat_hint">Undo or restart this garden.</string>
     <string name="tray_description">Four tile tray slots. %1$d occupied. %2$s</string>
     <string name="collection_board_description">%1$d board tiles. %2$d tray tiles. Tap an available tile to collect it.</string>
+<string name="hint_description">Hint, %1$d credits remaining.</string>
+<string name="no_safe_hint">No safe hint available.</string>
 </resources>

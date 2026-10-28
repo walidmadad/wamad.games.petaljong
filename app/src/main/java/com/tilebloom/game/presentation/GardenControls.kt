@@ -46,7 +46,7 @@ internal object GardenStyle {
 }
 
 /** Button remains a single accessible touch target, including its numeric credit badge. */
-class GardenIconButton(context: Context, iconResource: Int) : Button(context) {
+class GardenIconButton(context: Context, iconResource: Int, private val iconTint: Int = GardenStyle.ivory) : Button(context) {
     private val icon = context.getDrawable(iconResource)!!.mutate()
     private val ink = Paint(Paint.ANTI_ALIAS_FLAG)
     var badge: Int? = null
@@ -60,7 +60,7 @@ class GardenIconButton(context: Context, iconResource: Int) : Button(context) {
         super.onDraw(canvas)
         val size = GardenStyle.dp(context, 25)
         val cx = width / 2; val cy = height / 2
-        icon.setTint(if (isEnabled) GardenStyle.ivory else Color.rgb(137, 157, 137))
+        icon.setTint(if (isEnabled) iconTint else Color.rgb(137, 157, 137))
         icon.setBounds(cx - size / 2, cy - size / 2, cx + size / 2, cy + size / 2)
         icon.draw(canvas)
         badge?.let {

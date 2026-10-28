@@ -15,6 +15,16 @@ import kotlin.math.*
 class MahjongBoardView(context: Context, private var game: Game, private val changed: () -> Unit) : View(context) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val effects = MatchEffects()
+    var hintedTileId: Int? = null; private set
+    private var hintStarted = 0L
+    private val expireHint = Runnable { hintedTileId = null; invalidate() }
+    fun showHint(id: Int) {
+        if (hintedTileId != null || !game.isAvailable(id)) return
+        hintedTileId = id; hintStarted = SystemClock.uptimeMillis()
+        postDelayed(expireHint, 2000L); invalidate()
+    }
+    private fun clearHint() { removeCallbacks(expireHint); hintedTileId = null }
+
     val activeMatchEffectCount get() = effects.active.size
     private val gesture = TileTapGesture(ViewConfiguration.get(context).scaledTouchSlop.toFloat())
     private var blockedTileId: Int? = null
@@ -36,6 +46,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         invalidate()
     }
     fun clearFeedback() {
+        clearHint()
         removeCallbacks(clearBlocked)
         blockedTileId = null
         gesture.cancel()
@@ -69,9 +80,14 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             }
             val selected = game.selected == tile.id
             paint.style = Paint.Style.FILL
-            paint.color = Color.argb(95, 3, 20, 15)
+            // Two offset shadow bands: soft penumbra and a stronger contact shadow.
+            paint.color = Color.argb(if (tile.layer > 0) 48 else 28, 3, 20, 15)
+            canvas.drawRoundRect(layout.shadow(tile).offset(scale * .045f).android(), layout.radius * 1.2f, layout.radius * 1.2f, paint)
+            paint.color = Color.argb(if (tile.layer > 0) 115 else 75, 3, 20, 15)
             canvas.drawRoundRect(layout.shadow(tile).android(), layout.radius, layout.radius, paint)
-            paint.color = Color.rgb(183, 170, 135)
+            paint.color = Color.rgb(151, 139, 108)
+            canvas.drawRoundRect(layout.body(tile).android(), layout.radius, layout.radius, paint)
+            paint.color = Color.rgb(208, 197, 163)
             canvas.drawRoundRect(layout.edge(tile).android(), layout.radius, layout.radius, paint)
             paint.color = if (available) Color.rgb(250, 244, 224) else Color.rgb(222, 224, 204)
             canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
@@ -94,6 +110,13 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
                 paint.color = Color.rgb(227, 201, 135)
                 canvas.drawRoundRect(face.inset(scale * .075f).android(), scale * .06f, scale * .06f, paint)
             }
+            if (hintedTileId == tile.id) {
+                paint.style = Paint.Style.STROKE
+                val pulse = if (ValueAnimator.areAnimatorsEnabled()) ((sin((now - hintStarted) / 180.0) + 1) / 2).toFloat() else .5f
+                paint.strokeWidth = scale * (.035f + .012f * pulse)
+                paint.color = Color.argb((180 + 65 * pulse).toInt(), 201, 183, 122)
+                canvas.drawRoundRect(face.inset(scale * .025f).android(), layout.radius, layout.radius, paint)
+            }
             paint.style = Paint.Style.FILL
             canvas.save()
             canvas.translate(r.centerX(), r.centerY())
@@ -108,7 +131,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             }
             canvas.restoreToCount(saved)
         }
-        if (effects.active.isNotEmpty()) postInvalidateOnAnimation()
+        if (effects.active.isNotEmpty() || hintedTileId != null) postInvalidateOnAnimation()
     }
     override fun onTouchEvent(event: MotionEvent): Boolean {
         // Batched movement can accompany the final UP as well as MOVE.
@@ -133,6 +156,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
                 if (id != null) {
                     if (game.status == Status.PLAYING && game.isAvailable(id)) {
                         removeCallbacks(clearBlocked); blockedTileId = null
+                        clearHint()
                         val before = game.tiles
                         game.select(id)
                         effects.record(before, game.tiles, SystemClock.uptimeMillis(), ValueAnimator.areAnimatorsEnabled())
