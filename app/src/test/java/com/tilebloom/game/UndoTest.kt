@@ -58,7 +58,7 @@ class UndoTest {
         assertTrue(restored.session.game.undo())
         val after=restored.capture(); val s=before.active!!
         assertEquals(s.copy(game=GameSnapshot(s.game.moves.dropLast(1),null)),after.active)
-        assertEquals(before.completed,after.completed); assertEquals(3,restored.highestUnlocked)
+        assertEquals(before.completed,after.completed); assertEquals(3L,restored.highestUnlocked)
         val again=reload(after); assertEquals(after,again.capture()); assertTrue(again.session.game.canUndo)
     }
     @Test fun restartReplayAndNavigationCannotUndoPreviousAttempt() {
@@ -67,7 +67,7 @@ class UndoTest {
         s.level.witness.forEach { play(s.game,it) }; c.capture()
         assertFalse(s.game.canUndo); assertFalse(s.game.undo())
         s.restart(); assertFalse(s.game.undo()); assertEquals(setOf(1),c.capture().completed)
-        play(s.game,s.level.witness.first()); assertTrue(c.select(2)); assertFalse(s.game.undo())
+        assertFalse(s.restart()); assertTrue(c.advance()); assertFalse(s.game.undo())
         s.level.witness.forEach { play(s.game,it) }; c.capture(); assertTrue(s.advance()); assertFalse(s.game.undo())
     }
     @Test fun invalidReplayLeavesValidBoardAndUndoHistoryUntouched() {

@@ -1,3 +1,20 @@
+# CODEX 13 — current verification
+
+- JVM: **168 tests PASS**, 14.658 seconds in the final diagnostic run. Includes a 49-identity deterministic generation matrix (1–40 and large identifiers through Long.MAX_VALUE), full witness replay for every accepted matrix board, fallback, invalid candidates, geometric bounds/hit testing, exact next-level commits, deadlock, restarts, migration, pending victory, history and credit restoration.
+- Host workflow: **10 tests PASS** (`python3 tools/test_host_verify.py`).
+- Standard Gradle: **BLOCKED** before build: wrapper cannot create its lock in the read-only `/home/walid/.gradle/wrapper/dists` directory. Evidence: [gradle.txt](docs/codex13/gradle.txt).
+- Diagnostic compiler/build: production Kotlin/resources, Android instrumentation source compilation, D8, alignment, and debug signing. Final APK details appear in [CODEX_13_REPORT.md](CODEX_13_REPORT.md).
+- Android instrumentation/runtime: **NOT EXECUTED**. ADB server cannot install its socket listener (`Operation not permitted`). No installation, launch, device screenshots, performance claim or visual PASS is inferred from JVM/build results.
+- Instrumentation uses actual tile coordinate taps through Levels 1–7, Next double taps, generated save/relaunch/restart/Undo and pending-victory recreation. Compiled coverage is not execution evidence.
+- Android timing logging is available under `TileBloomGeneration` when the Next Level worker runs. Host measurements are separate and do not establish phone responsiveness.
+- Unchanged production files: Game/Rules, botanical tile drawing, board geometry, match effects and Undo wallet. No advertising dependencies added.
+
+See the complete [30-item acceptance table](CODEX_13_REPORT.md#q-acceptance-criteria) and current [device checklist](PLAYTEST_01.md). Historical validation below is superseded where it conflicts with CODEX 13 (including all ads, level selection, Replay and Level 5 ending claims).
+
+---
+
+# Historical validation
+
 # CODEX 12 — Current status
 
 Latest evidence: **159 JVM tests PASS; 10 host-workflow tests PASS**. Android Gradle was attempted twice and blocked by sandbox filesystem/network-interface restrictions. **26 instrumentation methods present, not compiled or executed** in this iteration. No new APK or real Google ad test is claimed. Logs are in `docs/codex12/`; [CODEX_12_REPORT.md](CODEX_12_REPORT.md) contains the full acceptance matrix. Previous iteration APK/instrumentation results below are historical.

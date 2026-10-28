@@ -1,0 +1,41 @@
+--- adb starting (pid 9111) ---
+10-27 23:10:43.581  9111  9111 I adb     : main.cpp:65 Android Debug Bridge version 1.0.41
+10-27 23:10:43.581  9111  9111 I adb     : main.cpp:65 Version 37.0.1-15733141
+10-27 23:10:43.581  9111  9111 I adb     : main.cpp:65 Installed as /home/walid/Android/Sdk/platform-tools/adb
+10-27 23:10:43.581  9111  9111 I adb     : main.cpp:65 Running on Linux 7.0.0-38-generic (x86_64)
+10-27 23:10:43.581  9111  9111 I adb     : main.cpp:65 
+--- adb starting (pid 233) ---
+10-27 23:21:59.450   233   233 I adb     : main.cpp:65 Android Debug Bridge version 1.0.41
+10-27 23:21:59.450   233   233 I adb     : main.cpp:65 Version 37.0.1-15733141
+10-27 23:21:59.450   233   233 I adb     : main.cpp:65 Installed as /home/walid/Android/Sdk/platform-tools/adb
+10-27 23:21:59.450   233   233 I adb     : main.cpp:65 Running on Linux 7.0.0-38-generic (x86_64)
+10-27 23:21:59.450   233   233 I adb     : main.cpp:65 
+10-27 23:21:59.951   233   233 F adb     : main.cpp:168 could not install *smartsocket* listener: Operation not permitted
+10-27 23:31:41.444  9111  9119 I adb     : transport.cpp:1222 13608b7c: connection terminated: read failed
+--- adb starting (pid 6) ---
+10-27 23:36:08.864     6     6 I adb     : main.cpp:65 Android Debug Bridge version 1.0.41
+10-27 23:36:08.864     6     6 I adb     : main.cpp:65 Version 37.0.1-15733141
+10-27 23:36:08.864     6     6 I adb     : main.cpp:65 Installed as /home/walid/Android/Sdk/platform-tools/adb
+10-27 23:36:08.864     6     6 I adb     : main.cpp:65 Running on Linux 7.0.0-38-generic (x86_64)
+10-27 23:36:08.864     6     6 I adb     : main.cpp:65 
+10-27 23:36:09.366     6     6 F adb     : main.cpp:168 could not install *smartsocket* listener: Operation not permitted
+10-27 23:44:14.614  9111 13412 I adb     : transport.cpp:1222 13608b7c: connection terminated: read failed
+10-27 23:47:00.822  9111 13476 I adb     : transport.cpp:1222 13608b7c: connection terminated: read failed
+10-28 18:10:57.678  9111 15741 I adb     : transport.cpp:1222 13608b7c: connection terminated: read failed
+10-28 18:12:11.608  9111 15829 I adb     : transport.cpp:1222 13608b7c: connection terminated: read failed
+10-28 18:13:15.685  9111 16620 I adb     : transport.cpp:1222 13608b7c: connection terminated: read failed
+10-28 18:13:15.685  9111 16621 E adb     : transport_usb.cpp:137 remote usb: 1 - write terminated: Connection timed out
+--- adb starting (pid 4) ---
+10-28 18:17:04.551     4     4 I adb     : main.cpp:65 Android Debug Bridge version 1.0.41
+10-28 18:17:04.551     4     4 I adb     : main.cpp:65 Version 37.0.1-15733141
+10-28 18:17:04.551     4     4 I adb     : main.cpp:65 Installed as /home/walid/Android/Sdk/platform-tools/adb
+10-28 18:17:04.551     4     4 I adb     : main.cpp:65 Running on Linux 7.0.0-38-generic (x86_64)
+10-28 18:17:04.551     4     4 I adb     : main.cpp:65 
+10-28 18:17:05.052     4     4 F adb     : main.cpp:168 could not install *smartsocket* listener: Operation not permitted
+--- adb starting (pid 5) ---
+10-28 18:35:39.134     5     5 I adb     : main.cpp:65 Android Debug Bridge version 1.0.41
+10-28 18:35:39.134     5     5 I adb     : main.cpp:65 Version 37.0.1-15733141
+10-28 18:35:39.134     5     5 I adb     : main.cpp:65 Installed as /home/walid/Android/Sdk/platform-tools/adb
+10-28 18:35:39.134     5     5 I adb     : main.cpp:65 Running on Linux 7.0.0-38-generic (x86_64)
+10-28 18:35:39.134     5     5 I adb     : main.cpp:65 
+10-28 18:35:39.636     5     5 F adb     : main.cpp:168 could not install *smartsocket* listener: Operation not permitted

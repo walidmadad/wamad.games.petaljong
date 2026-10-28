@@ -48,7 +48,7 @@ class UndoCreditTest {
     @Test fun restartReplayAndNavigationKeepBalance() {
         val c=ProgressController(PlayerProgress(setOf(1,2),undoCredits=1))
         match(c); assertTrue(c.undo()); c.session.restart(); assertEquals(0,c.wallet.balance)
-        assertTrue(c.select(2)); assertEquals(0,c.wallet.balance)
+        assertFalse(c.select(2)); assertEquals(0,c.wallet.balance)
         c.session.level.witness.forEach { assertTrue(c.session.game.match(it.first,it.second)) }
         assertTrue(c.session.advance()); assertEquals(0,c.wallet.balance)
         assertEquals(0,reload(c).wallet.balance)
@@ -62,14 +62,14 @@ class UndoCreditTest {
         c.session.restart() // Same operation as the victory Replay Level button.
         val restored = reload(c)
         assertEquals(2, restored.wallet.balance)
-        assertEquals(2, restored.highestUnlocked)
+        assertEquals(2L, restored.highestUnlocked)
         assertEquals(setOf(1), restored.capture().completed)
-        assertTrue(restored.session.game.snapshot().moves.isEmpty())
+        assertEquals(Status.WON,restored.session.game.status)
         assertFalse(restored.undo()); assertEquals(2, restored.wallet.balance)
     }
     @Test fun migrationKeepsCompletionsIdentityAndMovesExactlyOnce() {
         val c=ProgressController(PlayerProgress(setOf(1,2))); c.select(3); match(c)
-        val old=ProgressCodec.encode(c.capture()).split('\n').take(4).toMutableList(); old[0]="1"
+        val old=ProgressCodec.encode(c.capture()).split('\n').take(4).toMutableList(); old[0]="1"; old[1]="1,2"
         val migrated=ProgressController(ProgressCodec.decode(old.joinToString("\n")))
         assertEquals(c.capture(),migrated.capture()); assertEquals(3,migrated.wallet.balance)
         assertTrue(migrated.undo()); assertEquals(2,reload(migrated).wallet.balance)

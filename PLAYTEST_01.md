@@ -1,3 +1,24 @@
+# CODEX 13 — device playtest
+
+Status: NOT EXECUTED. ADB socket creation is denied in the sandbox. Earlier procedures below are historical and superseded; do not test ads, replay, or level selection as available features.
+
+1. Upgrade with `adb install -r app/build/outputs/apk/debug/app-debug.apk`. Preserve app data and signing identity. Do not uninstall to resolve a signature mismatch.
+2. Verify old saves: completed 1–3 enters 4; completed 1–5 enters 6; compatible unfinished history and credits persist. Noncontiguous records stop at their first missing level.
+3. Play Levels 1–7 via tile taps. At each victory check “Level N Complete”, Next Level, no Replay, no Restart, disabled Undo and visible unchanged credits. Tap the level label and Android Back: no old-level navigation must appear.
+4. Complete Level 5, close before Next Level, relaunch: victory must remain. Recreate Activity while victory is pending and while the next garden loads. Double tap Next Level: exactly Level 6 must load once with correct pairs and no stale animations/selection.
+5. On Level 6 match a pair, spend one Undo, restart, close/relaunch. Confirm exact initial arrangement on restart, exact saved history on relaunch, level stays 6, and credits never replenish.
+6. Complete generated levels, then check 99→100 and 999→1000 with isolated test saves. Do not change real player saves. Deadlock must offer Undo when possible and Restart, with no advance or regenerated seed.
+7. At zero credits, restart, victory, next, relaunch and recreation must all retain zero. No ad button or advertisement should appear.
+8. Test compact portrait, landscape and enlarged fonts across all eight layout families and reflections. Check tile artwork, accessible labels, touch centers, available-pair counts and 150 ms match effects.
+9. Measure actual Android generation time for 6, 10, 25, 50, 100, 500, 1000, 10000 and a large 64-bit ID; record device/API, commit/hash, elapsed time, frame responsiveness and loading duration. Host JVM numbers are not Android evidence.
+10. Inject a storage failure in isolated instrumentation storage. Next must keep the completed board pending and allow retry. Kill during generation and during writing: restoration must be either pending victory or its exact successor, never a skipped/replayed level.
+
+Record observed PASS/FAIL with device/build identity. Human strategic difficulty and long-session enjoyment need device playtesting.
+
+---
+
+# Historical playtest procedures (superseded)
+
 # CODEX 12 — Current status
 
 Status: **NOT PERFORMED for CODEX 12**. ADB could not create its socket listener; no emulator observations are invented. Use a new standard Gradle APK with the same signing identity as the installed build. Record device/API, build commit, consent state, network, observed balance and save/board outcome for each step.

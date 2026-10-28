@@ -2,11 +2,8 @@
     <string name="app_name">TileBloom</string>
     <string name="subtitle">Mahjong Garden Puzzle</string>
     <string name="level_number">Level %1$d</string>
-    <string name="generation_error">This garden could not be prepared. Please replay the current level.</string>
-    <string name="next_level">Next Level</string>
-    <string name="replay_level">Replay Level</string>
-    <string name="journey_complete">Garden Journey Complete</string>
-    <string name="journey_detail">Five gardens, beautifully tended.</string>
+    <string name="generation_error">The next garden could not be saved or prepared. Your completed level is retained. Tap Next Level to retry.</string>
+    <string name="next_level">Next Level →</string>
     <string name="level">Level 1</string>
     <string name="pairs">Pairs left: %1$d</string>
     <string name="instruction">Select two matching free tiles</string>
@@ -19,7 +16,6 @@
     <string name="undo_credits">Undo (%1$d)</string>
     <string name="restart_level">Restart Level</string>
     <string name="restart">Restart</string>
-    <string name="play_again">Play Again</string>
     <string name="won">Garden Cleared!</string>
     <string name="won_detail">Beautifully done.</string>
     <string name="no_moves">No More Matches</string>

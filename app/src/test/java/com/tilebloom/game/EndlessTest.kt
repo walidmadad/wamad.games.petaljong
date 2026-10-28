@@ -1,0 +1,38 @@
+package com.tilebloom.game
+import com.tilebloom.game.domain.*
+import com.tilebloom.game.presentation.board.*
+import org.junit.Assert.*
+import org.junit.Test
+class EndlessTest {
+    private val ids = ((1L..40L).toList() + listOf(50L,100L,500L,1000L,10000L,Int.MAX_VALUE.toLong()+1,1000000000000L,Long.MAX_VALUE-1,Long.MAX_VALUE)).distinct()
+    @Test fun deterministicMatrixAndWitnesses() {
+        ids.forEach { id ->
+            val start=System.nanoTime(); val l=Levels.get(id); LevelValidator.validate(l)
+            println("Generation HOST JVM level=$id ms=${(System.nanoTime()-start)/1000000} tiles=${l.tiles.size} quality=${l.qualityTargetMet}")
+            assertEquals(l,Levels.get(id)); assertEquals(id,l.id); assertTrue(l.tiles.size in 24..32)
+            assertTrue(l.attempts<=64); if(id>=6) assertTrue(l.candidatesEvaluated<=6)
+            assertTrue(l.candidateQuality.all { it.searchNodes<=5000 })
+            val g=Game(l.tiles); l.witness.forEach { assertTrue(g.match(it.first,it.second)) }; assertEquals(Status.WON,g.status)
+        }
+    }
+    @Test fun recentGeometryAndBoardsVary() {
+        for(id in 10L..60L) { val l=EndlessGenerator.layout(id); for(d in 1..4) assertNotEquals(EndlessGenerator.geometryFingerprint(l),EndlessGenerator.geometryFingerprint(EndlessGenerator.layout(id-d))) }
+        assertEquals(8,(6L..13L).map { EndlessGenerator.layout(it).id.substringBefore('-') }.toSet().size)
+        assertEquals(12,(6L..17L).map { Levels.get(it).tiles }.toSet().size)
+    }
+    @Test fun fallbackIsVerifiedAndReproducible() { val a=EndlessGenerator.generate(100,true); assertEquals(a,EndlessGenerator.generate(100,true)); LevelValidator.validate(a); assertFalse(a.qualityTargetMet); assertEquals(4,a.version) }
+    @Test fun invalidIdsRejected() { assertThrows(IllegalArgumentException::class.java) { Levels.get(0) }; assertThrows(IllegalArgumentException::class.java) { Levels.get(-1) } }
+    @Test fun geometryAndHitTestingAllVariants() {
+        (6L..37L).forEach { id -> val l=Levels.get(id)
+            for((w,h) in listOf(284f to 300f,360f to 520f,600f to 260f)) {
+                val geo=BoardGeometry(w,h,tiles=l.tiles); val game=Game(l.tiles)
+                l.tiles.forEach { val r=geo.shadow(it); assertTrue(r.left>=0 && r.top>=0 && r.right<=w && r.bottom<=h) }
+                l.witness.forEach { m -> for(tid in listOf(m.first,m.second)) { val t=game.remaining.first { it.id==tid }; val p=geo.face(t).center; assertEquals(tid,geo.hitTest(game.tiles,p.x,p.y)?.id) }; assertTrue(game.match(m.first,m.second)) }
+            }
+        }
+    }
+    @Test fun maximumIdentityDoesNotOverflow() {
+        val l=Levels.get(Long.MAX_VALUE); val c=ProgressController(PlayerProgress(active=SessionSnapshot(l.id,l.seed,l.version,GameSnapshot(l.witness,null)),highestCompleted=Long.MAX_VALUE))
+        assertEquals(Status.WON,c.session.game.status); assertFalse(c.session.canAdvance); assertNull(c.prepareNext()); assertEquals(Long.MAX_VALUE,c.capture().frontier)
+    }
+}

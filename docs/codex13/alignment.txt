@@ -1,0 +1,8 @@
+Verifying alignment of app/build/outputs/apk/debug/app-debug.apk (4)...
+      49 AndroidManifest.xml (OK - compressed)
+     872 resources.arsc (OK)
+    3977 classes.dex (OK - compressed)
+  746978 META-INF/ANDROIDD.SF (OK - compressed)
+  747327 META-INF/ANDROIDD.RSA (OK - compressed)
+  748441 META-INF/MANIFEST.MF (OK - compressed)
+Verification succesful

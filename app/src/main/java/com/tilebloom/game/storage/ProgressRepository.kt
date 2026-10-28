@@ -28,7 +28,7 @@ object ProgressRepository {
             Log.w("TileBloomSave", "Invalid save envelope; attempting conservative credit recovery", it)
             // A malformed schema-2 balance is never interpreted as a new introductory allocation.
             val lines = raw.split('\n').toMutableList()
-            if (lines.firstOrNull() == "2" && raw.length <= 8192) {
+            if (lines.firstOrNull() in listOf("2", "3") && raw.length <= 8192) {
                 while (lines.size < 5) lines.add("")
                 lines[4] = "0"
                 runCatching { ProgressCodec.decode(lines.joinToString("\n")) }.getOrElse { PlayerProgress(undoCredits = 0) }
@@ -55,6 +55,22 @@ object ProgressRepository {
                 Log.e("TileBloomSave", "Save failed; durable progress was not confirmed", e)
             }
         }
+    }
+    /** Transition caller waits on the ordered writer; latest is published only after fsync. */
+    fun saveDurably(context: Context, token: Long, progress: PlayerProgress): Boolean {
+        val raw = ProgressCodec.encode(progress)
+        val target = synchronized(this) { if (token != owner) return false else file(context) }
+        return writer.submit<Boolean> {
+            var stream: java.io.FileOutputStream? = null
+            try {
+                stream = target.startWrite(); stream.write(raw.toByteArray(Charsets.UTF_8)); target.finishWrite(stream)
+                synchronized(this) { latest = raw; lastWriteFailed = false }
+                true
+            } catch (e: Exception) {
+                target.failWrite(stream); lastWriteFailed = true
+                Log.e("TileBloomSave", "Transition not committed", e); false
+            }
+        }.get()
     }
     private fun java.io.BufferedReader.readTextBounded(): String {
         val chars = CharArray(8193)

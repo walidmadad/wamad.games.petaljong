@@ -15,6 +15,27 @@ import java.util.concurrent.atomic.AtomicReference
 
 @Suppress("DEPRECATION")
 class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivity::class.java) {
+    private fun ready(screen: MainActivity) {
+        val deadline = SystemClock.uptimeMillis() + 30000
+        while (SystemClock.uptimeMillis() < deadline) {
+            var loaded = false
+            instrumentation.runOnMainSync { loaded = screen.findViewById<MahjongBoardView>(R.id.board)?.width?.let { it > 0 } == true }
+            if (loaded) return
+            SystemClock.sleep(20)
+        }
+        fail("Board did not load")
+    }
+    override fun getActivity(): MainActivity = super.getActivity().also { if (android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) ready(it) }
+    private fun waitNext(id: Long) {
+        val deadline = SystemClock.uptimeMillis() + 30000
+        while (SystemClock.uptimeMillis() < deadline) {
+            instrumentation.waitForIdleSync()
+            if (!com.tilebloom.game.storage.GameStore.transitioning &&
+                com.tilebloom.game.storage.GameStore.get(instrumentation.targetContext).session.level.id == id) return
+            SystemClock.sleep(20)
+        }
+        fail("Next Level did not load $id")
+    }
     override fun setUp() {
         super.setUp()
         com.tilebloom.game.storage.ProgressRepository.awaitWrites()
@@ -57,12 +78,13 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
     fun testSchemaOneMigrationShowsCreditsAndDoesNotRefillOnRelaunch() {
         val original = com.tilebloom.game.domain.ProgressController(
             com.tilebloom.game.domain.PlayerProgress(setOf(1, 2)))
-        assertTrue(original.session.game.match(firstA, firstB))
+        val move = original.session.level.witness.first()
+        assertTrue(original.session.game.match(move.first, move.second))
         val legacy = com.tilebloom.game.domain.ProgressCodec.encode(original.capture())
-            .split('\n').take(4).toMutableList().apply { this[0] = "1" }.joinToString("\n")
+            .split('\n').take(4).toMutableList().apply { this[0] = "1"; this[1] = "1,2" }.joinToString("\n")
         java.io.File(instrumentation.targetContext.filesDir, "test-smoke-progress").writeText(legacy)
         activity; instrumentation.waitForIdleSync()
-        assertCount(22)
+        assertCount(26)
         ui {
             val undo = activity.findViewById<Button>(R.id.undo)
             assertTrue(undo.isShown); assertEquals("Undo (3)", undo.text.toString())
@@ -79,6 +101,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         assertEquals(2, saved.undoCredits)
         val relaunched = instrumentation.startActivitySync(android.content.Intent(instrumentation.targetContext, MainActivity::class.java)
             .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) as MainActivity
+        ready(relaunched)
         try {
             instrumentation.waitForIdleSync()
             ui { assertEquals("Undo (2)", relaunched.findViewById<Button>(R.id.undo).text.toString()) }
@@ -105,6 +128,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         val launched=instrumentation.startActivitySync(android.content.Intent(instrumentation.targetContext,MainActivity::class.java)
             .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) as MainActivity
         try {
+            ready(launched)
             instrumentation.waitForIdleSync()
             ui { assertEquals("Undo (0)",launched.findViewById<Button>(R.id.undo).text.toString()) }
         } finally { ui { launched.finish() } }
@@ -118,7 +142,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             ui { activity.recreate() }
             replacement=monitor.waitForActivityWithTimeout(5000) as? MainActivity
             assertNotNull(replacement); instrumentation.waitForIdleSync()
-            val screen=replacement!!
+            val screen=replacement!!; ready(screen)
             ui {
                 assertEquals("Undo (0)",screen.findViewById<Button>(R.id.undo).text.toString())
                 assertFalse(screen.findViewById<Button>(R.id.undo).isEnabled)
@@ -196,14 +220,14 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         java.io.File(instrumentation.targetContext.filesDir,"test-smoke-progress")
             .writeText("1\n1,2\n1,0,2\n16,20;0,4")
         com.tilebloom.game.storage.ProgressRepository.useTestStorage("test-smoke-progress")
-        activity; instrumentation.waitForIdleSync(); assertCount(24)
-        tap(firstA); tap(firstB); assertCount(22)
+        activity; instrumentation.waitForIdleSync(); assertCount(28)
+        val pair = Levels.get(3).witness.first()
+        tap(pair.first); tap(pair.second); assertCount(26)
         com.tilebloom.game.storage.ProgressRepository.awaitWrites()
-        com.tilebloom.game.storage.ProgressRepository.useTestStorage("test-smoke-progress")
         val saved = com.tilebloom.game.storage.ProgressRepository.load(instrumentation.targetContext)
         assertEquals(setOf(1,2),saved.completed)
-        assertEquals(3,saved.active!!.version)
-        assertEquals(listOf(com.tilebloom.game.domain.PairMove(firstA,firstB)),saved.active!!.game.moves)
+        assertEquals(3L,saved.active!!.id)
+        assertEquals(listOf(pair),saved.active!!.game.moves)
     }
     fun testDurableStoreWithoutBundle() {
         activity
@@ -219,13 +243,14 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
     fun testCompletionDurableAndReplayPreservesIt() {
         activity
         Levels.get(1).witness.forEach { tap(it.first); tap(it.second) }
-        ui { activity.findViewById<Button>(R.id.replay_level).performClick() }
+        ui { assertNull(activity.findViewById<Button>(R.id.replay_level)); activity.findViewById<Button>(R.id.next_level).performClick() }
+        waitNext(2)
         com.tilebloom.game.storage.ProgressRepository.awaitWrites()
         com.tilebloom.game.storage.ProgressRepository.useTestStorage("test-smoke-progress")
         val p = com.tilebloom.game.domain.ProgressController(com.tilebloom.game.storage.ProgressRepository.load(instrumentation.targetContext))
         assertEquals(setOf(1), p.capture().completed)
-        assertTrue(p.select(2)); assertFalse(p.select(3))
-        assertEquals(2,p.session.level.id)
+        assertFalse(p.select(1)); assertFalse(p.select(3))
+        assertEquals(2L,p.session.level.id)
     }
     fun testStorageFailureIsReportedAndRecovers() {
         val repository = com.tilebloom.game.storage.ProgressRepository
@@ -237,7 +262,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             repository.save(instrumentation.targetContext, token, com.tilebloom.game.domain.ProgressController().capture())
             repository.awaitWrites()
             assertTrue(repository.lastWriteFailed)
-            assertEquals(1,repository.load(instrumentation.targetContext).highestUnlocked)
+            assertEquals(1L,repository.load(instrumentation.targetContext).highestUnlocked)
         } finally { blocker.delete() }
     }
     fun testFreshActivityLaunchWithoutBundleRestoresMoves() {
@@ -274,11 +299,14 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         return result.get()
     }
     private fun board(screen: MainActivity = activity) = screen.findViewById<MahjongBoardView>(R.id.board)
-    private fun target(id: Int, screen: MainActivity = activity): BoardPoint = ui {
+    private fun target(id: Int, screen: MainActivity = activity): BoardPoint {
+        ready(screen)
+        return ui {
         val view = board(screen)
         val local = view.tileCenter(id) ?: error("Tile $id no longer exists")
         val location = IntArray(2); view.getLocationOnScreen(location)
         BoardPoint(local.x + location[0], local.y + location[1])
+        }
     }
     private fun send(action: Int, point: BoardPoint, down: Long) {
         val event = MotionEvent.obtain(down,SystemClock.uptimeMillis(),action,point.x,point.y,0)
@@ -291,6 +319,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         instrumentation.waitForIdleSync()
     }
     private fun assertCount(expected: Int, screen: MainActivity = activity) {
+        ready(screen)
         ui {
             assertEquals(expected,board(screen).remainingTileCount)
             assertEquals(screen.getString(R.string.pairs,expected/2),screen.findViewById<TextView>(R.id.counter).text.toString())
@@ -316,16 +345,17 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             assertFalse(activity.findViewById<TextView>(R.id.feedback).isShown)
             assertFalse(activity.findViewById<Button>(R.id.restart).isShown)
             assertTrue(activity.findViewById<Button>(R.id.next_level).isShown)
-            assertTrue(activity.findViewById<Button>(R.id.replay_level).isShown)
+            assertNull(activity.findViewById<Button>(R.id.replay_level))
             fun countTitles(view: android.view.View): Int {
                 if (!view.isShown) return 0
                 val own = if (view is TextView && view.text.toString() == activity.getString(R.string.won)) 1 else 0
                 return own + if (view is android.view.ViewGroup) (0 until view.childCount).sumOf { countTitles(view.getChildAt(it)) } else 0
             }
             assertEquals(1, countTitles(activity.window.decorView))
-            activity.findViewById<Button>(R.id.replay_level).performClick()
+            activity.findViewById<Button>(R.id.next_level).performClick()
         }
-        assertCount(24); tap(firstA); ui { assertEquals(firstA,board().selectedTileId) }
+        waitNext(2); assertCount(Levels.get(2).tiles.size)
+        tap(Levels.get(2).witness.first().first)
     }
     fun testCoordinateDeadlockAndRestart() {
         activity; instrumentation.waitForIdleSync()
@@ -334,7 +364,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         ui {
             assertTrue(activity.findViewById<TextView>(R.id.feedback).text.toString().contains(activity.getString(R.string.no_moves)))
             assertFalse(activity.findViewById<Button>(R.id.next_level).isShown)
-            assertFalse(activity.findViewById<Button>(R.id.replay_level).isShown)
+            assertNull(activity.findViewById<Button>(R.id.replay_level))
             assertTrue(activity.findViewById<Button>(R.id.restart).isShown)
             activity.findViewById<Button>(R.id.restart).performClick()
         }
@@ -442,7 +472,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             replacement = monitor.waitForActivityWithTimeout(5000) as? MainActivity
             assertNotNull("Recreated activity did not launch",replacement)
             instrumentation.waitForIdleSync()
-            val restored = replacement!!
+            val restored = replacement!!; ready(restored)
             assertCount(22,restored); ui {
                 assertEquals(secondA,board(restored).selectedTileId)
                 assertEquals(0,board(restored).activeMatchEffectCount)
@@ -453,33 +483,56 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             replacement?.let { screen -> ui { screen.finish() } }
         }
     }
-    fun testCoordinateProgressionThroughFiveGardens() {
-        activity; instrumentation.waitForIdleSync()
-        for (id in 1..5) {
-            val definition = com.tilebloom.game.domain.Levels.get(id)
+    fun testCoordinateProgressionBeyondFiveAndDoubleTap() {
+        activity
+        for (id in 1..7) {
+            val definition = Levels.get(id)
             assertCount(definition.tiles.size)
             definition.witness.forEach { tap(it.first); tap(it.second) }
-            assertCount(0)
             ui {
-                val next = activity.findViewById<Button>(R.id.next_level)
-                assertEquals(if (id < 5) android.view.View.VISIBLE else android.view.View.GONE, next.visibility)
-                assertEquals(0, board().remainingTileCount)
-                if (id < 5) {
-                    next.performClick()
-                    assertEquals(0, board().activeMatchEffectCount)
-                    assertNull(board().selectedTileId)
-                }
+                assertFalse(activity.findViewById<Button>(R.id.restart).isShown)
+                assertNull(activity.findViewById<Button>(R.id.replay_level))
+                val next=activity.findViewById<Button>(R.id.next_level)
+                assertTrue(next.isShown); next.performClick(); next.performClick()
             }
-            if (id < 5) {
-                val nextDefinition = com.tilebloom.game.domain.Levels.get(id + 1)
-                assertFalse(definition.layout == nextDefinition.layout)
-                val pair = nextDefinition.witness.first()
-                tap(pair.first); tap(pair.second)
-                assertCount(nextDefinition.tiles.size - 2)
-                ui { activity.findViewById<Button>(R.id.restart).performClick() }
-                assertCount(nextDefinition.tiles.size)
-            }
+            waitNext(id.toLong()+1)
+            val nextDefinition=Levels.get(id+1)
+            assertCount(nextDefinition.tiles.size)
+            val pair=nextDefinition.witness.first(); tap(pair.first); tap(pair.second)
+            ui { activity.findViewById<Button>(R.id.restart).performClick() }
+            assertCount(nextDefinition.tiles.size)
+            assertEquals(id.toLong()+1,com.tilebloom.game.storage.GameStore.get(instrumentation.targetContext).session.level.id)
         }
+    }
+    fun testPendingVictoryRecreation() {
+        activity
+        Levels.get(1).witness.forEach { tap(it.first); tap(it.second) }
+        val monitor=Instrumentation.ActivityMonitor(MainActivity::class.java.name,null,false)
+        instrumentation.addMonitor(monitor)
+        var replacement: MainActivity?=null
+        try {
+            ui { activity.recreate() }
+            replacement=monitor.waitForActivityWithTimeout(5000) as? MainActivity
+            val screen=replacement!!; ready(screen)
+            ui { assertTrue(screen.findViewById<Button>(R.id.next_level).isShown); assertFalse(screen.findViewById<Button>(R.id.restart).isShown) }
+            assertCount(0,screen)
+        } finally { instrumentation.removeMonitor(monitor); replacement?.let { ui { it.finish() } } }
+    }    fun testGeneratedLevelSaveRestoreAndCredits() {
+        val repo=com.tilebloom.game.storage.ProgressRepository
+        val c=com.tilebloom.game.domain.ProgressController(com.tilebloom.game.domain.PlayerProgress(highestCompleted=5,undoCredits=1))
+        java.io.File(instrumentation.targetContext.filesDir,"test-smoke-progress").writeText(com.tilebloom.game.domain.ProgressCodec.encode(c.capture()))
+        activity
+        val l=Levels.get(6); val m=l.witness.first()
+        tap(m.first); tap(m.second)
+        ui { activity.findViewById<Button>(R.id.undo).performClick(); assertEquals("Undo (0)",activity.findViewById<Button>(R.id.undo).text.toString()) }
+        tap(m.first); tap(m.second); assertCount(l.tiles.size-2)
+        ui { activity.finish() }; repo.awaitWrites(); repo.useTestStorage("test-smoke-progress")
+        val screen=instrumentation.startActivitySync(android.content.Intent(instrumentation.targetContext,MainActivity::class.java).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) as MainActivity
+        try { ready(screen); assertCount(l.tiles.size-2,screen)
+            ui { assertEquals("Undo (0)",screen.findViewById<Button>(R.id.undo).text.toString()); screen.findViewById<Button>(R.id.restart).performClick() }
+            assertCount(l.tiles.size,screen)
+            assertEquals(6L,com.tilebloom.game.storage.GameStore.get(instrumentation.targetContext).session.level.id)
+        } finally { ui { screen.finish() } }
     }
 
 }

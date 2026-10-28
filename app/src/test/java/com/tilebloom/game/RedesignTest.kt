@@ -106,7 +106,7 @@ class RedesignTest {
         val old=ProgressCodec.decode("1\n1,2\n1,0,2\n16,20;0,4")
         val controller=ProgressController(old)
         assertTrue(controller.recovered); assertEquals(setOf(1,2),controller.capture().completed)
-        assertEquals(3,controller.highestUnlocked); assertEquals(level.tiles,controller.session.game.tiles)
+        assertEquals(3L,controller.highestUnlocked); assertEquals(Levels.get(3).tiles,controller.session.game.tiles)
         assertTrue(controller.session.game.snapshot().moves.isEmpty())
         val reload=ProgressController(ProgressCodec.decode(ProgressCodec.encode(controller.capture())))
         assertFalse(reload.recovered); assertEquals(controller.capture(),reload.capture())
@@ -116,7 +116,7 @@ class RedesignTest {
         val move=l.witness.first()
         val raw="1\n1\n2,202,2\n${move.first},${move.second}"
         val controller=ProgressController(ProgressCodec.decode(raw))
-        assertFalse(controller.recovered); assertEquals("2" + raw.drop(1) + "\n3",ProgressCodec.encode(controller.capture()))
+        assertFalse(controller.recovered); assertEquals("3" + raw.drop(1) + "\n3",ProgressCodec.encode(controller.capture()))
     }
     @Test fun legacyHistoryIsNeverAppliedToNewGeometry() {
         val session=GardenSession(); val before=session.snapshot()

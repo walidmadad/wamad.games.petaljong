@@ -6,7 +6,7 @@ data class TileSlot(val id: Int, val x: Double, val y: Double, val layer: Int)
 data class BoardLayout(val id: String, val slots: List<TileSlot>)
 data class CandidateQuality(val index: Int, val consequenceChoices: Int, val riskyChoices: Int,
     val searchNodes: Int, val unknownAlternatives: Int, val targetMet: Boolean)
-data class LevelDefinition(val id: Int, val seed: Long, val version: Int, val layout: BoardLayout,
+data class LevelDefinition(val id: Long, val seed: Long, val version: Int, val layout: BoardLayout,
     val tiles: List<Tile>, val witness: List<PairMove>, val attempts: Int,
     val qualityTargetMet: Boolean = false, val candidatesEvaluated: Int = 0,
     val candidateQuality: List<CandidateQuality> = emptyList())
@@ -54,12 +54,14 @@ object LevelValidator {
  * Quality search is capped at 2000–5000 nodes per candidate and never runs during board rendering.
  */
 object LevelGenerator {
+    fun generate(id: Int, seed: Long, layout: BoardLayout, version: Int = VERSION) = generate(id.toLong(), seed, layout, version)
+    internal fun generateWithProfile(id: Int, seed: Long, layout: BoardLayout, version: Int = VERSION, qualityAttempts: Int = 6, minimumChoices: Int? = null) = generateWithProfile(id.toLong(), seed, layout, version, qualityAttempts, minimumChoices)
     const val VERSION = 2
     const val MAX_ATTEMPTS = 64
-    fun generate(id: Int, seed: Long, layout: BoardLayout, version: Int = VERSION): LevelDefinition =
+    fun generate(id: Long, seed: Long, layout: BoardLayout, version: Int = VERSION): LevelDefinition =
         generateWithProfile(id, seed, layout, version)
     // Internal profile override exercises fallback in tests; live identity always uses the versioned defaults.
-    internal fun generateWithProfile(id: Int, seed: Long, layout: BoardLayout, version: Int = VERSION,
+    internal fun generateWithProfile(id: Long, seed: Long, layout: BoardLayout, version: Int = VERSION,
         qualityAttempts: Int = 6, minimumChoices: Int? = null): LevelDefinition {
         require(version == 1 || version == VERSION)
         require(qualityAttempts in 1..6)
@@ -69,14 +71,14 @@ object LevelGenerator {
             val quality = mutableListOf<CandidateQuality>()
             for (candidate in 0 until qualityAttempts) {
                 val level = generate(id, seed + candidate * 7919L, layout, 1)
-                val a = PuzzleAnalyzer.analyze(level, if (id == 3) 5000 else if (id == 4) 4000 else 2000)
-                val score = a.consequenceChoiceStates * 3 + a.riskyChoiceStates * 5 - a.forced - (if (id == 3) maxOf(0, a.riskyChoiceStates - 2) * 20 else 0)
+                val a = PuzzleAnalyzer.analyze(level, if (id == 3L) 5000 else if (id == 4L) 4000 else 2000)
+                val score = a.consequenceChoiceStates * 3 + a.riskyChoiceStates * 5 - a.forced - (if (id == 3L) maxOf(0, a.riskyChoiceStates - 2) * 20 else 0)
                 if (score > bestScore) { best = level; bestScore = score }
                 // Require visible unlock choices and at least one proven consequential risk.
                 // Compare at least two candidates; cap observed risk for the branching tutorial.
-                val target = minimumChoices ?: (if (id <= 2) 3 else if (id == 3) 5 else 6)
+                val target = minimumChoices ?: (if (id <= 2) 3 else if (id == 3L) 5 else 6)
                 val targetMet = a.consequenceChoiceStates >= target && a.forced <= a.branching.size / 2 &&
-                    a.riskyChoiceStates >= (if (id == 5) 2 else 1) && (id != 3 || (a.complete && a.riskyChoiceStates <= 2))
+                    a.riskyChoiceStates >= (if (id == 5L) 2 else 1) && (id != 3L || (a.complete && a.riskyChoiceStates <= 2))
                 quality.add(CandidateQuality(candidate, a.consequenceChoiceStates, a.riskyChoiceStates,
                     a.searchNodes, a.unknownAlternatives, targetMet))
                 if (candidate >= 1 && targetMet) {
@@ -142,37 +144,46 @@ object Levels {
         3 to LevelGenerator.generate(3, 303L, Layouts.woodland),
         4 to LevelGenerator.generate(4, 404L, Layouts.courtyard),
         5 to LevelGenerator.generate(5, 511L, Layouts.woodland)) }
-    fun get(id: Int): LevelDefinition = when (id) {
-        1 -> introductory
-        2 -> generated.getValue(2)
-        3 -> generated.getValue(3)
-        4 -> generated.getValue(4)
-        5 -> generated.getValue(5)
-        else -> error("Unknown introductory level $id")
+    fun get(id: Int): LevelDefinition = get(id.toLong())
+    fun get(id: Long): LevelDefinition = when (id) {
+        1L -> introductory
+        2L -> generated.getValue(2)
+        3L -> generated.getValue(3)
+        4L -> generated.getValue(4)
+        5L -> generated.getValue(5)
+        else -> EndlessGenerator.generate(id)
     }
 }
 
-data class SessionSnapshot(val id: Int, val seed: Long, val version: Int, val game: GameSnapshot)
+data class SessionSnapshot(val id: Long, val seed: Long, val version: Int, val game: GameSnapshot) {
+    constructor(id: Int, seed: Long, version: Int, game: GameSnapshot): this(id.toLong(), seed, version, game)
+}
 class GardenSession {
     var level = Levels.get(1); private set
     var game = Game(level.tiles); private set
-    val canAdvance get() = game.status == Status.WON && level.id < Levels.COUNT
-    fun restart() = game.restart()
+    val canAdvance get() = game.status == Status.WON && level.id < Long.MAX_VALUE
+    fun restart(): Boolean {
+        if (game.status == Status.WON) return false
+        game.restart(); return true
+    }
     fun advance(): Boolean {
         if (!canAdvance) return false
-        val next = Levels.get(level.id + 1)
-        level = next; game = Game(next.tiles)
-        return true
+        return installNext(Levels.get(level.id + 1))
+    }
+    internal fun installNext(next: LevelDefinition): Boolean {
+        if (!canAdvance || next.id != level.id + 1) return false
+        LevelValidator.validate(next)
+        level = next; game = Game(next.tiles); return true
     }
     fun snapshot() = SessionSnapshot(level.id, level.seed, level.version, game.snapshot())
     fun restore(saved: SessionSnapshot): Boolean {
-        val candidate = try { Levels.get(saved.id) } catch (_: IllegalStateException) { return false }
-        // v3 changes Level 1 footprints and associations. Never replay a v2 ID history
-        // against it. ProgressController recovers only that attempt; completions survive.
-        // Levels 2–5 deliberately keep their v2 identities and exact definitions.
+        // Restoration may resume this board or a later one, never an earlier board.
+        if (saved.id < level.id) return false
+        val candidate = try { Levels.get(saved.id) } catch (_: Exception) { return false }
         if (candidate.seed != saved.seed || candidate.version != saved.version) return false
         val restored = Game(candidate.tiles)
         if (!restored.restore(saved.game)) return false
+        if (saved.id == level.id && game.status == Status.WON && restored.status != Status.WON) return false
         level = candidate; game = restored
         return true
     }
