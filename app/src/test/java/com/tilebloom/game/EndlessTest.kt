@@ -9,7 +9,7 @@ class EndlessTest {
         ids.forEach { id ->
             val start=System.nanoTime(); val l=Levels.get(id); LevelValidator.validate(l)
             println("Generation HOST JVM level=$id ms=${(System.nanoTime()-start)/1000000} tiles=${l.tiles.size} quality=${l.qualityTargetMet}")
-            assertEquals(l,Levels.get(id)); assertEquals(id,l.id); assertTrue(l.tiles.size in 24..32)
+            assertEquals(l,Levels.get(id)); assertEquals(id,l.id); assertTrue(l.tiles.size in 24..40)
             assertTrue(l.attempts<=64); if(id>=6) assertTrue(l.candidatesEvaluated<=6)
             assertTrue(l.candidateQuality.all { it.searchNodes<=5000 })
             val g=Game(l.tiles); l.witness.forEach { assertTrue(g.match(it.first,it.second)) }; assertEquals(Status.WON,g.status)
@@ -20,7 +20,7 @@ class EndlessTest {
         assertEquals(8,(6L..13L).map { EndlessGenerator.layout(it).id.substringBefore('-') }.toSet().size)
         assertEquals(12,(6L..17L).map { Levels.get(it).tiles }.toSet().size)
     }
-    @Test fun fallbackIsVerifiedAndReproducible() { val a=EndlessGenerator.generate(100,true); assertEquals(a,EndlessGenerator.generate(100,true)); LevelValidator.validate(a); assertFalse(a.qualityTargetMet); assertEquals(4,a.version) }
+    @Test fun fallbackIsVerifiedAndReproducible() { val a=EndlessGenerator.generate(100,true); assertEquals(a,EndlessGenerator.generate(100,true)); LevelValidator.validate(a); assertFalse(a.qualityTargetMet); assertEquals(5,a.version) }
     @Test fun invalidIdsRejected() { assertThrows(IllegalArgumentException::class.java) { Levels.get(0) }; assertThrows(IllegalArgumentException::class.java) { Levels.get(-1) } }
     @Test fun geometryAndHitTestingAllVariants() {
         (6L..37L).forEach { id -> val l=Levels.get(id)

@@ -87,7 +87,7 @@ object LevelGenerator {
             }
             return checkNotNull(best).copy(seed = seed, version = VERSION, candidatesEvaluated = qualityAttempts, candidateQuality = quality.toList())
         }
-        require(layout.slots.size in 2..32 && layout.slots.size % 2 == 0)
+        require(layout.slots.size in 2..48 && layout.slots.size % 2 == 0)
         val random = Random(seed xor id.toLong())
         repeat(MAX_ATTEMPTS) { attempt ->
             var remaining = layout.slots.map { Tile(it.id, Symbol.LEAF, it.x, it.y, it.layer) }
@@ -101,7 +101,7 @@ object LevelGenerator {
                 remaining = remaining.filter { it.id != a.id && it.id != b.id }
             }
             if (remaining.isNotEmpty()) return@repeat
-            val symbols = MutableList(witness.size) { Symbol.entries[it % Symbol.entries.size] }
+            val symbols = MutableList(witness.size) { Symbol.entries[it % 6] }
             java.util.Collections.shuffle(symbols, random)
             val assignments = mutableMapOf<Int, Symbol>()
             witness.forEachIndexed { i, p -> assignments[p.first] = symbols[i]; assignments[p.second] = symbols[i] }
@@ -179,7 +179,7 @@ class GardenSession {
     fun restore(saved: SessionSnapshot): Boolean {
         // Restoration may resume this board or a later one, never an earlier board.
         if (saved.id < level.id) return false
-        val candidate = try { Levels.get(saved.id) } catch (_: Exception) { return false }
+        val candidate = try { if (saved.id >= 6 && saved.version == 4) LegacyEndlessGenerator.generate(saved.id) else Levels.get(saved.id) } catch (_: Exception) { return false }
         if (candidate.seed != saved.seed || candidate.version != saved.version) return false
         val restored = Game(candidate.tiles)
         if (!restored.restore(saved.game)) return false

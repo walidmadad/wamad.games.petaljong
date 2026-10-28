@@ -38,4 +38,14 @@
         <item name="android:windowActionModeOverlay">true</item>
         <item name="android:windowBackground">#102F27</item>
     </style>
+    <string name="symbol_mushroom">Mushroom</string>
+    <string name="symbol_butterfly">Butterfly</string>
+    <string name="symbol_bamboo">Bamboo</string>
+    <string name="symbol_acorn">Acorn</string>
+    <string name="symbol_maple_leaf">Maple Leaf</string>
+    <string name="symbol_pinecone">Pinecone</string>
+    <string name="symbol_iris">Iris</string>
+    <string name="symbol_ginkgo_leaf">Ginkgo Leaf</string>
+    <string name="symbol_cherry_blossom">Cherry Blossom</string>
+    <string name="symbol_dragonfly">Dragonfly</string>
 </resources>

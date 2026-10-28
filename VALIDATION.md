@@ -681,3 +681,27 @@ Standard Gradle JVM tests, assemble and Lint: **NOT EXECUTED**. The known sandbo
 Live seeds/version: L1 0/v2, L2 202/v2, L3 303/v2, L4 404/v2, L5 511/v2. Incompatible saved histories are rejected atomically; activity falls back to a fresh Level 1. New coordinate deadlock path: `(16,20), (0,4), (8,12), (17,21), (1,5), (9,13), (15,18), (19,23)` leaves eight tiles/four pairs. Historical fixture tests remain on `LevelOne`.
 
 Evidence: `app/build/codex08/verification.log`, `quality-matrix.tsv`, `host-workflow-tests.log`, `adb-server.log`, archived APK. Full metrics and all 26 acceptance criteria: [CODEX_08_REPORT.md](CODEX_08_REPORT.md). Human difficulty and device latency remain unverified.
+
+## CODEX 14 — final host validation
+
+- PASS: 174 JVM tests (168 existing tests retained, six new tier/catalog/matrix/save/
+  progression/fallback tests); final suite 28.213 seconds. Historical v4 reconstruction
+  tested at levels 6, 20, 21, 40, 101 and 10000.
+- PASS: 10 host-workflow tests.
+- PASS: deterministic matrix at every introduction and nearby boundaries, through
+  levels 200, 500, 1000, 10000 and Long.MAX_VALUE. Complete engine witness replay,
+  even paired symbols, bounded attempts/nodes and compact/medium/wide hit testing.
+- Host generation at the required 17 representative levels: 16–180 ms in this run;
+  subsequent analysis measured separately. These are single host observations, not
+  device latency or statistically stable benchmarks. See `docs/codex14/host-matrix.txt`.
+- Standard Gradle: blocked by read-only wrapper cache lock. Android Lint NOT EXECUTED.
+- Diagnostic Java 17 pipeline: production code, instrumentation compilation and fresh
+  aligned/signed debug APK. See final APK evidence in `CODEX_14_REPORT.md`.
+- Android instrumentation: sources updated; execution NOT EXECUTED. ADB listener bind
+  denied by the sandbox. No device runtime, performance or visual claims.
+- Human challenge, artwork recognizability, font scaling and insets: NOT VERIFIED;
+  follow the CODEX 14 milestone checklist in `PLAYTEST_01.md`.
+
+Reproduce with Java 17: `python3 tools/verify_offline.py`, then
+`python3 -m unittest tools/test_host_verify.py`. Standard Gradle remains the preferred
+normal-host build. Environment diagnostics: `docs/codex14/environment.txt`.

@@ -535,4 +535,60 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         } finally { ui { screen.finish() } }
     }
 
+    fun testTier20To21ThroughCoordinates() = milestoneThroughCoordinates(20)
+    fun testTier40To41ThroughCoordinates() = milestoneThroughCoordinates(40)
+    private fun milestoneThroughCoordinates(id: Long) {
+        val c = com.tilebloom.game.domain.ProgressController(com.tilebloom.game.domain.PlayerProgress(highestCompleted=id-1,undoCredits=1))
+        java.io.File(instrumentation.targetContext.filesDir,"test-smoke-progress")
+            .writeText(com.tilebloom.game.domain.ProgressCodec.encode(c.capture()))
+        activity
+        val level=Levels.get(id)
+        level.witness.forEach { tap(it.first); tap(it.second) }
+        ui { val next=activity.findViewById<Button>(R.id.next_level); next.performClick(); next.performClick() }
+        waitNext(id+1)
+        val next=Levels.get(id+1)
+        assertCount(next.tiles.size)
+        assertTrue(com.tilebloom.game.domain.DifficultyPolicy.transitionMessage(id+1)!!.contains("New tiles discovered"))
+        val opening=next.witness.first(); tap(opening.first); tap(opening.second)
+        ui { activity.findViewById<Button>(R.id.restart).performClick() }
+        assertCount(next.tiles.size)
+        assertEquals(next,com.tilebloom.game.storage.GameStore.get(instrumentation.targetContext).session.level)
+        ui {
+            val image=android.graphics.Bitmap.createBitmap(board().width,board().height,android.graphics.Bitmap.Config.ARGB_8888)
+            board().draw(android.graphics.Canvas(image)); image.recycle()
+        }
+        next.witness.forEach { pair -> tap(pair.first); tap(pair.second) }
+        ui { assertEquals("Undo (1)",activity.findViewById<Button>(R.id.undo).text.toString()) }
+        assertCount(0)
+    }
+
+    fun testMilestone21RecreationAndRelaunch() {
+        val repo=com.tilebloom.game.storage.ProgressRepository
+        val c=com.tilebloom.game.domain.ProgressController(com.tilebloom.game.domain.PlayerProgress(highestCompleted=20,undoCredits=1))
+        java.io.File(instrumentation.targetContext.filesDir,"test-smoke-progress")
+            .writeText(com.tilebloom.game.domain.ProgressCodec.encode(c.capture()))
+        activity
+        val level=Levels.get(21); val pair=level.witness.first()
+        tap(pair.first); tap(pair.second)
+        val monitor=Instrumentation.ActivityMonitor(MainActivity::class.java.name,null,false)
+        instrumentation.addMonitor(monitor)
+        var replacement: MainActivity?=null
+        try {
+            ui { activity.recreate() }
+            replacement=monitor.waitForActivityWithTimeout(5000) as? MainActivity
+            val screen=replacement!!; ready(screen); assertCount(level.tiles.size-2,screen)
+            assertEquals(1L,com.tilebloom.game.domain.DifficultyPolicy.tier(com.tilebloom.game.storage.GameStore.get(instrumentation.targetContext).session.level.id))
+            ui { assertEquals("Undo (1)",screen.findViewById<Button>(R.id.undo).text.toString()); screen.finish() }
+        } finally { instrumentation.removeMonitor(monitor); replacement?.let { ui { it.finish() } } }
+        repo.awaitWrites(); repo.useTestStorage("test-smoke-progress")
+        val screen=instrumentation.startActivitySync(android.content.Intent(instrumentation.targetContext,MainActivity::class.java)
+            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) as MainActivity
+        try {
+            ready(screen); assertCount(level.tiles.size-2,screen)
+            val saved=com.tilebloom.game.storage.GameStore.get(instrumentation.targetContext)
+            assertEquals(level,saved.session.level); assertFalse(saved.select(20)); assertEquals(1,saved.wallet.balance)
+            ui { screen.findViewById<Button>(R.id.restart).performClick() }; assertCount(level.tiles.size,screen)
+        } finally { ui { screen.finish() } }
+    }
+
 }

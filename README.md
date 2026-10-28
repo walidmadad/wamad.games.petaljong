@@ -20,3 +20,43 @@ python3 tools/test_host_verify.py
 ```
 
 Normal toolchain: Kotlin 2.2.10, AGP 8.10.0, Gradle 8.13, Java 17, SDK 36, min SDK 26, build tools 35.0.0. The diagnostic builder compiles instrumentation sources but does not execute them or run Android Lint.
+
+## CODEX 14: twenty-level garden challenges
+
+Difficulty is selected by `(level - 1) / 20` using positive Long identifiers. Profiles:
+
+| Tier | Levels | Tile target | Active symbols |
+|---|---|---|---|
+| Beginner | 1–20 | 24–28 | 6 |
+| Beginner Plus | 21–40 | 28–32 | 8 |
+| Intermediate | 41–60 | 32–36 | 10 |
+| Advanced | 61–80 | 36–40 | 12 |
+| Expert | 81–100 | 40–44 | 14 |
+| Master | 101–120 | 40–48 | 16 |
+| Continuing | 121+ (20 levels each) | 40–48 | at most 16 |
+
+The five existing introductory puzzles remain frozen (including their historical tile
+counts). New boards use at most 40 tiles within eight compact silhouette families;
+target ranges permit this conservative device-size cap. Within each tier the second
+half adds four tiles where the cap permits. Profiles also control cover offsets,
+unlocking-choice targets, risk allowance, candidate and analysis budgets. Higher tiers
+rotate strategic emphasis and geometry; finite board and symbol limits mean challenge
+cannot grow without bound. Scores measure proxies, not proven human difficulty.
+
+New original Canvas artwork: mushroom and butterfly (21), bamboo and acorn (41), maple
+leaf and pinecone (61), iris and ginkgo (81), cherry blossom and dragonfly (101).
+Every milestone board includes a complete pair of each new type. Original IDs 0–5 stay
+fixed; appended explicit stable IDs 6–15 identify the new catalog. Matching still uses
+symbol identity through the existing engine. No downloaded art or image engine.
+
+Generation v5 retains v4 reconstruction for ongoing saved puzzles. Historical assignment
+is frozen to six symbols, including introductory versions. Saves keep the existing
+schema, seed, generator version, completion frontier, moves and global Undo balance.
+An unrecognizable snapshot follows the existing safe recovery at the current frontier,
+preserving level and credits. New levels use v5; no data deletion is required.
+Future catalog additions must append a unique stable ID and introduction milestone,
+provide a renderer/accessibility name, bump the generation version when output changes,
+and retain earlier reconstructors. The curated catalog currently ends at sixteen;
+there is no unlimited artwork. At 121+ tier notifications do not claim new tiles.
+
+See [CODEX_14_REPORT.md](CODEX_14_REPORT.md) for build evidence and limitations.

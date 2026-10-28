@@ -204,7 +204,12 @@ class MainActivity : Activity() {
                     runOnUiThread {
                         loading = false
                         result.onSuccess {
-                            if (session.level.id == expected && progress.commitNext(it)) board.load(game)
+                            if (session.level.id == expected && progress.commitNext(it)) {
+                                board.load(game)
+                                com.tilebloom.game.domain.DifficultyPolicy.transitionMessage(session.level.id)?.let { message ->
+                                    Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+                                }
+                            }
                         }.onFailure {
                             Toast.makeText(this@MainActivity, R.string.generation_error, Toast.LENGTH_LONG).show()
                         }

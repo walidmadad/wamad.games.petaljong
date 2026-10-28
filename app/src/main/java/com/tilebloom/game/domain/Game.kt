@@ -2,7 +2,13 @@ package com.tilebloom.game.domain
 
 import kotlin.math.abs
 
-enum class Symbol { LEAF, LOTUS, FERN, FLOWER, BERRIES, SUNFLOWER }
+/** Append only. Explicit IDs are persistence contracts, independent of catalog ordering. */
+enum class Symbol(val stableId: Int, val introducedAt: Long) {
+    LEAF(0, 1), LOTUS(1, 1), FERN(2, 1), FLOWER(3, 1), BERRIES(4, 1), SUNFLOWER(5, 1),
+    MUSHROOM(6, 21), BUTTERFLY(7, 21), BAMBOO(8, 41), ACORN(9, 41),
+    MAPLE_LEAF(10, 61), PINECONE(11, 61), IRIS(12, 81), GINKGO_LEAF(13, 81),
+    CHERRY_BLOSSOM(14, 101), DRAGONFLY(15, 101)
+}
 enum class Status { PLAYING, WON, NO_MOVES }
 data class Tile(val id: Int, val symbol: Symbol, val x: Double, val y: Double, val layer: Int, val removed: Boolean = false)
 data class PairMove(val first: Int, val second: Int)

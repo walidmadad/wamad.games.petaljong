@@ -1,62 +1,77 @@
 package com.tilebloom.game.domain
 
-/** Version 4: signed 64-bit identity, SplitMix64 seed, eight silhouette cycle, four reflections.
- * No dependency on wall time, process randomness, or player history. At most 6 × 64
- * construction attempts and 6 × 2000 analyzer nodes; verified fallback relaxes quality only.
- */
+import java.util.Random
+
+/** v4 remains reconstructible; v5 changes geometry, symbol assignment and quality selection. */
 object EndlessGenerator {
-    const val VERSION = 4
+    const val VERSION = 5
     const val RECENT_WINDOW = 4
-    private val rows = listOf(
-        listOf(0 to 3, 0 to 4, 1 to 5, 2 to 4, 2 to 4), // winding terraces
-        listOf(0 to 4, -1 to 5, -1 to 5, 0 to 4, 1 to 2), // stepped garden
-        listOf(1 to 2, 0 to 4, -1 to 6, 0 to 4, 1 to 4), // layered cross
-        listOf(-1 to 5, 0 to 5, 1 to 4, 0 to 4, 2 to 2), // asymmetric wings
-        listOf(0 to 4, 0 to 4, -1 to 6, 1 to 2, 0 to 4), // split garden
-        listOf(1 to 2, 0 to 4, -1 to 6, -1 to 6, 1 to 2), // compact pyramid
-        listOf(0 to 5, -1 to 5, 0 to 5, 1 to 5), // offset rectangles
-        listOf(0 to 4, -1 to 6, 0 to 6, 1 to 4) // staggered garden
-    )
-    private val names = listOf("river", "steps", "cross", "wings", "split", "pyramid", "offset", "staggered")
-    fun seed(id: Long): Long {
-        require(id >= 6)
-        var z = id + -7046029254386353131L
-        z = (z xor (z ushr 30)) * -4658895280553007687L
-        z = (z xor (z ushr 27)) * -7723592293110705685L
-        return z xor (z ushr 31) xor VERSION.toLong()
-    }
+    fun seed(id: Long) = LegacyEndlessGenerator.seed(id) xor 4L xor VERSION.toLong()
     fun layout(id: Long): BoardLayout {
-        require(id >= 6)
-        val index = ((id - 6) % rows.size).toInt()
-        val cycle = (id - 6) / rows.size
-        val slots = mutableListOf<TileSlot>()
-        rows[index].forEachIndexed { y, row -> repeat(row.second) { x ->
-            slots.add(TileSlot(slots.size, (row.first + x).toDouble(), y.toDouble(), 0))
-        } }
-        // Upper terraces are supported by central rows. Counts stabilize at 28 tiles.
-        val topCount = if (id < 25) 4 else 8
-        repeat(topCount) { n ->
-            val y = n / 2 + .5
-            val x = rows[index][n / 2].first + n % 2 + if (cycle % 2 == 0L) .5 else 0.0
-            slots.add(TileSlot(slots.size, x, y, 1))
-        }
-        val reflected = slots.map { it.copy(x = if (cycle % 4 >= 2) -it.x else it.x,
-            y = if (cycle % 2 == 1L) -it.y else it.y) }
-        return BoardLayout("${names[index]}-${cycle % 4}", reflected)
+        val profile = DifficultyPolicy.profile(id)
+        val old = LegacyEndlessGenerator.layout(id)
+        val base = old.slots.filter { it.layer == 0 }
+        // Twenty base tiles in eight compact silhouettes; at most a half-tile cover offset.
+        val count = minOf(40, profile.targetTiles.first + if (profile.phase >= 10) 4 else 0)
+        val ordered = base.sortedWith(compareBy<TileSlot> { it.y }.thenBy { it.x })
+        val shift = ((id - 1) % base.size).toInt()
+        val upper = List(count - base.size) { n -> ordered[(n + shift) % base.size] }
+        return BoardLayout(old.id, base + upper.mapIndexed { i, slot -> slot.copy(id = base.size + i, x = slot.x + profile.coverOffset, layer = 1) })
     }
-    fun geometryFingerprint(layout: BoardLayout) = layout.slots.map { Triple(it.x, it.y, it.layer) }.toSet()
-    fun generate(id: Long, forceFallback: Boolean = false): LevelDefinition {
-        val seed = seed(id)
-        val layout = layout(id)
-        // Distinct silhouettes within the last four identities preclude exact board duplicates,
-        // regardless of symbols. Bounded, stateless comparison; no historical boards stored.
-        for (distance in 1..RECENT_WINDOW) {
-            if (id - distance >= 6) check(geometryFingerprint(layout) != geometryFingerprint(layout(id - distance)))
+    fun geometryFingerprint(layout: BoardLayout) = LegacyEndlessGenerator.geometryFingerprint(layout)
+    /** No search: peel each even-sized layer using the authoritative availability rule. */
+    private fun fallback(id: Long, seed: Long, layout: BoardLayout): LevelDefinition {
+        var remaining = layout.slots.map { Tile(it.id, Symbol.LEAF, it.x, it.y, it.layer) }
+        val witness = mutableListOf<PairMove>()
+        while (remaining.isNotEmpty()) {
+            val layer = remaining.maxOf { it.layer }
+            val free = remaining.filter { it.layer == layer && Rules.available(it, remaining) }.sortedBy { it.id }
+            check(free.size >= 2)
+            val pair = PairMove(free.first().id, free.last().id)
+            witness.add(pair); remaining = remaining.filter { it.id != pair.first && it.id != pair.second }
         }
-        val preferred = if (forceFallback) null else runCatching {
-            LevelGenerator.generateWithProfile(id, seed, layout, minimumChoices = if (id < 25) 4 else if (id < 100) 6 else 8)
-        }.getOrNull()
-        val accepted = preferred ?: LevelGenerator.generate(id, seed, layout, version = 1)
-        return accepted.copy(seed = seed, version = VERSION).also(LevelValidator::validate)
+        return LevelDefinition(id, seed, VERSION, layout,
+            layout.slots.map { Tile(it.id, Symbol.LEAF, it.x, it.y, it.layer) }, witness, 0).also(LevelValidator::validate)
+    }
+    fun generate(id: Long, forceFallback: Boolean = false): LevelDefinition {
+        require(id >= 6)
+        val profile = DifficultyPolicy.profile(id)
+        val layout = layout(id)
+        val seed = seed(id)
+        check(layout.id.substringBefore('-') in profile.allowedFamilies)
+        check(layout.slots.all { it.layer in profile.allowedLayers })
+        val quality = mutableListOf<CandidateQuality>()
+        var best: LevelDefinition? = null
+        var bestScore = Int.MIN_VALUE
+        repeat(if (forceFallback) 1 else profile.candidateBudget) { index ->
+            val built = if (forceFallback) fallback(id, seed, layout) else runCatching {
+                LevelGenerator.generate(id, seed + index * 7919L, layout, version = 1)
+            }.getOrElse { fallback(id, seed, layout) }
+            val catalog = DifficultyPolicy.symbols(id)
+            val offset = ((id - 1) % catalog.size).toInt()
+            val active = List(minOf(profile.activeSymbols, built.witness.size)) { catalog[(it + offset) % catalog.size] }
+            // Every active type receives a complete witness pair, including all milestone unlocks.
+            val assignments = MutableList(built.witness.size) { active[it % active.size] }
+            java.util.Collections.shuffle(assignments, Random(seed + index))
+            val symbols = mutableMapOf<Int, Symbol>()
+            built.witness.forEachIndexed { i, pair -> symbols[pair.first] = assignments[i]; symbols[pair.second] = assignments[i] }
+            val candidate = built.copy(seed = seed, version = VERSION,
+                tiles = built.tiles.map { it.copy(symbol = symbols.getValue(it.id)) })
+            LevelValidator.validate(candidate)
+            val a = PuzzleAnalyzer.analyze(candidate, if (forceFallback) 0 else profile.analysisBudget)
+            val met = !forceFallback && a.complete && a.consequenceChoiceStates >= profile.meaningfulChoices &&
+                a.initialBlocked >= profile.targetBlocked && a.riskyChoiceStates <= profile.maximumRiskStates &&
+                a.forced <= a.pairRemovals / 2
+            // Reward unlock differences and safe alternatives; penalize traps and unresolved analysis.
+            val score = a.consequenceChoiceStates * (12 + profile.strategicEmphasis) + a.upperUnlockMoves * (2 + profile.strategicEmphasis) + a.multiple * 2 -
+                a.forced * 3 - maxOf(0, a.riskyChoiceStates - profile.maximumRiskStates) * 30 -
+                a.unknownAlternatives / 10 - maxOf(0, a.initialPairs - 8) * 5 -
+                a.unsolvableAlternatives + minOf(10, a.solvableAlternatives) + if (met) 1000 else 0
+            quality.add(CandidateQuality(index, a.consequenceChoiceStates, a.riskyChoiceStates, a.searchNodes, a.unknownAlternatives, met))
+            if (best == null || score > bestScore) { best = candidate; bestScore = score }
+        }
+        return checkNotNull(best).copy(attempts = checkNotNull(best).attempts,
+            qualityTargetMet = quality.any { it.targetMet }, candidatesEvaluated = quality.size,
+            candidateQuality = quality).also(LevelValidator::validate)
     }
 }

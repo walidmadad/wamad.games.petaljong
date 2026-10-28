@@ -1,0 +1,83 @@
+Diagnostic pipeline; Java 17; host timings only. Generation and subsequent analysis timed separately.
+.................CODEX14 HOST level=1 ms=16 analysisMs=37 tiles=24 symbols=6 free=6 pairs=2 blocked=18 forced=3 choices=8 risk=1 unknown=0 target=true
+CODEX14 HOST level=20 ms=180 analysisMs=16 tiles=28 symbols=6 free=9 pairs=3 blocked=19 forced=1 choices=12 risk=0 unknown=0 target=true
+CODEX14 HOST level=21 ms=49 analysisMs=11 tiles=28 symbols=8 free=9 pairs=5 blocked=19 forced=1 choices=12 risk=0 unknown=0 target=true
+CODEX14 HOST level=40 ms=157 analysisMs=17 tiles=32 symbols=8 free=11 pairs=7 blocked=21 forced=4 choices=12 risk=1 unknown=0 target=true
+CODEX14 HOST level=41 ms=74 analysisMs=13 tiles=32 symbols=10 free=11 pairs=5 blocked=21 forced=3 choices=13 risk=1 unknown=0 target=true
+CODEX14 HOST level=60 ms=144 analysisMs=38 tiles=36 symbols=10 free=8 pairs=3 blocked=28 forced=1 choices=16 risk=0 unknown=0 target=true
+CODEX14 HOST level=61 ms=81 analysisMs=12 tiles=36 symbols=12 free=8 pairs=7 blocked=28 forced=1 choices=16 risk=0 unknown=0 target=true
+CODEX14 HOST level=80 ms=133 analysisMs=16 tiles=40 symbols=12 free=10 pairs=3 blocked=30 forced=1 choices=18 risk=0 unknown=0 target=true
+CODEX14 HOST level=81 ms=103 analysisMs=10 tiles=40 symbols=14 free=10 pairs=2 blocked=30 forced=1 choices=18 risk=0 unknown=0 target=true
+CODEX14 HOST level=100 ms=97 analysisMs=8 tiles=40 symbols=14 free=8 pairs=2 blocked=32 forced=2 choices=18 risk=0 unknown=0 target=true
+CODEX14 HOST level=101 ms=55 analysisMs=10 tiles=40 symbols=16 free=8 pairs=2 blocked=32 forced=1 choices=19 risk=2 unknown=0 target=true
+CODEX14 HOST level=120 ms=130 analysisMs=30 tiles=40 symbols=16 free=10 pairs=7 blocked=30 forced=1 choices=18 risk=3 unknown=0 target=true
+CODEX14 HOST level=121 ms=119 analysisMs=17 tiles=40 symbols=16 free=10 pairs=3 blocked=30 forced=2 choices=18 risk=0 unknown=0 target=true
+CODEX14 HOST level=200 ms=96 analysisMs=16 tiles=40 symbols=16 free=10 pairs=2 blocked=30 forced=2 choices=18 risk=1 unknown=0 target=true
+CODEX14 HOST level=500 ms=125 analysisMs=80 tiles=40 symbols=16 free=8 pairs=2 blocked=32 forced=3 choices=17 risk=2 unknown=0 target=true
+CODEX14 HOST level=1000 ms=123 analysisMs=18 tiles=40 symbols=16 free=10 pairs=2 blocked=30 forced=2 choices=18 risk=0 unknown=0 target=true
+CODEX14 HOST level=10000 ms=68 analysisMs=16 tiles=40 symbols=16 free=10 pairs=3 blocked=30 forced=3 choices=17 risk=2 unknown=0 target=true
+CODEX14 HOST level=9223372036854775807 ms=139 analysisMs=15 tiles=40 symbols=16 free=10 pairs=3 blocked=30 forced=1 choices=18 risk=1 unknown=0 target=true
+CODEX14 HOST level=22 ms=51 analysisMs=7 tiles=28 symbols=8 free=12 pairs=5 blocked=16 forced=1 choices=11 risk=1 unknown=0 target=true
+CODEX14 HOST level=39 ms=74 analysisMs=9 tiles=32 symbols=8 free=10 pairs=5 blocked=22 forced=1 choices=14 risk=0 unknown=0 target=true
+CODEX14 HOST level=42 ms=82 analysisMs=9 tiles=32 symbols=10 free=11 pairs=4 blocked=21 forced=2 choices=12 risk=1 unknown=0 target=true
+CODEX14 HOST level=59 ms=103 analysisMs=12 tiles=36 symbols=10 free=11 pairs=8 blocked=25 forced=2 choices=14 risk=1 unknown=0 target=true
+CODEX14 HOST level=62 ms=74 analysisMs=7 tiles=36 symbols=12 free=11 pairs=3 blocked=25 forced=2 choices=15 risk=0 unknown=0 target=true
+CODEX14 HOST level=79 ms=128 analysisMs=12 tiles=40 symbols=12 free=10 pairs=3 blocked=30 forced=2 choices=17 risk=0 unknown=0 target=true
+CODEX14 HOST level=82 ms=83 analysisMs=16 tiles=40 symbols=14 free=10 pairs=8 blocked=30 forced=2 choices=17 risk=0 unknown=0 target=true
+CODEX14 HOST level=99 ms=143 analysisMs=15 tiles=40 symbols=14 free=10 pairs=3 blocked=30 forced=2 choices=17 risk=3 unknown=0 target=true
+CODEX14 HOST level=102 ms=79 analysisMs=20 tiles=40 symbols=16 free=10 pairs=5 blocked=30 forced=2 choices=18 risk=0 unknown=0 target=true
+CODEX14 HOST level=119 ms=125 analysisMs=10 tiles=40 symbols=16 free=10 pairs=3 blocked=30 forced=3 choices=17 risk=0 unknown=0 target=true
+CODEX14 HOST level=122 ms=156 analysisMs=17 tiles=40 symbols=16 free=10 pairs=5 blocked=30 forced=2 choices=17 risk=0 unknown=0 target=true
+CODEX14 HOST level=140 ms=55 analysisMs=10 tiles=40 symbols=16 free=8 pairs=3 blocked=32 forced=2 choices=18 risk=0 unknown=0 target=true
+CODEX14 HOST level=141 ms=64 analysisMs=10 tiles=40 symbols=16 free=8 pairs=2 blocked=32 forced=1 choices=17 risk=0 unknown=0 target=true
+......Generation HOST JVM level=1 ms=0 tiles=24 quality=true
+Generation HOST JVM level=2 ms=252 tiles=24 quality=true
+Generation HOST JVM level=3 ms=0 tiles=28 quality=true
+Generation HOST JVM level=4 ms=0 tiles=30 quality=true
+Generation HOST JVM level=5 ms=0 tiles=28 quality=true
+Generation HOST JVM level=6 ms=36 tiles=24 quality=true
+Generation HOST JVM level=7 ms=20 tiles=24 quality=true
+Generation HOST JVM level=8 ms=36 tiles=24 quality=true
+Generation HOST JVM level=9 ms=19 tiles=24 quality=true
+Generation HOST JVM level=10 ms=28 tiles=24 quality=true
+Generation HOST JVM level=11 ms=60 tiles=28 quality=true
+Generation HOST JVM level=12 ms=35 tiles=28 quality=true
+Generation HOST JVM level=13 ms=32 tiles=28 quality=true
+Generation HOST JVM level=14 ms=34 tiles=28 quality=true
+Generation HOST JVM level=15 ms=57 tiles=28 quality=true
+Generation HOST JVM level=16 ms=61 tiles=28 quality=true
+Generation HOST JVM level=17 ms=40 tiles=28 quality=true
+Generation HOST JVM level=18 ms=40 tiles=28 quality=true
+Generation HOST JVM level=19 ms=38 tiles=28 quality=true
+Generation HOST JVM level=20 ms=32 tiles=28 quality=true
+Generation HOST JVM level=21 ms=28 tiles=28 quality=true
+Generation HOST JVM level=22 ms=95 tiles=28 quality=true
+Generation HOST JVM level=23 ms=40 tiles=28 quality=true
+Generation HOST JVM level=24 ms=53 tiles=28 quality=true
+Generation HOST JVM level=25 ms=33 tiles=28 quality=true
+Generation HOST JVM level=26 ms=52 tiles=28 quality=true
+Generation HOST JVM level=27 ms=33 tiles=28 quality=true
+Generation HOST JVM level=28 ms=25 tiles=28 quality=true
+Generation HOST JVM level=29 ms=22 tiles=28 quality=true
+Generation HOST JVM level=30 ms=46 tiles=28 quality=true
+Generation HOST JVM level=31 ms=56 tiles=32 quality=true
+Generation HOST JVM level=32 ms=53 tiles=32 quality=true
+Generation HOST JVM level=33 ms=101 tiles=32 quality=true
+Generation HOST JVM level=34 ms=61 tiles=32 quality=true
+Generation HOST JVM level=35 ms=89 tiles=32 quality=true
+Generation HOST JVM level=36 ms=91 tiles=32 quality=true
+Generation HOST JVM level=37 ms=94 tiles=32 quality=false
+Generation HOST JVM level=38 ms=129 tiles=32 quality=false
+Generation HOST JVM level=39 ms=73 tiles=32 quality=true
+Generation HOST JVM level=40 ms=81 tiles=32 quality=true
+Generation HOST JVM level=50 ms=69 tiles=32 quality=true
+Generation HOST JVM level=100 ms=80 tiles=40 quality=true
+Generation HOST JVM level=500 ms=95 tiles=40 quality=true
+Generation HOST JVM level=1000 ms=87 tiles=40 quality=true
+Generation HOST JVM level=10000 ms=50 tiles=40 quality=true
+Generation HOST JVM level=2147483648 ms=67 tiles=40 quality=true
+Generation HOST JVM level=1000000000000 ms=55 tiles=40 quality=true
+Generation HOST JVM level=9223372036854775806 ms=59 tiles=40 quality=true
+Generation HOST JVM level=9223372036854775807 ms=121 tiles=40 quality=true
+Time: 28.213
+OK (174 tests)

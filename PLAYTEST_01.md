@@ -263,3 +263,23 @@ Final serial `python3 tools/verify_offline.py` completed with exit code 0. All 8
 - Android installation/launch/instrumentation/visual review: **NOT EXECUTED**.
 - Full A–Q report and all 24 acceptance criteria: `CODEX_07_REPORT.md`.
 - Local diagnostic evidence: `app/build/codex07/` (ignored build output).
+
+## CODEX 14 milestone playtest (human results pending)
+
+Test 20→21, 40→41, 60→61, 80→81, 100→101, and 120→121 with isolated test storage.
+Never reset a real player's progress. Complete each pre-boundary level, double tap Next,
+and confirm exactly +1, a brief challenge notification, and unchanged Undo balance.
+At 121, confirm the message does not promise new symbols.
+
+On compact, medium and large portrait devices, including increased font size and system
+insets, inspect each newly introduced pair: mushroom/butterfly, bamboo/acorn,
+maple/pinecone, iris/ginkgo, cherry blossom/dragonfly. Identify symbols by silhouette
+without relying on color. Confirm all sixteen remain distinct at actual tile size.
+Use legal matches, test coverage and side blocking, watch match animations, restart the
+unfinished board, recreate the activity, and force stop/relaunch. Confirm the same board,
+level, remaining matches and Undo balance; no replay or backward navigation.
+
+For each milestone record device/density/font scale, perceived challenge (1–5), fairness,
+recognizability, comfortable touch size, planning needed, generation delay and overall
+progression satisfaction. Record traps separately from interesting unlocking choices.
+These are pending subjective observations; automated analysis is not a substitute.
