@@ -33,3 +33,5 @@ O. Limitations: standard Gradle unit/build/lint and actual Android instrumentati
 Verification logs: `docs/codex27/`. Diagnostic cached-compiler results are recorded below when complete; they do not replace Gradle or device evidence.
 
 Cached-compiler JVM result: **216/216 PASS**, 27.267 seconds under Java 17. These are production-domain regression tests, not Android presentation tests. Resource linking and diagnostic main/instrumentation Kotlin compilation also pass using cached dependencies and the diagnostic metadata compatibility flag. Android tests were compiled, not executed.
+
+Implementation commit: `4f50b14` — `fix: create dedicated premium offline screen`.
