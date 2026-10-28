@@ -63,7 +63,7 @@ All three requested normal commands were attempted:
 - `./gradlew --no-daemon --console=plain :app:assembleDebug`
 - `./gradlew --no-daemon --console=plain :app:lintDebug`
 
-They fail before tasks at the read-only default Gradle wrapper lock. Installed Gradle 8.13 with Java 17 and a writable `/tmp` user home also fails before tasks: `Could not determine a usable wildcard IP for this machine`. Logs are in docs/codex25.
+They fail before tasks at the read-only default Gradle wrapper lock. Installed Gradle 8.13 with Java 17 and a writable `/tmp` user home also fails before tasks: `Could not determine a usable wildcard IP for this machine`. Logs are in docs/codex25 (trailing whitespace normalized for Git checks).
 
 **Fresh APK: FAIL.** New timestamp, size, SHA-256, packaged connectivity/symbol/SDK checks, package ID, alignment and signature are **NOT VERIFIED**. Any existing APK is stale evidence and is not delivered as CODEX 25.
 
@@ -71,7 +71,7 @@ The existing local signing configuration and key are unchanged. The configured c
 
 ## O. Git
 
-Existing `.tilebloom-git` history is preserved. Use `git --git-dir=.tilebloom-git --work-tree=. log -1 --oneline` to identify this change's commit. Existing unrelated untracked CODEX_18_REPORT.md is left untouched. No history rewrite, push or publication.
+Implementation commit: `7ad0b9e` — `feat: require online gameplay and expand botanical tile designs`. Existing `.tilebloom-git` history is preserved. Use `git --git-dir=.tilebloom-git --work-tree=. log -1 --oneline` to identify this change's commit. Existing unrelated untracked CODEX_18_REPORT.md is left untouched. No history rewrite, push or publication.
 
 ## P–Q. Limitations and CODEX 26
 
