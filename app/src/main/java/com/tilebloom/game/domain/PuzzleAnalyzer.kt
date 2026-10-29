@@ -14,8 +14,15 @@ object PuzzleSolver {
             val key = remaining.map { it.id }.toSet()
             memo[key]?.let { return it }
             if (nodes >= budget) return Solvability.UNKNOWN_BUDGET_EXCEEDED
+            if (nodes and 255 == 0) PreparationMetrics.checkBudget()
             nodes++
-            val moves = Game(remaining).matchingPairs()
+            // Same stable move order as Game.matchingPairs; avoid rebuilding and
+            // validating an immutable board at every search node.
+            val free = remaining.filter { Rules.available(it, remaining) }
+            val moves = mutableListOf<PairMove>()
+            for (i in free.indices) for (j in i + 1 until free.size) {
+                if (free[i].symbol == free[j].symbol) moves.add(PairMove(free[i].id, free[j].id))
+            }
             var unknown = false
             for (p in moves) {
                 when (visit(remaining.filter { it.id != p.first && it.id != p.second })) {
@@ -122,6 +129,7 @@ object TrayAnalyzer {
             val key = g.remaining.map { it.id }.toSet() to g.tray.map { it.symbol.stableId }.sorted()
             memo[key]?.let { return it }
             if (nodes >= budget) return Solvability.UNKNOWN_BUDGET_EXCEEDED
+            if (nodes and 255 == 0) PreparationMetrics.checkBudget()
             nodes++
             var unknown = false
             for (tile in g.remaining.filter { g.isAvailable(it.id) }) {

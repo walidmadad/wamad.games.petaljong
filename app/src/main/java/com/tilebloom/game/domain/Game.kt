@@ -22,11 +22,16 @@ object Rules {
     fun overlaps(a: Tile, b: Tile) = span(a.x, b.x) && span(a.y, b.y)
     fun available(tile: Tile, tiles: List<Tile>): Boolean {
         if (tile.removed) return false
-        val others = tiles.filter { !it.removed && it.id != tile.id }
-        if (others.any { it.layer > tile.layer && overlaps(tile, it) }) return false
-        val neighbors = others.filter { it.layer == tile.layer && span(tile.y, it.y) }
-        val left = neighbors.any { abs(it.x + 1 - tile.x) <= EPS }
-        val right = neighbors.any { abs(tile.x + 1 - it.x) <= EPS }
+        var left = false
+        var right = false
+        for (other in tiles) {
+            if (other.removed || other.id == tile.id) continue
+            if (other.layer > tile.layer && overlaps(tile, other)) return false
+            if (other.layer == tile.layer && span(tile.y, other.y)) {
+                if (abs(other.x + 1 - tile.x) <= EPS) left = true
+                if (abs(tile.x + 1 - other.x) <= EPS) right = true
+            }
+        }
         return !left || !right
     }
 }

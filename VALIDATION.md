@@ -793,3 +793,7 @@ CODEX 30 final diagnostic result: **244/244 JVM tests PASS**, plus **6/6 focused
 Source changes unify gameplay palettes and use opaque painter-order occlusion. New JVM checks cover palette completeness/brightness, deterministic restoration, visible blocked legality, point occlusion, upper removal and Undo at four widths. Android pixel and capture tests were added; execution and image review are NOT VERIFIED. Standard Gradle tasks cannot start here (read-only default Gradle cache; writable cached distribution fails wildcard-IP/socket initialization). No fresh APK is certified by this iteration. See CODEX_31_REPORT.md for final diagnostic test results and docs/codex31/HOST_COMMANDS.md for exact host verification.
 
 Final CODEX 31 diagnostic results: **248/248 JVM tests PASS** (380.773s); strengthened four-test rendering/restoration rerun **4/4 PASS** (8.318s). Main and Android test sources compile with cached Kotlin/JDK 17/SDK dependencies. Android instrumentation, standard Gradle/Lint and a fresh APK remain unverified/blocked as described above. Logs are under docs/codex31.
+
+## CODEX 32
+
+Evidence and acceptance matrix: [CODEX_32_REPORT.md](CODEX_32_REPORT.md). Raw host measurements/tests/compilation and failed standard Gradle attempts: `docs/codex32/`. Host JVM timings must not be described as Android measurements. New Android loading-view fixture is source-only until standard Gradle and instrumentation can execute. Existing APK is stale for this iteration; no signing/alignment or runtime claim is made for CODEX 32.

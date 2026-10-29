@@ -25,7 +25,7 @@ object EndlessGenerator {
     }
     fun generate(id: Long, forceFallback: Boolean = false): LevelDefinition {
         require(id >= 6)
-        val profile = DifficultyPolicy.profile(id)
+        val profile = PreparationMetrics.phase("configuration") { DifficultyPolicy.profile(id) }
         val seed = seed(id)
         check(layout(id).id.substringBefore('-') in AdvancedLayouts.families)
         check(layout(id).slots.all { it.layer in profile.allowedLayers })
@@ -33,17 +33,22 @@ object EndlessGenerator {
         var best: LevelDefinition? = null
         var bestScore = Int.MIN_VALUE
         var bestIndex = 0
-        val recent = (maxOf(6L, id - RECENT_WINDOW) until id).flatMap { previous ->
-            (0 until profile.candidateBudget).map { AdvancedLayouts.layout(previous, it) }
+        val recent = PreparationMetrics.phase("noveltyGeometry") {
+            (maxOf(6L, id - RECENT_WINDOW) until id).flatMap { previous ->
+                (0 until profile.candidateBudget).map { AdvancedLayouts.layout(previous, it) }
+            }
         }
+        val recentFingerprints = recent.map(AdvancedLayouts::fingerprint).toHashSet()
+        val proposals = (0 until profile.candidateBudget).map { AdvancedLayouts.layout(id, it) }
+        val fingerprints = proposals.map(AdvancedLayouts::fingerprint)
         repeat(if (forceFallback) 1 else profile.candidateBudget) { index ->
-            val proposed = AdvancedLayouts.layout(id, index)
-            val layout = if (!recent.any { AdvancedLayouts.fingerprint(it) == AdvancedLayouts.fingerprint(proposed) }) proposed else
-                (0 until profile.candidateBudget).map { AdvancedLayouts.layout(id, it) }
-                    .firstOrNull { recent.none { previous -> AdvancedLayouts.fingerprint(previous) == AdvancedLayouts.fingerprint(it) } } ?: proposed
-            val built = if (forceFallback || index == profile.candidateBudget - 1) fallback(id, seed, layout) else runCatching {
+            val layout = PreparationMetrics.phase("noveltySelection") {
+                if (fingerprints[index] !in recentFingerprints) proposals[index]
+                else proposals.indices.firstOrNull { fingerprints[it] !in recentFingerprints }?.let { proposals[it] } ?: proposals[index]
+            }
+            val built = PreparationMetrics.phase("witnessConstruction") { if (forceFallback || index == profile.candidateBudget - 1) fallback(id, seed, layout) else runCatching {
                 LevelGenerator.generate(id, seed + index * 7919L, layout, version = 1)
-            }.getOrElse { fallback(id, seed, layout) }
+            }.getOrElse { fallback(id, seed, layout) } }
             val catalog = DifficultyPolicy.symbols(id)
             val offset = ((id - 1) % catalog.size).toInt()
             val required = catalog.filter { it.introducedAt == id } + catalog.filter { it.stableId >= 16 }
@@ -56,9 +61,9 @@ object EndlessGenerator {
             built.witness.forEachIndexed { i, pair -> symbols[pair.first] = assignments[i]; symbols[pair.second] = assignments[i] }
             val candidate = built.copy(seed = seed, version = VERSION,
                 tiles = built.tiles.map { it.copy(symbol = symbols.getValue(it.id)) })
-            LevelValidator.validate(candidate)
-            val a = PuzzleAnalyzer.analyze(candidate, if (forceFallback) 0 else profile.analysisBudget)
-            val tray = TrayPressure.measure(candidate)
+            PreparationMetrics.phase("witnessVerification") { LevelValidator.validate(candidate) }
+            val a = PreparationMetrics.phase("difficultyAnalysis") { PuzzleAnalyzer.analyze(candidate, if (forceFallback) 0 else profile.analysisBudget) }
+            val tray = PreparationMetrics.phase("trayReplay") { TrayPressure.measure(candidate) }
             val geometry = GeometryMetrics.measure(candidate.tiles)
             val met = !forceFallback && a.complete && a.consequenceChoiceStates >= profile.meaningfulChoices &&
                 a.initialBlocked >= profile.targetBlocked && a.layers >= minOf(4, profile.tierIndex.toInt() + 2) &&

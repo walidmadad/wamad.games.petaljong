@@ -1,0 +1,700 @@
+app/src/test/java/com/tilebloom/game/BotanicalExpansionTest.kt:52:80: warning: unnecessary non-null assertion (!!) on a non-null receiver of type HintPolicy.Suggestion
+                    val hint = HintPolicy.suggest(level.tiles, game.snapshot())!!
+                                                                               ^
+app/src/test/java/com/tilebloom/game/ProgressTest.kt:29:60: warning: unnecessary non-null assertion (!!) on a non-null receiver of type SessionSnapshot
+        for(bad in listOf(p.active!!.copy(id=999L),p.active!!.copy(seed=-55))) {
+                                                           ^
+JUnit version 4.13.2
+..........CODEX29 id=1 tiles=24 layers=2 overlaps=23 density=0.9583333333333334 blocked=18 free=6 choices=8 pairRisk=1 unknown=0 tray=TrayPressure(probes=12, losses=8, wins=4, threeHeldStates=26) target=true totalMs=7
+CODEX29 id=7 tiles=28 layers=2 overlaps=15 density=0.5357142857142857 blocked=15 free=13 choices=12 pairRisk=0 unknown=0 tray=TrayPressure(probes=12, losses=5, wins=7, threeHeldStates=25) target=true totalMs=604
+CODEX29 id=8 tiles=34 layers=3 overlaps=57 density=1.6764705882352942 blocked=26 free=8 choices=11 pairRisk=0 unknown=0 tray=TrayPressure(probes=12, losses=11, wins=1, threeHeldStates=28) target=true totalMs=387
+CODEX29 id=15 tiles=40 layers=3 overlaps=44 density=1.1 blocked=31 free=9 choices=18 pairRisk=1 unknown=0 tray=TrayPressure(probes=12, losses=10, wins=2, threeHeldStates=26) target=true totalMs=1748
+CODEX29 id=16 tiles=40 layers=4 overlaps=76 density=1.9 blocked=30 free=10 choices=15 pairRisk=0 unknown=0 tray=TrayPressure(probes=12, losses=9, wins=3, threeHeldStates=25) target=true totalMs=807
+CODEX29 id=30 tiles=48 layers=4 overlaps=89 density=1.8541666666666667 blocked=39 free=9 choices=21 pairRisk=0 unknown=87 tray=TrayPressure(probes=12, losses=11, wins=1, threeHeldStates=28) target=true totalMs=1666
+CODEX29 id=31 tiles=54 layers=4 overlaps=123 density=2.2777777777777777 blocked=43 free=11 choices=25 pairRisk=5 unknown=83 tray=TrayPressure(probes=12, losses=12, wins=0, threeHeldStates=26) target=true totalMs=3030
+CODEX29 id=50 tiles=52 layers=4 overlaps=105 density=2.019230769230769 blocked=42 free=10 choices=19 pairRisk=0 unknown=84 tray=TrayPressure(probes=12, losses=12, wins=0, threeHeldStates=25) target=true totalMs=4254
+CODEX29 id=100 tiles=48 layers=4 overlaps=101 density=2.1041666666666665 blocked=39 free=9 choices=22 pairRisk=1 unknown=0 tray=TrayPressure(probes=12, losses=12, wins=0, threeHeldStates=14) target=true totalMs=1244
+CODEX29 id=500 tiles=48 layers=4 overlaps=100 density=2.0833333333333335 blocked=40 free=8 choices=20 pairRisk=3 unknown=0 tray=TrayPressure(probes=12, losses=12, wins=0, threeHeldStates=26) target=true totalMs=985
+CODEX29 id=1000 tiles=48 layers=4 overlaps=112 density=2.3333333333333335 blocked=39 free=9 choices=19 pairRisk=0 unknown=0 tray=TrayPressure(probes=12, losses=12, wins=0, threeHeldStates=20) target=true totalMs=706
+.....................E.E.E.E..E.E.E.E.CODEX14 HOST level=1 ms=0 analysisMs=6 tiles=24 symbols=6 free=6 pairs=2 blocked=18 forced=3 choices=8 risk=1 unknown=0 target=true
+E......Generation HOST JVM level=1 ms=0 tiles=24 quality=true
+Generation HOST JVM level=2 ms=0 tiles=24 quality=true
+Generation HOST JVM level=3 ms=0 tiles=28 quality=true
+Generation HOST JVM level=4 ms=0 tiles=30 quality=true
+Generation HOST JVM level=5 ms=14 tiles=28 quality=true
+Generation HOST JVM level=6 ms=199 tiles=30 quality=true
+Generation HOST JVM level=7 ms=338 tiles=28 quality=true
+Generation HOST JVM level=8 ms=204 tiles=34 quality=true
+Generation HOST JVM level=9 ms=468 tiles=34 quality=true
+Generation HOST JVM level=10 ms=638 tiles=38 quality=true
+Generation HOST JVM level=11 ms=438 tiles=36 quality=true
+Generation HOST JVM level=12 ms=129 tiles=34 quality=true
+Generation HOST JVM level=13 ms=111 tiles=32 quality=true
+Generation HOST JVM level=14 ms=1770 tiles=42 quality=true
+Generation HOST JVM level=15 ms=459 tiles=40 quality=true
+Generation HOST JVM level=16 ms=533 tiles=40 quality=true
+Generation HOST JVM level=17 ms=678 tiles=40 quality=true
+Generation HOST JVM level=18 ms=1572 tiles=44 quality=true
+Generation HOST JVM level=19 ms=551 tiles=42 quality=true
+Generation HOST JVM level=20 ms=344 tiles=40 quality=true
+Generation HOST JVM level=21 ms=359 tiles=38 quality=false
+Generation HOST JVM level=22 ms=759 tiles=48 quality=true
+Generation HOST JVM level=23 ms=522 tiles=46 quality=true
+Generation HOST JVM level=24 ms=263 tiles=40 quality=true
+Generation HOST JVM level=25 ms=141 tiles=40 quality=true
+Generation HOST JVM level=26 ms=933 tiles=44 quality=true
+Generation HOST JVM level=27 ms=741 tiles=42 quality=true
+Generation HOST JVM level=28 ms=391 tiles=40 quality=true
+Generation HOST JVM level=29 ms=539 tiles=38 quality=false
+Generation HOST JVM level=30 ms=868 tiles=48 quality=true
+Generation HOST JVM level=31 ms=1219 tiles=54 quality=true
+Generation HOST JVM level=32 ms=575 tiles=48 quality=true
+Generation HOST JVM level=33 ms=469 tiles=48 quality=true
+Generation HOST JVM level=34 ms=1685 tiles=52 quality=true
+Generation HOST JVM level=35 ms=1326 tiles=50 quality=true
+Generation HOST JVM level=36 ms=460 tiles=48 quality=true
+Generation HOST JVM level=37 ms=491 tiles=46 quality=true
+Generation HOST JVM level=38 ms=2291 tiles=56 quality=true
+Generation HOST JVM level=39 ms=1595 tiles=54 quality=true
+Generation HOST JVM level=40 ms=460 tiles=48 quality=true
+Generation HOST JVM level=50 ms=1853 tiles=52 quality=true
+Generation HOST JVM level=100 ms=373 tiles=48 quality=true
+Generation HOST JVM level=500 ms=267 tiles=48 quality=true
+Generation HOST JVM level=1000 ms=302 tiles=48 quality=true
+Generation HOST JVM level=10000 ms=184 tiles=48 quality=true
+Generation HOST JVM level=2147483648 ms=425 tiles=48 quality=true
+Generation HOST JVM level=1000000000000 ms=692 tiles=48 quality=true
+Generation HOST JVM level=9223372036854775806 ms=917 tiles=56 quality=true
+Generation HOST JVM level=9223372036854775807 ms=2729 tiles=54 quality=true
+......E.E.E.E.E...........................................E.E.E.E.E..E.E.E.E.E.E.E.E..E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E..E......E..........Level 1: 24 tiles, 6 initially free, 2 initial matching choices
+Level 2: 24 tiles, 11 initially free, 7 initial matching choices
+Level 3: 28 tiles, 10 initially free, 8 initial matching choices
+Level 4: 30 tiles, 9 initially free, 7 initial matching choices
+Level 5: 28 tiles, 10 initially free, 6 initial matching choices
+120-board matrix: 8609 ms; max attempts=1
+......E.E.E.E..E.............E..E...........MATRIX original/0 choices=9 risk=2 target=true candidates=3 unknown=0
+MATRIX original/1 choices=10 risk=1 target=true candidates=2 unknown=0
+MATRIX original/2 choices=8 risk=2 target=true candidates=4 unknown=0
+MATRIX original/3 choices=9 risk=1 target=true candidates=3 unknown=0
+MATRIX terrace/0 choices=9 risk=1 target=true candidates=3 unknown=0
+MATRIX terrace/1 choices=9 risk=2 target=true candidates=3 unknown=0
+MATRIX terrace/2 choices=7 risk=2 target=true candidates=2 unknown=0
+MATRIX terrace/3 choices=9 risk=0 target=false candidates=6 unknown=0
+MATRIX woodland/0 choices=10 risk=1 target=true candidates=6 unknown=0
+MATRIX woodland/1 choices=10 risk=1 target=true candidates=2 unknown=0
+MATRIX woodland/2 choices=11 risk=1 target=true candidates=4 unknown=48
+MATRIX woodland/3 choices=11 risk=1 target=true candidates=2 unknown=0
+MATRIX courtyard/0 choices=10 risk=1 target=true candidates=4 unknown=0
+MATRIX courtyard/1 choices=12 risk=0 target=true candidates=4 unknown=28
+MATRIX courtyard/2 choices=11 risk=2 target=true candidates=4 unknown=0
+MATRIX courtyard/3 choices=12 risk=0 target=false candidates=6 unknown=0
+MATRIX SUMMARY boards=16 candidates=58 acceptedProfiles=14 fallback=2 discardedCandidates=42 searchExhausted=2 candidateSearchExhausted=1 generationMs=1337 analysisMs=229
+....ORIGINAL 1 PuzzleAnalysis(tileCount=24, layers=2, symbols=6, initialFree=6, initialPairs=3, initialMatchingSymbols=3, branching=[3, 6, 6, 5, 12, 8, 4, 4, 4, 3, 2, 1], forced=1, multiple=11, upperUnlockMoves=2, consequenceChoiceStates=8, riskyChoiceStates=0, solvableAlternatives=58, unsolvableAlternatives=0, unknownAlternatives=0, searchNodes=457, layout=original, seed=0) randomWins=20/32
+UPDATED 1 PuzzleAnalysis(tileCount=24, layers=2, symbols=6, initialFree=6, initialPairs=2, initialMatchingSymbols=2, branching=[2, 3, 4, 5, 4, 4, 3, 1, 2, 1, 2, 1], forced=3, multiple=9, upperUnlockMoves=5, consequenceChoiceStates=8, riskyChoiceStates=1, solvableAlternatives=31, unsolvableAlternatives=1, unknownAlternatives=0, searchNodes=270, layout=winding, seed=123) randomWins=29/32 candidates=60 target=true
+ORIGINAL 2 PuzzleAnalysis(tileCount=24, layers=2, symbols=6, initialFree=11, initialPairs=6, initialMatchingSymbols=4, branching=[6, 5, 5, 6, 8, 3, 4, 2, 2, 2, 2, 1], forced=1, multiple=11, upperUnlockMoves=3, consequenceChoiceStates=9, riskyChoiceStates=0, solvableAlternatives=46, unsolvableAlternatives=0, unknownAlternatives=0, searchNodes=376, layout=terrace, seed=202) randomWins=29/32
+UPDATED 2 PuzzleAnalysis(tileCount=24, layers=2, symbols=6, initialFree=11, initialPairs=7, initialMatchingSymbols=5, branching=[7, 9, 8, 8, 8, 4, 5, 3, 3, 2, 1, 1], forced=2, multiple=10, upperUnlockMoves=2, consequenceChoiceStates=10, riskyChoiceStates=1, solvableAlternatives=58, unsolvableAlternatives=1, unknownAlternatives=0, searchNodes=768, layout=terrace, seed=202) randomWins=21/32 candidates=2 target=true
+ORIGINAL 3 PuzzleAnalysis(tileCount=28, layers=2, symbols=6, initialFree=10, initialPairs=5, initialMatchingSymbols=5, branching=[5, 4, 9, 8, 3, 5, 6, 8, 4, 5, 3, 2, 2, 1], forced=1, multiple=13, upperUnlockMoves=6, consequenceChoiceStates=11, riskyChoiceStates=2, solvableAlternatives=63, unsolvableAlternatives=2, unknownAlternatives=0, searchNodes=2031, layout=woodland, seed=303) randomWins=23/32
+UPDATED 3 PuzzleAnalysis(tileCount=28, layers=2, symbols=6, initialFree=10, initialPairs=8, initialMatchingSymbols=3, branching=[8, 3, 3, 5, 4, 6, 2, 2, 4, 3, 3, 2, 2, 1], forced=1, multiple=13, upperUnlockMoves=5, consequenceChoiceStates=11, riskyChoiceStates=1, solvableAlternatives=47, unsolvableAlternatives=1, unknownAlternatives=0, searchNodes=1090, layout=woodland, seed=303) randomWins=22/32 candidates=3 target=true
+ORIGINAL 4 PuzzleAnalysis(tileCount=30, layers=2, symbols=6, initialFree=9, initialPairs=5, initialMatchingSymbols=3, branching=[5, 4, 7, 3, 5, 9, 4, 3, 2, 3, 2, 2, 1, 2, 1], forced=2, multiple=13, upperUnlockMoves=6, consequenceChoiceStates=12, riskyChoiceStates=0, solvableAlternatives=53, unsolvableAlternatives=0, unknownAlternatives=0, searchNodes=1372, layout=courtyard, seed=404) randomWins=24/32
+UPDATED 4 PuzzleAnalysis(tileCount=30, layers=2, symbols=6, initialFree=9, initialPairs=7, initialMatchingSymbols=3, branching=[7, 7, 9, 4, 2, 2, 5, 4, 3, 2, 1, 3, 3, 2, 1], forced=2, multiple=13, upperUnlockMoves=6, consequenceChoiceStates=11, riskyChoiceStates=1, solvableAlternatives=54, unsolvableAlternatives=1, unknownAlternatives=0, searchNodes=950, layout=courtyard, seed=404) randomWins=18/32 candidates=2 target=true
+ORIGINAL 5 PuzzleAnalysis(tileCount=28, layers=2, symbols=6, initialFree=10, initialPairs=6, initialMatchingSymbols=4, branching=[6, 8, 3, 8, 8, 7, 7, 9, 5, 4, 3, 1, 1, 1], forced=3, multiple=11, upperUnlockMoves=5, consequenceChoiceStates=11, riskyChoiceStates=0, solvableAlternatives=71, unsolvableAlternatives=0, unknownAlternatives=0, searchNodes=800, layout=woodland, seed=505) randomWins=21/32
+UPDATED 5 PuzzleAnalysis(tileCount=28, layers=2, symbols=6, initialFree=10, initialPairs=6, initialMatchingSymbols=4, branching=[6, 5, 6, 4, 10, 10, 11, 4, 2, 2, 1, 3, 2, 1], forced=2, multiple=12, upperUnlockMoves=6, consequenceChoiceStates=11, riskyChoiceStates=4, solvableAlternatives=62, unsolvableAlternatives=5, unknownAlternatives=0, searchNodes=1887, layout=woodland, seed=511) randomWins=18/32 candidates=5 target=true
+DEADLOCK [PairMove(first=15, second=23), PairMove(first=10, second=22), PairMove(first=9, second=20), PairMove(first=6, second=16), PairMove(first=17, second=18), PairMove(first=0, second=14)]
+........PORTFOLIO sprout,100,7,9,1,2,4,55,1,0,413,51.79856
+PORTFOLIO sprout,101,10,8,0,2,5,63,0,0,554,51.79856
+PORTFOLIO sprout,102,10,8,0,1,5,63,0,0,450,51.79856
+PORTFOLIO sprout,103,10,10,0,1,6,75,0,0,514,51.79856
+PORTFOLIO sprout,104,8,10,0,2,5,81,0,0,567,51.79856
+PORTFOLIO sprout,105,9,6,0,4,4,47,0,0,329,51.79856
+PORTFOLIO sprout,106,6,10,0,2,4,51,0,0,385,51.79856
+PORTFOLIO sprout,107,6,8,0,2,3,49,0,0,872,51.79856
+PORTFOLIO sprout,108,8,9,2,2,4,43,2,0,445,51.79856
+PORTFOLIO sprout,109,9,10,0,2,3,61,0,0,444,51.79856
+PORTFOLIO sprout,110,11,10,0,2,5,75,0,0,518,51.79856
+PORTFOLIO sprout,111,7,8,3,1,5,57,3,0,1155,51.79856
+PORTFOLIO steps,100,7,10,1,1,4,66,1,0,607,51.79856
+PORTFOLIO steps,101,7,8,0,1,6,54,0,0,377,51.79856
+PORTFOLIO steps,102,7,9,4,1,5,35,4,0,390,51.79856
+PORTFOLIO steps,103,8,7,3,2,4,58,3,0,957,51.79856
+PORTFOLIO steps,104,4,10,0,1,5,67,0,0,395,51.79856
+PORTFOLIO steps,105,5,7,1,5,4,33,1,0,539,51.79856
+PORTFOLIO steps,106,6,9,0,1,5,50,0,0,333,51.79856
+PORTFOLIO steps,107,7,8,3,2,4,51,3,0,1022,51.79856
+PORTFOLIO steps,108,4,10,0,2,4,50,0,0,369,51.79856
+PORTFOLIO steps,109,8,9,2,2,4,46,2,0,352,51.79856
+PORTFOLIO steps,110,8,8,0,2,6,50,0,0,342,51.79856
+PORTFOLIO steps,111,5,9,4,1,5,49,4,0,446,51.79856
+PORTFOLIO crescent,100,8,10,1,1,3,49,1,0,325,44.72441
+PORTFOLIO crescent,101,7,8,1,2,4,45,1,0,534,44.72441
+PORTFOLIO crescent,102,8,8,0,1,4,47,0,0,305,44.72441
+PORTFOLIO crescent,103,7,8,0,1,5,62,0,0,389,44.72441
+PORTFOLIO crescent,104,6,10,1,1,4,63,1,0,438,44.72441
+PORTFOLIO crescent,105,5,10,1,2,3,39,1,0,654,44.72441
+PORTFOLIO crescent,106,6,8,1,1,4,54,1,0,754,44.72441
+PORTFOLIO crescent,107,4,8,0,3,6,41,0,0,293,44.72441
+PORTFOLIO crescent,108,6,9,0,2,4,41,0,0,325,44.72441
+PORTFOLIO crescent,109,7,9,1,2,5,49,1,0,458,44.72441
+PORTFOLIO crescent,110,7,9,3,3,6,37,3,0,331,44.72441
+PORTFOLIO crescent,111,5,9,6,1,5,42,6,0,503,44.72441
+PORTFOLIO winding,100,1,9,2,2,4,48,2,0,413,51.79856
+PORTFOLIO winding,101,6,7,0,2,4,44,0,0,348,51.79856
+PORTFOLIO winding,102,2,9,3,2,4,36,3,0,969,51.79856
+PORTFOLIO winding,103,7,10,1,1,5,57,1,0,584,51.79856
+PORTFOLIO winding,104,1,8,2,2,5,57,2,0,440,51.79856
+PORTFOLIO winding,105,3,6,2,4,5,40,2,0,389,51.79856
+PORTFOLIO winding,106,1,9,0,3,5,42,0,0,270,51.79856
+PORTFOLIO winding,107,2,7,0,3,5,41,0,0,342,51.79856
+PORTFOLIO winding,108,1,7,1,2,5,41,1,0,351,51.79856
+PORTFOLIO winding,109,2,9,0,1,5,68,0,0,448,51.79856
+PORTFOLIO winding,110,2,9,0,3,4,48,0,0,280,51.79856
+PORTFOLIO winding,111,2,9,5,1,4,42,5,0,503,51.79856
+PORTFOLIO winding,112,1,8,0,2,4,46,0,0,281,51.79856
+PORTFOLIO winding,113,4,9,2,2,5,48,2,0,590,51.79856
+PORTFOLIO winding,114,2,9,2,1,3,40,2,0,647,51.79856
+PORTFOLIO winding,115,2,9,0,1,6,48,0,0,282,51.79856
+PORTFOLIO winding,116,3,9,1,3,4,34,1,0,308,51.79856
+PORTFOLIO winding,117,3,10,0,1,4,51,0,0,319,51.79856
+PORTFOLIO winding,118,3,9,1,2,6,41,1,0,290,51.79856
+PORTFOLIO winding,119,2,9,0,2,5,66,0,0,469,51.79856
+PORTFOLIO winding,120,1,8,0,2,6,45,0,0,257,51.79856
+PORTFOLIO winding,121,2,10,4,1,6,38,4,0,271,51.79856
+PORTFOLIO winding,122,3,10,2,1,5,53,2,0,435,51.79856
+PORTFOLIO winding,123,2,8,1,3,5,31,1,0,270,51.79856
+PORTFOLIO_MS 457
+......IMPACTS step=0 [MoveImpact(move=PairMove(first=15, second=23), newlyAvailable=[10, 14, 16, 22], result=SearchResult(outcome=SOLVABLE, nodes=24)), MoveImpact(move=PairMove(first=17, second=18), newlyAvailable=[0, 3, 16, 19], result=SearchResult(outcome=SOLVABLE, nodes=11))]
+IMPACTS step=1 [MoveImpact(move=PairMove(first=10, second=22), newlyAvailable=[9], result=SearchResult(outcome=SOLVABLE, nodes=23)), MoveImpact(move=PairMove(first=16, second=21), newlyAvailable=[7, 11], result=SearchResult(outcome=SOLVABLE, nodes=22)), MoveImpact(move=PairMove(first=17, second=18), newlyAvailable=[0, 3, 19], result=SearchResult(outcome=SOLVABLE, nodes=10))]
+IMPACTS step=2 [MoveImpact(move=PairMove(first=7, second=17), newlyAvailable=[], result=SearchResult(outcome=UNSOLVABLE, nodes=12)), MoveImpact(move=PairMove(first=7, second=18), newlyAvailable=[0, 3, 19], result=SearchResult(outcome=SOLVABLE, nodes=9)), MoveImpact(move=PairMove(first=10, second=22), newlyAvailable=[9], result=SearchResult(outcome=SOLVABLE, nodes=20)), MoveImpact(move=PairMove(first=17, second=18), newlyAvailable=[0, 3, 19], result=SearchResult(outcome=SOLVABLE, nodes=9))]
+IMPACTS step=3 [MoveImpact(move=PairMove(first=0, second=14), newlyAvailable=[], result=SearchResult(outcome=SOLVABLE, nodes=8)), MoveImpact(move=PairMove(first=3, second=10), newlyAvailable=[], result=SearchResult(outcome=SOLVABLE, nodes=8)), MoveImpact(move=PairMove(first=3, second=22), newlyAvailable=[], result=SearchResult(outcome=SOLVABLE, nodes=8)), MoveImpact(move=PairMove(first=10, second=22), newlyAvailable=[9], result=SearchResult(outcome=SOLVABLE, nodes=14)), MoveImpact(move=PairMove(first=11, second=19), newlyAvailable=[], result=SearchResult(outcome=SOLVABLE, nodes=8))]
+IMPACTS step=4 [MoveImpact(move=PairMove(first=0, second=14), newlyAvailable=[1], result=SearchResult(outcome=SOLVABLE, nodes=7)), MoveImpact(move=PairMove(first=3, second=10), newlyAvailable=[4], result=SearchResult(outcome=SOLVABLE, nodes=7)), MoveImpact(move=PairMove(first=3, second=22), newlyAvailable=[4, 12], result=SearchResult(outcome=SOLVABLE, nodes=7)), MoveImpact(move=PairMove(first=10, second=22), newlyAvailable=[9, 12], result=SearchResult(outcome=SOLVABLE, nodes=8))]
+IMPACTS step=5 [MoveImpact(move=PairMove(first=1, second=7), newlyAvailable=[], result=SearchResult(outcome=SOLVABLE, nodes=6)), MoveImpact(move=PairMove(first=3, second=10), newlyAvailable=[4], result=SearchResult(outcome=SOLVABLE, nodes=6)), MoveImpact(move=PairMove(first=3, second=22), newlyAvailable=[4, 12, 13], result=SearchResult(outcome=SOLVABLE, nodes=6)), MoveImpact(move=PairMove(first=10, second=22), newlyAvailable=[9, 12, 13], result=SearchResult(outcome=SOLVABLE, nodes=7))]
+IMPACTS step=6 [MoveImpact(move=PairMove(first=3, second=10), newlyAvailable=[4], result=SearchResult(outcome=SOLVABLE, nodes=5)), MoveImpact(move=PairMove(first=3, second=22), newlyAvailable=[4, 8, 12, 13], result=SearchResult(outcome=SOLVABLE, nodes=5)), MoveImpact(move=PairMove(first=10, second=22), newlyAvailable=[8, 9, 12, 13], result=SearchResult(outcome=SOLVABLE, nodes=6))]
+IMPACTS step=7 [MoveImpact(move=PairMove(first=4, second=20), newlyAvailable=[2, 5, 6], result=SearchResult(outcome=SOLVABLE, nodes=4))]
+IMPACTS step=8 [MoveImpact(move=PairMove(first=2, second=22), newlyAvailable=[8, 9, 12, 13], result=SearchResult(outcome=SOLVABLE, nodes=3)), MoveImpact(move=PairMove(first=5, second=6), newlyAvailable=[], result=SearchResult(outcome=SOLVABLE, nodes=3))]
+IMPACTS step=9 [MoveImpact(move=PairMove(first=2, second=22), newlyAvailable=[8, 9, 12, 13], result=SearchResult(outcome=SOLVABLE, nodes=2))]
+IMPACTS step=10 [MoveImpact(move=PairMove(first=8, second=12), newlyAvailable=[], result=SearchResult(outcome=SOLVABLE, nodes=1)), MoveImpact(move=PairMove(first=9, second=13), newlyAvailable=[], result=SearchResult(outcome=SOLVABLE, nodes=1))]
+IMPACTS step=11 [MoveImpact(move=PairMove(first=8, second=12), newlyAvailable=[], result=SearchResult(outcome=SOLVABLE, nodes=0))]
+EQUIVALENT_EXTRA_ASSOCIATIONS 5
+...DESIGN_AUDIT version=2 PuzzleAnalysis(tileCount=24, layers=2, symbols=6, initialFree=6, initialPairs=2, initialMatchingSymbols=2, branching=[2, 8, 10, 7, 8, 4, 8, 4, 4, 3, 2, 1], forced=1, multiple=11, upperUnlockMoves=2, consequenceChoiceStates=8, riskyChoiceStates=1, solvableAlternatives=60, unsolvableAlternatives=1, unknownAlternatives=0, searchNodes=555, layout=original, seed=0) randomWins=19/32
+DESIGN_AUDIT version=3 PuzzleAnalysis(tileCount=24, layers=2, symbols=6, initialFree=6, initialPairs=2, initialMatchingSymbols=2, branching=[2, 3, 4, 5, 4, 4, 3, 1, 2, 1, 2, 1], forced=3, multiple=9, upperUnlockMoves=5, consequenceChoiceStates=8, riskyChoiceStates=1, solvableAlternatives=31, unsolvableAlternatives=1, unknownAlternatives=0, searchNodes=270, layout=winding, seed=123) randomWins=29/32
+DESIGN_AUDIT version=2 PuzzleAnalysis(tileCount=24, layers=2, symbols=6, initialFree=11, initialPairs=7, initialMatchingSymbols=5, branching=[7, 9, 8, 8, 8, 4, 5, 3, 3, 2, 1, 1], forced=2, multiple=10, upperUnlockMoves=2, consequenceChoiceStates=10, riskyChoiceStates=1, solvableAlternatives=58, unsolvableAlternatives=1, unknownAlternatives=0, searchNodes=768, layout=terrace, seed=202) randomWins=21/32
+DESIGN_AUDIT version=2 PuzzleAnalysis(tileCount=28, layers=2, symbols=6, initialFree=10, initialPairs=8, initialMatchingSymbols=3, branching=[8, 3, 3, 5, 4, 6, 2, 2, 4, 3, 3, 2, 2, 1], forced=1, multiple=13, upperUnlockMoves=5, consequenceChoiceStates=11, riskyChoiceStates=1, solvableAlternatives=47, unsolvableAlternatives=1, unknownAlternatives=0, searchNodes=1090, layout=woodland, seed=303) randomWins=22/32
+DESIGN_AUDIT version=2 PuzzleAnalysis(tileCount=30, layers=2, symbols=6, initialFree=9, initialPairs=7, initialMatchingSymbols=3, branching=[7, 7, 9, 4, 2, 2, 5, 4, 3, 2, 1, 3, 3, 2, 1], forced=2, multiple=13, upperUnlockMoves=6, consequenceChoiceStates=11, riskyChoiceStates=1, solvableAlternatives=54, unsolvableAlternatives=1, unknownAlternatives=0, searchNodes=950, layout=courtyard, seed=404) randomWins=18/32
+DESIGN_AUDIT version=2 PuzzleAnalysis(tileCount=28, layers=2, symbols=6, initialFree=10, initialPairs=6, initialMatchingSymbols=4, branching=[6, 5, 6, 4, 10, 10, 11, 4, 2, 2, 1, 3, 2, 1], forced=2, multiple=12, upperUnlockMoves=6, consequenceChoiceStates=11, riskyChoiceStates=4, solvableAlternatives=62, unsolvableAlternatives=5, unknownAlternatives=0, searchNodes=1887, layout=woodland, seed=511) randomWins=18/32
+SELECTED_TILES [Tile(id=0, symbol=FERN, x=0.0, y=0.0, layer=0, removed=false), Tile(id=1, symbol=LEAF, x=1.0, y=0.0, layer=0, removed=false), Tile(id=2, symbol=LOTUS, x=2.0, y=0.0, layer=0, removed=false), Tile(id=3, symbol=LOTUS, x=0.0, y=1.0, layer=0, removed=false), Tile(id=4, symbol=SUNFLOWER, x=1.0, y=1.0, layer=0, removed=false), Tile(id=5, symbol=BERRIES, x=2.0, y=1.0, layer=0, removed=false), Tile(id=6, symbol=BERRIES, x=3.0, y=1.0, layer=0, removed=false), Tile(id=7, symbol=LEAF, x=1.0, y=2.0, layer=0, removed=false), Tile(id=8, symbol=FERN, x=2.0, y=2.0, layer=0, removed=false), Tile(id=9, symbol=SUNFLOWER, x=3.0, y=2.0, layer=0, removed=false), Tile(id=10, symbol=LOTUS, x=4.0, y=2.0, layer=0, removed=false), Tile(id=11, symbol=FLOWER, x=1.0, y=3.0, layer=0, removed=false), Tile(id=12, symbol=FERN, x=2.0, y=3.0, layer=0, removed=false), Tile(id=13, symbol=SUNFLOWER, x=3.0, y=3.0, layer=0, removed=false), Tile(id=14, symbol=FERN, x=4.0, y=3.0, layer=0, removed=false), Tile(id=15, symbol=FLOWER, x=2.0, y=4.0, layer=0, removed=false), Tile(id=16, symbol=BERRIES, x=3.0, y=4.0, layer=0, removed=false), Tile(id=17, symbol=LEAF, x=4.0, y=4.0, layer=0, removed=false), Tile(id=18, symbol=LEAF, x=0.5, y=0.5, layer=1, removed=false), Tile(id=19, symbol=FLOWER, x=1.5, y=0.5, layer=1, removed=false), Tile(id=20, symbol=SUNFLOWER, x=2.5, y=0.5, layer=1, removed=false), Tile(id=21, symbol=BERRIES, x=1.5, y=2.5, layer=1, removed=false), Tile(id=22, symbol=LOTUS, x=2.5, y=2.5, layer=1, removed=false), Tile(id=23, symbol=FLOWER, x=3.5, y=2.5, layer=1, removed=false)]
+SELECTED_WITNESS [PairMove(first=23, second=15), PairMove(first=21, second=16), PairMove(first=18, second=17), PairMove(first=11, second=19), PairMove(first=14, second=0), PairMove(first=7, second=1), PairMove(first=3, second=10), PairMove(first=20, second=4), PairMove(first=6, second=5), PairMove(first=22, second=2), PairMove(first=13, second=9), PairMove(first=12, second=8)]
+SELECTED_DEADLOCK [PairMove(first=15, second=23), PairMove(first=10, second=22), PairMove(first=9, second=20), PairMove(first=6, second=16), PairMove(first=17, second=18), PairMove(first=0, second=14)]
+.................E..E..E..E..E.E.E...UNDO benchmark: 1000 restore+undo cycles, ms=487.800461
+.......
+Time: 190.268
+There were 68 failures:
+1) newSymbolsSupportHintMatchingAndUndo(com.tilebloom.game.BotanicalExpansionTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/HintPolicy
+	at com.tilebloom.game.BotanicalExpansionTest.newSymbolsSupportHintMatchingAndUndo(BotanicalExpansionTest.kt:52)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.HintPolicy
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+2) handoverBlocksInputImmediatelyWithoutFlashingOrExtendingTheDeadline(com.tilebloom.game.BotanicalExpansionTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/ConnectionState
+	at com.tilebloom.game.BotanicalExpansionTest.handoverBlocksInputImmediatelyWithoutFlashingOrExtendingTheDeadline(BotanicalExpansionTest.kt:65)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.ConnectionState
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+3) connectivityRequiresBothCapabilitiesRegardlessOfTransport(com.tilebloom.game.BotanicalExpansionTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/InternetPolicy
+	at com.tilebloom.game.BotanicalExpansionTest.connectivityRequiresBothCapabilitiesRegardlessOfTransport(BotanicalExpansionTest.kt:76)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.InternetPolicy
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+4) historicalVersionFiveAndCurrentSavesRestoreTrayAndCreditsExactly(com.tilebloom.game.BotanicalExpansionTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/ProgressController$undo$1
+	at com.tilebloom.game.domain.ProgressController.undo(PlayerProgress.kt:99)
+	at com.tilebloom.game.BotanicalExpansionTest.historicalVersionFiveAndCurrentSavesRestoreTrayAndCreditsExactly(BotanicalExpansionTest.kt:40)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.ProgressController$undo$1
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 35 more
+5) olderSchemaVictoryRetainsCompletionAndUndoOnMigration(com.tilebloom.game.CompletionEntryTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/CompletionEntryTest$olderSchemaVictoryRetainsCompletionAndUndoOnMigration$1
+	at com.tilebloom.game.CompletionEntryTest.olderSchemaVictoryRetainsCompletionAndUndoOnMigration(CompletionEntryTest.kt:76)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.CompletionEntryTest$olderSchemaVictoryRetainsCompletionAndUndoOnMigration$1
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+6) existingVictoriesFinalizeExactlyOnceBeforePlay(com.tilebloom.game.CompletionEntryTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/CompletionEntryTest$existingVictoriesFinalizeExactlyOnceBeforePlay$1
+	at com.tilebloom.game.CompletionEntryTest.existingVictoriesFinalizeExactlyOnceBeforePlay(CompletionEntryTest.kt:24)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.CompletionEntryTest$existingVictoriesFinalizeExactlyOnceBeforePlay$1
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+7) unfinishedAndDefeatKeepExactTrayHistoryAndBalances(com.tilebloom.game.CompletionEntryTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/CompletionEntryTest$unfinishedAndDefeatKeepExactTrayHistoryAndBalances$2
+	at com.tilebloom.game.CompletionEntryTest.unfinishedAndDefeatKeepExactTrayHistoryAndBalances(CompletionEntryTest.kt:65)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.CompletionEntryTest$unfinishedAndDefeatKeepExactTrayHistoryAndBalances$2
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+8) interruptedSaveAndDeathAfterCommitRecoverWithoutSkipping(com.tilebloom.game.CompletionEntryTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/CompletionEntryTest$interruptedSaveAndDeathAfterCommitRecoverWithoutSkipping$1
+	at com.tilebloom.game.CompletionEntryTest.interruptedSaveAndDeathAfterCommitRecoverWithoutSkipping(CompletionEntryTest.kt:46)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.CompletionEntryTest$interruptedSaveAndDeathAfterCommitRecoverWithoutSkipping$1
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+9) profileMatrixVerifiedAndTouchable(com.tilebloom.game.DifficultyTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/DifficultyTest$profileMatrixVerifiedAndTouchable$lambda$13$$inlined$groupingBy$1
+	at com.tilebloom.game.DifficultyTest.profileMatrixVerifiedAndTouchable(DifficultyTest.kt:104)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.DifficultyTest$profileMatrixVerifiedAndTouchable$lambda$13$$inlined$groupingBy$1
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+10) duplicateShownCallbacksResetCooldownOnlyOnce(com.tilebloom.game.FullScreenAdvertisingTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/FullScreenAdLifecycle
+	at com.tilebloom.game.FullScreenAdvertisingTest.duplicateShownCallbacksResetCooldownOnlyOnce(FullScreenAdvertisingTest.kt:14)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.FullScreenAdLifecycle
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+11) failureAfterDisplayRetainsNormalCooldown(com.tilebloom.game.FullScreenAdvertisingTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/FullScreenAdLifecycle
+	at com.tilebloom.game.FullScreenAdvertisingTest.failureAfterDisplayRetainsNormalCooldown(FullScreenAdvertisingTest.kt:28)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.FullScreenAdLifecycle
+	... 34 more
+12) interstitialCallbacksCannotChangeBoardCreditsOrProgression(com.tilebloom.game.FullScreenAdvertisingTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/FullScreenAdLifecycle
+	at com.tilebloom.game.FullScreenAdvertisingTest.interstitialCallbacksCannotChangeBoardCreditsOrProgression(FullScreenAdvertisingTest.kt:34)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.FullScreenAdLifecycle
+	... 34 more
+13) failedDisplayDoesNotResetAndLateCallbacksAreIgnored(com.tilebloom.game.FullScreenAdvertisingTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/FullScreenAdLifecycle
+	at com.tilebloom.game.FullScreenAdvertisingTest.failedDisplayDoesNotResetAndLateCallbacksAreIgnored(FullScreenAdvertisingTest.kt:22)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.FullScreenAdLifecycle
+	... 34 more
+14) rewardedAndInterstitialCannotOverlap(com.tilebloom.game.FullScreenAdvertisingTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/FullScreenAdGate
+	at com.tilebloom.game.FullScreenAdvertisingTest.rewardedAndInterstitialCannotOverlap(FullScreenAdvertisingTest.kt:9)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.FullScreenAdGate
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+15) matrixReplaysProductionControllerAndRecordsEvidence(com.tilebloom.game.GardenDiversityTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/GardenDiversityTest$matrixReplaysProductionControllerAndRecordsEvidence$digest$1
+	at com.tilebloom.game.GardenDiversityTest.matrixReplaysProductionControllerAndRecordsEvidence(GardenDiversityTest.kt:43)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.GardenDiversityTest$matrixReplaysProductionControllerAndRecordsEvidence$digest$1
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+16) themesAreStableAndCeramicContrastIsPreserved(com.tilebloom.game.GardenDiversityTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/GardenTheme
+	at com.tilebloom.game.GardenDiversityTest.themesAreStableAndCeramicContrastIsPreserved(GardenDiversityTest.kt:50)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.GardenTheme
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+17) versionSevenSaveStillRestores(com.tilebloom.game.GardenDiversityTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/VersionSevenGenerator
+	at com.tilebloom.game.GardenDiversityTest.versionSevenSaveStillRestores(GardenDiversityTest.kt:59)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.VersionSevenGenerator
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+18) restartAndSnapshotRestoreKeepTheSameThemeAndIdentity(com.tilebloom.game.GardenRenderingTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/GardenTheme
+	at com.tilebloom.game.GardenRenderingTest.restartAndSnapshotRestoreKeepTheSameThemeAndIdentity(GardenRenderingTest.kt:27)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.GardenTheme
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+19) palettesAreCompleteOpaqueDistinctAndReadable(com.tilebloom.game.GardenRenderingTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/GardenTheme
+	at com.tilebloom.game.GardenRenderingTest.palettesAreCompleteOpaqueDistinctAndReadable(GardenRenderingTest.kt:10)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.GardenTheme
+	... 34 more
+20) visibleBlockedArtworkDoesNotChangeSelectionOrHint(com.tilebloom.game.GardenRenderingTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/HintPolicy
+	at com.tilebloom.game.GardenRenderingTest.visibleBlockedArtworkDoesNotChangeSelectionOrHint(GardenRenderingTest.kt:53)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.HintPolicy
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+21) exactGeometryAndHitTestingOnCompactLayeredBoard(com.tilebloom.game.HintPresentationTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/presentation/board/HintPresentation
+	at com.tilebloom.game.HintPresentationTest.exactGeometryAndHitTestingOnCompactLayeredBoard(HintPresentationTest.kt:32)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.presentation.board.HintPresentation
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+22) invalidCoveredAndCollectedTargetsNeverDisplay(com.tilebloom.game.HintPresentationTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/presentation/board/HintPresentation
+	at com.tilebloom.game.HintPresentationTest.invalidCoveredAndCollectedTargetsNeverDisplay(HintPresentationTest.kt:48)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.presentation.board.HintPresentation
+	... 34 more
+23) terminalBoardsInvalidatePreviouslyAvailableTargets(com.tilebloom.game.HintPresentationTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/presentation/board/HintPresentation
+	at com.tilebloom.game.HintPresentationTest.terminalBoardsInvalidatePreviouslyAvailableTargets(HintPresentationTest.kt:60)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.presentation.board.HintPresentation
+	... 34 more
+24) authoritativeSingleTargetAndWalletAreIndependentOfFrames(com.tilebloom.game.HintPresentationTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/HintPolicy
+	at com.tilebloom.game.HintPresentationTest.authoritativeSingleTargetAndWalletAreIndependentOfFrames(HintPresentationTest.kt:13)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.HintPolicy
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+25) staticModeAndNewViewHaveNoSavedAnimationState(com.tilebloom.game.HintPresentationTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/HintPolicy
+	at com.tilebloom.game.HintPresentationTest.staticModeAndNewViewHaveNoSavedAnimationState(HintPresentationTest.kt:75)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.HintPolicy
+	... 34 more
+26) trayMatchAndCoveredRemovedSafety(com.tilebloom.game.HintTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/HintPolicy
+	at com.tilebloom.game.HintTest.trayMatchAndCoveredRemovedSafety(HintTest.kt:40)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.HintPolicy
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+27) avoidsFourthDistinctSymbol(com.tilebloom.game.HintTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/HintPolicy
+	at com.tilebloom.game.HintTest.avoidsFourthDistinctSymbol(HintTest.kt:93)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.HintPolicy
+	... 34 more
+28) budgetsAndGeneratedSymbols(com.tilebloom.game.HintTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/HintPolicy
+	at com.tilebloom.game.HintTest.budgetsAndGeneratedSymbols(HintTest.kt:52)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.HintPolicy
+	... 34 more
+29) chargesOnlyAcceptedHintsAndNeverRefills(com.tilebloom.game.HintTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/HintPolicy
+	at com.tilebloom.game.HintTest.chargesOnlyAcceptedHintsAndNeverRefills(HintTest.kt:27)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.HintPolicy
+	... 34 more
+30) migrationPreservesTrayHistoryAndAdvancementKeepsBalance(com.tilebloom.game.HintTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/HintPolicy
+	at com.tilebloom.game.HintTest.migrationPreservesTrayHistoryAndAdvancementKeepsBalance(HintTest.kt:72)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.HintPolicy
+	... 34 more
+31) staleRequestsAndTerminalBoardsCannotCharge(com.tilebloom.game.HintTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/HintPolicy
+	at com.tilebloom.game.HintTest.staleRequestsAndTerminalBoardsCannotCharge(HintTest.kt:63)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.HintPolicy
+	... 34 more
+32) allBlockingStatesExcludeTime(com.tilebloom.game.InterstitialFrequencyTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/ActiveGameplayConditions
+	at com.tilebloom.game.InterstitialFrequencyTest.allBlockingStatesExcludeTime(InterstitialFrequencyTest.kt:64)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.ActiveGameplayConditions
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+33) interstitialAndRewardedDisplayBothResetEvenWithoutReward(com.tilebloom.game.InterstitialFrequencyTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/InterstitialFrequencyPolicy
+	at com.tilebloom.game.InterstitialFrequencyTest.interstitialAndRewardedDisplayBothResetEvenWithoutReward(InterstitialFrequencyTest.kt:49)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.InterstitialFrequencyPolicy
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+34) exactThresholdAndOneSecondBelow(com.tilebloom.game.InterstitialFrequencyTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/InterstitialFrequencyPolicy
+	at com.tilebloom.game.InterstitialFrequencyTest.exactThresholdAndOneSecondBelow(InterstitialFrequencyTest.kt:18)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.InterstitialFrequencyPolicy
+	... 34 more
+35) repeatedStartStopDoesNotDoubleCountAndClockRollbackIsSafe(com.tilebloom.game.InterstitialFrequencyTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/InterstitialFrequencyPolicy
+	at com.tilebloom.game.InterstitialFrequencyTest.repeatedStartStopDoesNotDoubleCountAndClockRollbackIsSafe(InterstitialFrequencyTest.kt:90)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.InterstitialFrequencyPolicy
+	... 34 more
+36) unfinishedAndLostNeverConsumeVictory(com.tilebloom.game.InterstitialFrequencyTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/InterstitialFrequencyPolicy
+	at com.tilebloom.game.InterstitialFrequencyTest.unfinishedAndLostNeverConsumeVictory(InterstitialFrequencyTest.kt:24)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.InterstitialFrequencyPolicy
+	... 34 more
+37) requestAndFailureDoNotResetDuration(com.tilebloom.game.InterstitialFrequencyTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/InterstitialFrequencyPolicy
+	at com.tilebloom.game.InterstitialFrequencyTest.requestAndFailureDoNotResetDuration(InterstitialFrequencyTest.kt:58)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.InterstitialFrequencyPolicy
+	... 34 more
+38) invalidPersistenceIsSafeAndDurationIsBounded(com.tilebloom.game.InterstitialFrequencyTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/InterstitialFrequencyPolicy
+	at com.tilebloom.game.InterstitialFrequencyTest.invalidPersistenceIsSafeAndDurationIsBounded(InterstitialFrequencyTest.kt:83)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.InterstitialFrequencyPolicy
+	... 34 more
+39) duplicateAndOldVictoriesAreConsumedEvenIfNoAdDisplayed(com.tilebloom.game.InterstitialFrequencyTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/InterstitialFrequencyPolicy
+	at com.tilebloom.game.InterstitialFrequencyTest.duplicateAndOldVictoriesAreConsumedEvenIfNoAdDisplayed(InterstitialFrequencyTest.kt:29)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.InterstitialFrequencyPolicy
+	... 34 more
+40) restoredVictoryCannotReplayAfterRecreationOrRelaunch(com.tilebloom.game.InterstitialFrequencyTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/InterstitialFrequencyPolicy
+	at com.tilebloom.game.InterstitialFrequencyTest.restoredVictoryCannotReplayAfterRecreationOrRelaunch(InterstitialFrequencyTest.kt:43)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.InterstitialFrequencyPolicy
+	... 34 more
+41) launchPlayHomeNextAndReconnectDoNotCreateAnOpportunity(com.tilebloom.game.InterstitialFrequencyTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/InterstitialFrequencyPolicy
+	at com.tilebloom.game.InterstitialFrequencyTest.launchPlayHomeNextAndReconnectDoNotCreateAnOpportunity(InterstitialFrequencyTest.kt:77)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.InterstitialFrequencyPolicy
+	... 34 more
+42) shortLevelsAccumulateOnlyPlayableIntervals(com.tilebloom.game.InterstitialFrequencyTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/InterstitialFrequencyPolicy
+	at com.tilebloom.game.InterstitialFrequencyTest.shortLevelsAccumulateOnlyPlayableIntervals(InterstitialFrequencyTest.kt:9)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.InterstitialFrequencyPolicy
+	... 34 more
+43) relaunchRestoresDurationButNeverCountsClosedTime(com.tilebloom.game.InterstitialFrequencyTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/InterstitialFrequencyPolicy
+	at com.tilebloom.game.InterstitialFrequencyTest.relaunchRestoresDurationButNeverCountsClosedTime(InterstitialFrequencyTest.kt:36)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.InterstitialFrequencyPolicy
+	... 34 more
+44) freshEntryUsesAuthoritativeIdentityIncludingLongLevels(com.tilebloom.game.LevelNavigationTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/presentation/board/LevelNavigation
+	at com.tilebloom.game.LevelNavigationTest.freshEntryUsesAuthoritativeIdentityIncludingLongLevels(LevelNavigationTest.kt:13)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.presentation.board.LevelNavigation
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+45) homeAndPlayReuseExactBoardTrayHistorySeedAndWallet(com.tilebloom.game.LevelNavigationTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/presentation/board/LevelNavigation
+	at com.tilebloom.game.LevelNavigationTest.homeAndPlayReuseExactBoardTrayHistorySeedAndWallet(LevelNavigationTest.kt:21)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.presentation.board.LevelNavigation
+	... 34 more
+46) backPreservesTrayWalletAndPendingVictory(com.tilebloom.game.LevelNavigationTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/presentation/board/LevelNavigation
+	at com.tilebloom.game.LevelNavigationTest.backPreservesTrayWalletAndPendingVictory(LevelNavigationTest.kt:84)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.presentation.board.LevelNavigation
+	... 34 more
+47) pendingVictoryCannotReplayAndNextEntersGameplayExactlyOnce(com.tilebloom.game.LevelNavigationTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/presentation/board/LevelNavigation
+	at com.tilebloom.game.LevelNavigationTest.pendingVictoryCannotReplayAndNextEntersGameplayExactlyOnce(LevelNavigationTest.kt:49)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.presentation.board.LevelNavigation
+	... 34 more
+48) savedDefeatHomeAndResumeDoNotResetAttemptOrSpendCredits(com.tilebloom.game.LevelNavigationTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/presentation/board/LevelNavigation
+	at com.tilebloom.game.LevelNavigationTest.savedDefeatHomeAndResumeDoNotResetAttemptOrSpendCredits(LevelNavigationTest.kt:74)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.presentation.board.LevelNavigation
+	... 34 more
+49) recreationRestoresOnlyNavigationForTheSameLevel(com.tilebloom.game.LevelNavigationTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/presentation/board/LevelNavigation
+	at com.tilebloom.game.LevelNavigationTest.recreationRestoresOnlyNavigationForTheSameLevel(LevelNavigationTest.kt:35)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.presentation.board.LevelNavigation
+	... 34 more
+50) staleRecreationDuringAdvanceKeepsGameplay(com.tilebloom.game.LevelNavigationTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/presentation/board/LevelNavigation
+	at com.tilebloom.game.LevelNavigationTest.staleRecreationDuringAdvanceKeepsGameplay(LevelNavigationTest.kt:61)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.presentation.board.LevelNavigation
+	... 34 more
+51) verifiedAdvancementAndFailureKeepNavigationAndProgress(com.tilebloom.game.LevelNavigationTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/presentation/board/LevelNavigation
+	at com.tilebloom.game.LevelNavigationTest.verifiedAdvancementAndFailureKeepNavigationAndProgress(LevelNavigationTest.kt:95)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.presentation.board.LevelNavigation
+	... 34 more
+52) sharedResultThresholdAndRetry(com.tilebloom.game.LevelPreparationTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/LevelPreparation
+	at com.tilebloom.game.LevelPreparationTest.sharedResultThresholdAndRetry(LevelPreparationTest.kt:10)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.LevelPreparation
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+53) obsoleteResultsRejected(com.tilebloom.game.LevelPreparationTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/LevelPreparation
+	at com.tilebloom.game.LevelPreparationTest.obsoleteResultsRejected(LevelPreparationTest.kt:23)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.LevelPreparation
+	... 34 more
+54) deadlockNeverAdvances(com.tilebloom.game.LevelsTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/PuzzleAnalyzerTestKt
+	at com.tilebloom.game.LevelsTest.deadlockNeverAdvances(LevelsTest.kt:52)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.PuzzleAnalyzerTestKt
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+55) evenSymbols(com.tilebloom.game.LevelsTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/LevelsTest$evenSymbols$lambda$6$$inlined$groupingBy$1
+	at com.tilebloom.game.LevelsTest.evenSymbols(LevelsTest.kt:98)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.LevelsTest$evenSymbols$lambda$6$$inlined$groupingBy$1
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+56) restartClearsCopiesAndRapidSuccessivePairsRemainIndependent(com.tilebloom.game.MatchEffectsTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/presentation/board/MatchEffects
+	at com.tilebloom.game.MatchEffectsTest.restartClearsCopiesAndRapidSuccessivePairsRemainIndependent(MatchEffectsTest.kt:33)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.presentation.board.MatchEffects
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+57) acceptedMatchIsImmediateAndCopiesExpireWithoutChangingGame(com.tilebloom.game.MatchEffectsTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/presentation/board/MatchEffects
+	at com.tilebloom.game.MatchEffectsTest.acceptedMatchIsImmediateAndCopiesExpireWithoutChangingGame(MatchEffectsTest.kt:12)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.presentation.board.MatchEffects
+	... 34 more
+58) disabledEffectsAndRecreatedPresentationNeverRetainGhosts(com.tilebloom.game.MatchEffectsTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/presentation/board/MatchEffects
+	at com.tilebloom.game.MatchEffectsTest.disabledEffectsAndRecreatedPresentationNeverRetainGhosts(MatchEffectsTest.kt:51)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.presentation.board.MatchEffects
+	... 34 more
+59) deadlockNeverAdvances(com.tilebloom.game.ProgressTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/PuzzleAnalyzerTestKt
+	at com.tilebloom.game.ProgressTest.deadlockNeverAdvances(ProgressTest.kt:20)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.PuzzleAnalyzerTestKt
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 34 more
+60) generatedTransitionsAndUndoIsolation(com.tilebloom.game.ProgressTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/ProgressController$undo$1
+	at com.tilebloom.game.domain.ProgressController.undo(PlayerProgress.kt:99)
+	at com.tilebloom.game.ProgressTest.generatedTransitionsAndUndoIsolation(ProgressTest.kt:19)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.ProgressController$undo$1
+	... 35 more
+61) unfinishedHistoryAndCreditsRestore(com.tilebloom.game.ProgressTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/ProgressController$undo$1
+	at com.tilebloom.game.domain.ProgressController.undo(PlayerProgress.kt:99)
+	at com.tilebloom.game.ProgressTest.unfinishedHistoryAndCreditsRestore(ProgressTest.kt:12)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.ProgressController$undo$1
+	... 35 more
+62) migrationKeepsCompletionsIdentityAndMovesExactlyOnce(com.tilebloom.game.UndoCreditTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/ProgressController$undo$1
+	at com.tilebloom.game.domain.ProgressController.undo(PlayerProgress.kt:99)
+	at com.tilebloom.game.UndoCreditTest.migrationKeepsCompletionsIdentityAndMovesExactlyOnce(UndoCreditTest.kt:76)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.ProgressController$undo$1
+	... 35 more
+63) threeCreditsThenRejectWithoutChangingBoard(com.tilebloom.game.UndoCreditTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/ProgressController$undo$1
+	at com.tilebloom.game.domain.ProgressController.undo(PlayerProgress.kt:99)
+	at com.tilebloom.game.UndoCreditTest.threeCreditsThenRejectWithoutChangingBoard(UndoCreditTest.kt:15)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.ProgressController$undo$1
+	... 35 more
+64) callbackExactlyOnceAndCreditAllowsExactlyOneUndo(com.tilebloom.game.UndoCreditTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/ProgressController$undo$1
+	at com.tilebloom.game.domain.ProgressController.undo(PlayerProgress.kt:99)
+	at com.tilebloom.game.UndoCreditTest.callbackExactlyOnceAndCreditAllowsExactlyOneUndo(UndoCreditTest.kt:28)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.ProgressController$undo$1
+	... 35 more
+65) emptyAndInvalidRestorationDoNotCharge(com.tilebloom.game.UndoCreditTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/ProgressController$undo$1
+	at com.tilebloom.game.domain.ProgressController.undo(PlayerProgress.kt:99)
+	at com.tilebloom.game.UndoCreditTest.emptyAndInvalidRestorationDoNotCharge(UndoCreditTest.kt:21)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.ProgressController$undo$1
+	... 35 more
+66) replayAfterVictoryKeepsSpentCreditsAndUnlockedLevel(com.tilebloom.game.UndoCreditTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/ProgressController$undo$1
+	at com.tilebloom.game.domain.ProgressController.undo(PlayerProgress.kt:99)
+	at com.tilebloom.game.UndoCreditTest.replayAfterVictoryKeepsSpentCreditsAndUnlockedLevel(UndoCreditTest.kt:58)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.ProgressController$undo$1
+	... 35 more
+67) restartReplayAndNavigationKeepBalance(com.tilebloom.game.UndoCreditTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/ProgressController$undo$1
+	at com.tilebloom.game.domain.ProgressController.undo(PlayerProgress.kt:99)
+	at com.tilebloom.game.UndoCreditTest.restartReplayAndNavigationKeepBalance(UndoCreditTest.kt:50)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.ProgressController$undo$1
+	... 35 more
+68) repeatedRoundTripsKeepZeroAndExactRestoredPair(com.tilebloom.game.UndoCreditTest)
+java.lang.NoClassDefFoundError: com/tilebloom/game/domain/ProgressController$undo$1
+	at com.tilebloom.game.domain.ProgressController.undo(PlayerProgress.kt:99)
+	at com.tilebloom.game.UndoCreditTest.repeatedRoundTripsKeepZeroAndExactRestoredPair(UndoCreditTest.kt:80)
+	... 32 trimmed
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.domain.ProgressController$undo$1
+	... 35 more
+
+FAILURES!!!
+Tests run: 251,  Failures: 68
+
+Traceback (most recent call last):
+  File "/home/walid/Documents/projects/androidGames/TileBloom/tools/verify_offline.py", line 43, in <module>
+    run('java','-cp',':'.join([str(testclasses),stdlib,junit,hamcrest]),'org.junit.runner.JUnitCore',
+  File "/home/walid/Documents/projects/androidGames/TileBloom/tools/verify_offline.py", line 25, in run
+    subprocess.run([str(a) for a in args], check=True)
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['java', '-cp', '/home/walid/Documents/projects/androidGames/TileBloom/app/build/offline/test-classes:/home/walid/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.9.24/9928532f12c66ad816a625b3f9984f8368ca6d2b/kotlin-stdlib-1.9.24.jar:/home/walid/.gradle/caches/modules-2/files-2.1/junit/junit/4.13.2/8ac9e16d933b6fb43bc7f576336b8f4d7eb5ba12/junit-4.13.2.jar:/home/walid/.gradle/caches/modules-2/files-2.1/org.hamcrest/hamcrest-core/1.3/42a25dc3219429f0e5d060061f71acb49bf010a0/hamcrest-core-1.3.jar', 'org.junit.runner.JUnitCore', 'com.tilebloom.game.AdRewardTest', 'com.tilebloom.game.AdvancedMahjongTest', 'com.tilebloom.game.BoardGeometryTest', 'com.tilebloom.game.BotanicalExpansionTest', 'com.tilebloom.game.CompletionEntryTest', 'com.tilebloom.game.DifficultyTest', 'com.tilebloom.game.EndlessTest', 'com.tilebloom.game.FullScreenAdvertisingTest', 'com.tilebloom.game.GameReliabilityTest', 'com.tilebloom.game.GameTest', 'com.tilebloom.game.GardenDiversityTest', 'com.tilebloom.game.GardenRenderingTest', 'com.tilebloom.game.HintPresentationTest', 'com.tilebloom.game.HintTest', 'com.tilebloom.game.InterstitialFrequencyTest', 'com.tilebloom.game.LevelNavigationTest', 'com.tilebloom.game.LevelPreparationTest', 'com.tilebloom.game.LevelsTest', 'com.tilebloom.game.MatchEffectsTest', 'com.tilebloom.game.ProgressTest', 'com.tilebloom.game.PuzzleAnalyzerTest', 'com.tilebloom.game.RedesignTest', 'com.tilebloom.game.ScreenPresentationTest', 'com.tilebloom.game.TileTapGestureTest', 'com.tilebloom.game.TrayTest', 'com.tilebloom.game.UndoCreditTest', 'com.tilebloom.game.UndoTest']' returned non-zero exit status 1.

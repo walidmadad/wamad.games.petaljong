@@ -129,3 +129,7 @@ CODEX 30 final diagnostic result: **244/244 JVM tests PASS**, plus **6/6 focused
 ### CODEX 31 garden rendering
 
 The existing five level themes now supply an immutable screen palette: full-screen gradient, status panel, tray, empty holders, controls, ceramics, shadows and Hint. The board itself is transparent. Side-blocked botanical symbols remain visible with muted faces; opaque upper tiles cover lower artwork in physical draw order. Generator v8, historical generators, saves, credits and ads are unchanged. Android screenshots and a fresh standard APK could not be verified inside the restricted sandbox; see [CODEX 31 report](CODEX_31_REPORT.md) and [host commands](docs/codex31/HOST_COMMANDS.md).
+
+### CODEX 32: next-level preparation
+
+Next Level now shares a background preparation task begun after durable victory. Slow preparation shows a theme-aware botanical loading surface with the real next level and Retry; ready boards skip it. Search/geometry optimizations retain generator version, difficulty and witness validation. See [CODEX_32_REPORT.md](CODEX_32_REPORT.md) and [host JVM measurements](docs/codex32/isolated-performance.md). Android runtime, fresh standard APK and screenshots remain pending because Gradle cannot run in this sandbox.

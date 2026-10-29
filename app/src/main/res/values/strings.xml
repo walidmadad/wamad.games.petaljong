@@ -107,4 +107,7 @@
 <string name="offline_heading">YOU\'RE OFFLINE</string>
 <string name="checking_connection">Checking connection</string>
 <string name="settings_unavailable">Network settings unavailable</string>
+    <string name="loading_level">Preparing Level %1$d</string>
+    <string name="loading_error">Garden not ready.</string>
+    <string name="loading_retry">Retry</string>
 </resources>

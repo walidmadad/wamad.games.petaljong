@@ -1,0 +1,1 @@
+PASS: all 24 samples retain identical target, tier, selected layout, selected geometry attempts, candidate count, analyzer nodes and selected fallback flag. This compares metadata, not an exhaustive board identity proof.

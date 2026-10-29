@@ -57,9 +57,11 @@ class MainActivity : Activity() {
     private val compact get() = resources.configuration.screenHeightDp < 740 || resources.configuration.fontScale > 1.3f
     private val refreshListener: () -> Unit = {
         if (!isDestroyed && ::navigation.isInitialized) {
+            val boardStart = System.nanoTime()
             navigation.synchronize(session.level.id)
             if (::board.isInitialized) { board.load(game); tray.clearFeedback() }
             update()
+            android.util.Log.i("TileBloomPreparation", "level=${session.level.id} boardAndPresentationNs=${System.nanoTime()-boardStart}")
         }
     }
 
@@ -81,6 +83,7 @@ class MainActivity : Activity() {
     private fun completedByPlayer() {
         update() // Persists actual victory and stops active time before considering an ad.
         if (game.status != Status.WON || !GameStore.persistVictory(applicationContext)) return
+        GameStore.prepareVictory()
         val level = session.level.id
         val eligible = AdExposure.policy.victory(level, true, SystemClock.elapsedRealtime())
         val saved = AdExposure.save() // Consume before asynchronous presentation.
@@ -482,29 +485,35 @@ class MainActivity : Activity() {
 
     private fun advance() {
         if (!online || AdExposure.busy || pendingVictory != null || GameStore.transitioning || !session.canAdvance) return
-        GameStore.transitioning = true
+        GameStore.advance(applicationContext)
         update()
-        val expected = session.level.id
-        Thread {
-            val result = runCatching {
-                val definition = progress.prepareNext() ?: error("No pending victory")
-                val state = progress.nextProgress(definition) ?: error("Stale transition")
-                check(GameStore.persistTransition(applicationContext, state))
-                definition
+        root.postDelayed(loadingRefresh, 250)
+    }
+
+    private var loadingScreen: LevelLoadingScreen? = null
+    private val loadingRefresh = object : Runnable {
+        override fun run() {
+            if (!isDestroyed && resumed) {
+                updateLoading()
+                if (GameStore.transitioning) root.postDelayed(this, 100)
             }
-            runOnUiThread {
-                result.onSuccess {
-                    if (session.level.id == expected && progress.commitNext(it)) {
-                        DifficultyPolicy.transitionMessage(session.level.id)?.let { message ->
-                            Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }.onFailure { Toast.makeText(applicationContext, R.string.generation_error, Toast.LENGTH_LONG).show() }
-                GameStore.transitioning = false
-                // The current activity observes the committed identity even if its predecessor rotated.
-                GameStore.onChanged?.invoke()
-            }
-        }.start()
+        }
+    }
+    private fun updateLoading() {
+        if (!::navigation.isInitialized) return
+        val target = session.level.id + if (session.canAdvance) 1 else 0
+        val error = GameStore.transitionError != null
+        val visible = online && !showConnection && navigation.state.screen == GardenScreen.GAME && !AdExposure.busy &&
+            (error || LevelLoadingPolicy.visible(GameStore.transitionStartedAt, System.nanoTime()/1_000_000, GameStore.transitioning))
+        if (visible) {
+            val screen = loadingScreen ?: LevelLoadingScreen(this) {
+                if (online && !AdExposure.busy) {
+                    GameStore.advance(applicationContext, retry = true); update(); root.postDelayed(loadingRefresh, 250)
+                }
+            }.also { loadingScreen = it; root.addView(it, FrameLayout.LayoutParams(-1,-1)) }
+            if (screen.visibility != View.VISIBLE || error) screen.present(target, error, resumed)
+            screen.visibility = View.VISIBLE; screen.bringToFront()
+        } else { loadingScreen?.visibility = View.GONE; loadingScreen?.stopAnimation() }
     }
 
     fun refreshPrivacyOptions() {
@@ -513,6 +522,7 @@ class MainActivity : Activity() {
     }
 
     private fun update() {
+        updateLoading()
         accountGameplay()
         if (online && resumed) {
             if (AdvertisingService.provider === RewardedAdManager) RewardedAdManager.load()
@@ -606,7 +616,7 @@ class MainActivity : Activity() {
         } else getString(if (game.tray.size == 4) R.string.tray_full_detail else R.string.unrecoverable_detail)
         next.visibility = if (presentation.advance) View.VISIBLE else View.GONE
         next.isEnabled = online && !GameStore.transitioning && pendingVictory == null && !AdExposure.busy
-        next.setText(if (GameStore.transitioning) R.string.preparing_garden else R.string.next_level)
+        next.setText(R.string.next_level)
         GardenStyle.primaryIcon(next, R.drawable.ic_next)
         feedback.visibility = if (terminal) View.GONE else View.VISIBLE
         feedback.setText(if (game.status == Status.LOST) R.string.defeat_hint else R.string.instruction)
@@ -765,10 +775,11 @@ class MainActivity : Activity() {
         }
     }
     override fun onResume() {
-        super.onResume(); resumed = true; update()
+        super.onResume(); resumed = true; update(); loadingScreen?.let { it.visibility = View.GONE }; loadingRefresh.run()
     }
     override fun onPause() {
         resumed = false; pendingVictory = null
+        loadingScreen?.stopAnimation(); root.removeCallbacks(loadingRefresh)
         accountGameplay(); AdExposure.save()
         super.onPause()
     }
@@ -790,6 +801,7 @@ class MainActivity : Activity() {
         ProgressRepository.awaitWrites()
     }
     override fun onDestroy() {
+        loadingScreen?.stopAnimation(); root.removeCallbacks(loadingRefresh)
         if (AdExposure.changed === exposureChanged) AdExposure.changed = null
         connectivity.destroy()
         rewardDialog?.setOnDismissListener(null)
