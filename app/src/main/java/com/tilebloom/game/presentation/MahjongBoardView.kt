@@ -45,6 +45,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
     val remainingTileCount get() = game.remaining.size
     fun tileCenter(id: Int): BoardPoint? = game.remaining.find { it.id == id }?.let { geometry().face(it).center }
     init {
+        isSoundEffectsEnabled = false
         isClickable = true
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
         refresh()

@@ -1,7 +1,8 @@
 {
-  "status": "OLD APK; contains no CODEX 37 audio resources",
-  "timestamp": "2026-10-29T10:17:10.928445+00:00",
-  "bytes": 7567883,
-  "sha256": "6955ca4434417facc2bb20f8243d9fd28372c48c1a39ce75158936bb0695d709",
-  "package": "com.tilebloom.game"
+  "status": "OLD: predates sound-effects-only correction; contains previous music resource; not a deliverable for this change",
+  "path": "app/build/outputs/apk/debug/app-debug.apk",
+  "bytes": 7732535,
+  "modified_utc": "2026-10-29T10:41:17.545938+00:00",
+  "sha256": "b7e3759b06a04c04e0f2455d728467fc90269de4585087606e11c986a06e1c9a",
+  "certificate_sha256": "fc1828f63432530e788baa4d69c70594157dfad0312a977e710158393e4110f6"
 }

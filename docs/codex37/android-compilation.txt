@@ -61,22 +61,22 @@ import android.test.ActivityInstrumentationTestCase2
 app/src/main/java/com/tilebloom/game/domain/Game.kt:155:73: warning: name shadowed: t
                             candidate.current = candidate.current.map { t -> if (t.id == it.tileId) t.copy(revealed = true) else t }
                                                                         ^
-app/src/main/java/com/tilebloom/game/presentation/GardenControls.kt:85:58: warning: 'scaledDensity: Float' is deprecated. Deprecated in Java
+app/src/main/java/com/tilebloom/game/presentation/GardenControls.kt:86:58: warning: 'scaledDensity: Float' is deprecated. Deprecated in Java
             ink.textSize = 12 * resources.displayMetrics.scaledDensity
                                                          ^
-app/src/main/java/com/tilebloom/game/presentation/GardenControls.kt:100:58: warning: 'scaledDensity: Float' is deprecated. Deprecated in Java
+app/src/main/java/com/tilebloom/game/presentation/GardenControls.kt:101:58: warning: 'scaledDensity: Float' is deprecated. Deprecated in Java
             ink.textSize = 11 * resources.displayMetrics.scaledDensity
                                                          ^
-app/src/main/java/com/tilebloom/game/presentation/MahjongBoardView.kt:262:29: warning: 'announceForAccessibility(CharSequence!): Unit' is deprecated. Deprecated in Java
+app/src/main/java/com/tilebloom/game/presentation/MahjongBoardView.kt:263:29: warning: 'announceForAccessibility(CharSequence!): Unit' is deprecated. Deprecated in Java
                             announceForAccessibility(context.getString(R.string.mystery_revealed, BotanicalSymbols.label(context, before.first { it.id == id }.symbol)))
                             ^
 app/src/main/java/com/tilebloom/game/presentation/MainActivity.kt:306:17: warning: 'announceForAccessibility(CharSequence!): Unit' is deprecated. Deprecated in Java
                 announceForAccessibility(getString(R.string.checking_connection))
                 ^
-app/src/main/java/com/tilebloom/game/presentation/MainActivity.kt:846:16: warning: 'setter for statusBarColor: Int' is deprecated. Deprecated in Java
+app/src/main/java/com/tilebloom/game/presentation/MainActivity.kt:852:16: warning: 'setter for statusBarColor: Int' is deprecated. Deprecated in Java
         window.statusBarColor = palette.backgroundTop
                ^
-app/src/main/java/com/tilebloom/game/presentation/MainActivity.kt:847:16: warning: 'setter for navigationBarColor: Int' is deprecated. Deprecated in Java
+app/src/main/java/com/tilebloom/game/presentation/MainActivity.kt:853:16: warning: 'setter for navigationBarColor: Int' is deprecated. Deprecated in Java
         window.navigationBarColor = palette.backgroundBottom
                ^
 Diagnostic main + Android test compilation PASS; not a Gradle build or executed instrumentation.

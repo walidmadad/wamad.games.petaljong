@@ -1,7 +1,18 @@
 {
+  "button.wav": {
+    "bytes": 5116,
+    "seconds": 0.11501133786848072,
+    "channels": 1,
+    "sample_rate": 22050,
+    "peak": 0.68,
+    "clipped_samples": 0,
+    "sha256": "7d130a423d032af750923dac83845b1fd8fc96807468fbba79672a3abe17b445"
+  },
   "defeat.wav": {
     "bytes": 47672,
     "seconds": 1.08,
+    "channels": 1,
+    "sample_rate": 22050,
     "peak": 0.68,
     "clipped_samples": 0,
     "sha256": "ab13bd09793c5ec5e8ec3c300fc498b68ff303f5963f2f0a462f85b8b2bce1a9"
@@ -9,20 +20,26 @@
   "hide.wav": {
     "bytes": 12392,
     "seconds": 0.28,
+    "channels": 1,
+    "sample_rate": 22050,
     "peak": 0.68,
     "clipped_samples": 0,
     "sha256": "787616b0b29506bdf554f38c375de43077e5c8d5ae9fde577970cf59fe0aa473"
   },
   "hint.wav": {
     "bytes": 36648,
-    "seconds": 0.83,
+    "seconds": 0.8300226757369614,
+    "channels": 1,
+    "sample_rate": 22050,
     "peak": 0.68,
     "clipped_samples": 0,
     "sha256": "82f417c1a36321293611afabfe2ebe22c30f808725127ea44709403f8c7ad337"
   },
   "match.wav": {
     "bytes": 32236,
-    "seconds": 0.73,
+    "seconds": 0.7299773242630385,
+    "channels": 1,
+    "sample_rate": 22050,
     "peak": 0.68,
     "clipped_samples": 0,
     "sha256": "557ad524c48c5b503705fcf60c7c2a63ef4cf392db37457627993a8e80945e66"
@@ -30,6 +47,8 @@
   "restart.wav": {
     "bytes": 22094,
     "seconds": 0.5,
+    "channels": 1,
+    "sample_rate": 22050,
     "peak": 0.68,
     "clipped_samples": 0,
     "sha256": "b00a895055aa314c98aeca2c5c4fd6522f37f30d0e56953f030f214a7f48999c"
@@ -37,6 +56,8 @@
   "reveal.wav": {
     "bytes": 14156,
     "seconds": 0.32,
+    "channels": 1,
+    "sample_rate": 22050,
     "peak": 0.68,
     "clipped_samples": 0,
     "sha256": "18d7fbce82315ae07ac77e806ebe9fc244d7faea0e1e5eddb2d5ae456ff0fbdc"
@@ -44,6 +65,8 @@
   "select.wav": {
     "bytes": 9746,
     "seconds": 0.22,
+    "channels": 1,
+    "sample_rate": 22050,
     "peak": 0.68,
     "clipped_samples": 0,
     "sha256": "103e69b51cc2646eccb7a65bad0367cde3bc4e53cc30fa63383efbe3b327210d"
@@ -51,6 +74,8 @@
   "undo.wav": {
     "bytes": 20330,
     "seconds": 0.46,
+    "channels": 1,
+    "sample_rate": 22050,
     "peak": 0.68,
     "clipped_samples": 0,
     "sha256": "664909a74e3df988a33a3bef3c56021ef8bf95d4f65084f6ff32a2aa823de0e9"
@@ -58,16 +83,10 @@
   "victory.wav": {
     "bytes": 59138,
     "seconds": 1.34,
+    "channels": 1,
+    "sample_rate": 22050,
     "peak": 0.68,
     "clipped_samples": 0,
     "sha256": "d6e44f3e529d594c234a06c7792d2791ad4572420f91fc3f0344f0366cec6ca2"
-  },
-  "zen_garden.ogg": {
-    "bytes": 100688,
-    "seconds": 48.0,
-    "peak": 0.6764,
-    "clipped_samples": 0,
-    "sha256": "b943e5089bd0c151ad5863bb780a383c959186550bb58724891277e1aa886790",
-    "boundary_step": 0.0
   }
 }

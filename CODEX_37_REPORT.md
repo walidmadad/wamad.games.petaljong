@@ -1,33 +1,93 @@
-# CODEX 37 — TileBloom audio
+# CODEX 37 — Sound effects only and persistent mute
 
-Implementation is complete in source. **A fresh APK and Android playback verification are blocked by this environment.** No installation, uninstall, data clearing, push or publication was performed. Existing unrelated untracked files are excluded from this change.
+Source implementation is complete. Fresh Gradle APK generation, Android Lint,
+and real Android playback verification are blocked by the execution environment.
+The APK already in the output folder is OLD and contains the previous music
+resource; it must not be treated as the sound-effects-only deliverable.
 
-A. Architecture: `GameAudioManager` owns one three-stream SoundPool, one asynchronously prepared MediaPlayer and an AudioFocusRequest. It retains application context only. The pure Kotlin `AudioPolicy` receives an injectable backend for deterministic tests. Resources load once per Activity lifetime and release on destruction; level navigation does not recreate them.
+A. Implemented effects: ceramic-inspired selection, gentle mystery reveal/hide,
+crystalline matching, Hint sparkle, reverse Undo, Restart, victory, descending
+defeat, and a short navigation button click. Confirmed interactions alone emit
+cues. Invalid actions emit nothing; end-state transitions emit once. Mystery
+collection/direct matching no longer emits an erroneous hide cue. Gameplay,
+Option C mystery rules, four-slot tray, credits, generation, progression and
+connectivity requirements were not changed. Optional match pitch variation is
+omitted. All MediaPlayer/music playback, loop generation, the bundled loop,
+music preferences in the policy, settings dialog and settings icon were removed.
 
-B. Effects: nine original PCM resources provide ceramic-style selection, papery reveal/hide textures, crystalline matching, Hint chime, Undo, Restart, victory flourish and gentle defeat descent. `GameplayAudio.events` observes only accepted player interactions, including mystery switching/direct pairing. Board animations, update(), restoration and ad dismissal do not emit cues. Hint follows accepted credit use; Undo/Restart run their authoritative action once before emitting. Identical effects are throttled for 65 ms; SoundPool limits overlap to three streams. Optional consecutive-match pitch escalation is omitted.
+B. Architecture: the existing dedicated GameAudioManager now owns only a
+three-stream SoundPool with sonification attributes. All ten resources preload
+once per Activity lifetime; interactions reuse loaded resources without decoding.
+Not-yet-loaded cues are dropped, never queued. Playback uses 30% gain and no
+looping. Per-cue 65 ms throttling also bounds alternating rapid taps; the backend
+stops the oldest stream above three. Application context only is retained.
+Destruction releases resources, with an idempotent close. Pure Kotlin AudioPolicy
+and GameplayAudio support deterministic fake-backend tests.
 
-C. Music: a locally bundled 48-second mono Ogg Vorbis original slow garden score uses synthesized piano/harp-like partials, arpeggios and a quiet ambient bass texture, without vocals or percussion. Note tails wrap; a 350 ms phrase-edge taper protects the encoded boundary. MediaPlayer loops and preserves its playback position across pauses. No network playback or new dependency is used.
+C. Provenance: original procedural synthesis in tools/generate_audio.py, using
+Python standard library only, with no external samples or recordings. Source
+and audio assets are dedicated under CC0-1.0; see AUDIO_ASSETS.md. Ten mono
+22.05 kHz 16-bit PCM assets total 259,528 bytes (about 253 KiB). Signal analysis
+found no clipped samples; detailed durations/hashes are in docs/codex37/assets.json.
+Procedural timbres have not been approved through listening.
 
-D. Provenance: `tools/generate_audio.py` contains the complete reproducible synthesis and score. No outside samples or compositions were used. Source and assets are dedicated under CC0-1.0; see AUDIO_ASSETS.md. These are synthesized timbres, not recordings of acoustic instruments. Real listening and artistic approval remain pending.
+D. Controls: one visible speaker/crossed-speaker button on Home and the gameplay
+header, also retained in the offline panel. Each target is 48 dp and uses garden
+surfaces/colors. TalkBack text states sound on/off and the available action.
+One tap updates every control and immediately stops active effects when muted.
+Platform click sounds are disabled on the board and styled buttons, including
+the mute buttons, so Android's default clicks cannot bypass the game mute.
 
-E. Master Mute: header speaker/crossed-speaker buttons immediately suppress game music and stop active effect streams. Mute leaves individual preferences intact. Unmuting never enables separately disabled music. Descriptions explicitly refer to game audio; they make no promise about ad audio.
+E. Persistence: existing garden_audio SharedPreferences store the selected mute
+state using apply(). Defaults are effects enabled and unmuted. Previous disabled
+effects migrate into mute, so existing silence is respected; unmuting restores
+effects. The obsolete music key is ignored and removed on preference changes.
+Changing levels never resets this state. Android instrumentation tests cover
+manager recreation and migration in isolated namespaces without player data.
 
-F. Settings: gold vector icons and 48 dp targets expose a forest-green/ivory dialog with native Music, Sound Effects and Mute All Game Audio switches. Controls appear on Home, the gameplay header, and inside the offline connection panel (including its gameplay overlay). Original four bottom controls are retained. TalkBack labels are present; actual accessibility/layout testing is pending.
+F. Lifecycle/ads: playback requires resumed/focused foreground state, audio focus,
+no full-screen ad, and unmuted effects. Background, focus loss, mute and ads stop
+current streams; no queue or past events replay afterward. Audio focus is
+abandoned on suppression. The existing AdExposure gate covers rewarded and
+interstitial presentation. AdMob, Google UMP, rewards, frequency, and SDK audio
+configuration are unchanged. No service or third-party audio dependency was added.
 
-G. Persistence: independent `garden_audio` SharedPreferences save effects/music/master mute, with defaults true/false/false. Effects playback is 0.30 and music 0.18; Android media volume remains authoritative. No progress, credit, undo, generator or saved-board persistence code changed. `apply()` updates memory immediately and schedules durable writes through Android.
+G. Automated verification: all 304 JVM tests passed in 172.745 seconds, including
+the existing gameplay/progression/advertising regressions and 21 sound-policy
+tests. Final results are recorded in docs/codex37/tests-final.txt.
+Final main and instrumentation Kotlin compilation plus Android resource
+compilation/linking passed using the cached compiler on Java 17; see
+android-compilation.txt. These are diagnostics, not Gradle task success or Android
+instrumentation execution. Fake-backend tests cover every cue under mute/ad
+suppression, unmute, background/focus, preference recreation, level changes,
+rapid alternating cues, accepted Hint/Undo/Restart, selection, reveal, hide,
+mystery collection/direct pairing, and once-only victory/defeat.
 
-H. Lifecycle: playback requires resumed, focused foreground state, granted audio focus, no full-screen ad and allowed preferences. All focus losses, including duck requests, pause music and stop effects. Focus gain resumes only when permitted. Backgrounding abandons focus. Requests occur only while foreground/focused, respecting Android 15+ top-app requirements. Settings and other windows also suspend playback while the Activity loses window focus. Music never resumes solely because an ad callback or lifecycle callback occurs while muted.
+H. Android playback: NOT VERIFIED. ADB cannot open its listener (Operation not
+permitted). No speaker/headphone listening, audible quality, device latency,
+TalkBack interaction, relaunch interaction, or live-ad audio test is claimed.
+Follow docs/codex37/PLAYBACK_CHECKLIST.md on an available Android host/device.
 
-I. Advertising: the existing shared `AdExposure` gate notifies audio before SDK presentation and after dismissal/failure. Both rewarded and interstitial ads suspend game audio. Existing reward transactions, frequency policy, consent and SDK audio settings are untouched.
+I. APK/build: all three exact requested wrapper commands were attempted and
+failed before task execution at the read-only Gradle wrapper lock. Installed
+Gradle 8.13 with a writable temporary user home also failed before task execution:
+Could not determine a usable wildcard IP for this machine. Tests/assemble/lint
+therefore have no Gradle success, and no fresh APK was generated. The existing
+APK is 7,732,535 bytes, modified 2026-10-29T10:41:17.545938+00:00, SHA-256
+b7e3759b06a04c04e0f2455d728467fc90269de4585087606e11c986a06e1c9a.
+Its signature verifies against required certificate
+fc1828f63432530e788baa4d69c70594157dfad0312a977e710158393e4110f6.
+It contains the PREVIOUS implementation and music resource. It was not replaced
+or installed. Signing configuration and keys are unchanged. Use Java 17 and
+tools/host_verify.sh on a normal host to build/check the new APK; verify the
+certificate before an in-place adb install -r. Never uninstall or clear data.
 
-J. Performance: all audio assets total approximately 347 KiB (355,100 bytes). Effects are preloaded; missing/not-yet-loaded effects are skipped instead of queued. Music prepares asynchronously. There is no audio polling, tap-time decoding or third-party audio library. Signal analysis found no clipped samples and a zero decoded endpoint step for the loop. Device memory, latency and audible looping are not measured.
+J. Git: use the existing .tilebloom-git history with commit message
+feat: add premium game sound effects with persistent mute control.
+No history rewrite, signing keys, unrelated untracked files, push, or publication.
 
-K. Automated checks: the full cached-compiler JUnit run passed **308 tests** (283 existing regressions plus the first 25 audio tests) in 202.349 seconds. The final focused run passed **all 27 audio tests**, including the two subsequently added accepted-action tests (310 distinct passing tests across both runs). Final main/instrumentation source and resource compilation passed. See docs/codex37 for evidence. The cached compiler requires Java 17. These diagnostics are distinct from Gradle test/lint execution. A device instrumentation test verifies saved preferences across manager recreation in an isolated namespace; it is compiled but not executed.
-
-L. Android verification: ADB fails to open its listener (`Operation not permitted`). No on-device effect playback, loop listening, toggle/relaunch interaction, calls/focus interruptions, TalkBack or live rewarded/interstitial playback could be verified. A fake backend verifies policy behavior, not speakers or SDK runtime behavior.
-
-M. APK/build: all three requested wrapper commands were attempted and fail before task execution because the wrapper lock is read-only. Retrying installed Gradle 8.13 with Java 17 and a writable temporary Gradle home fails creating its lock service (`Could not determine a usable wildcard IP`). Consequently assemble and lint have not passed and there is **no fresh CODEX 37 APK**. Existing APK details are archived in docs/codex37/existing-apk.json: 7,567,883 bytes, 2026-10-29T10:17:10.928445Z, SHA-256 `6955ca4434417facc2bb20f8243d9fd28372c48c1a39ce75158936bb0695d709`, package `com.tilebloom.game`. Its alignment and signature verify; its certificate remains `fc1828f63432530e788baa4d69c70594157dfad0312a977e710158393e4110f6`. It has no bundled raw audio and does not contain this implementation. Signing files are untouched. Run tools/host_verify.sh in a normal host terminal to produce and verify the fresh APK.
-
-N. Git: changes are committed using the existing `.tilebloom-git` history with message `feat: add relaxing garden music and customizable game audio`. No history rewrite, push or signing credentials are included.
-
-O. Remaining work: successful standard Gradle tests/build/lint and fresh APK verification; Android instrumentation; real listening and timbre/loop tuning as necessary; foreground/focus/call and live-ad device testing; compact-screen and enlarged-font/TalkBack review. No claim of premium sound quality or completed Android testing is made.
+K. Limitations: a fresh signed APK, successful standard Gradle tests and Lint,
+Android instrumentation, listening/timbre tuning, and actual device lifecycle/ad/
+accessibility checks remain outstanding. Historical tests.txt and audio-tests.txt
+in docs/codex37 describe the superseded music implementation; tests-final.txt
+and this report describe the correction.

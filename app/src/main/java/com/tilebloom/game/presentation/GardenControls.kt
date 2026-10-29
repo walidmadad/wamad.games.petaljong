@@ -23,6 +23,7 @@ internal object GardenStyle {
     }
     fun button(button: Button, primary: Boolean = false) {
         val context = button.context
+        button.isSoundEffectsEnabled = false
         button.isAllCaps = false
         button.minimumWidth = dp(context, 56); button.minimumHeight = dp(context, 56)
         button.gravity = Gravity.CENTER

@@ -23,7 +23,6 @@ import com.tilebloom.game.storage.ProgressRepository
 class MainActivity : Activity() {
     private lateinit var audio: com.tilebloom.game.audio.GameAudioManager
     private val muteButtons = mutableListOf<ImageButton>()
-    private var audioDialog: AlertDialog? = null
     private lateinit var progress: ProgressController
     private val session get() = progress.session
     private val game get() = session.game
@@ -233,6 +232,7 @@ class MainActivity : Activity() {
             minimumHeight = dp(64); letterSpacing = .08f
             setOnClickListener {
                 if (!online) return@setOnClickListener
+                audio.play(AudioCue.BUTTON)
                 if (!::navigation.isInitialized) {
                     pendingPlay = true
                     play.isEnabled = false
@@ -396,7 +396,7 @@ class MainActivity : Activity() {
             setOnClickListener {
                 if (online && game.status != Status.WON && !GameStore.transitioning) {
                     hintRequest++; hintPending = false; board.clearFeedback(); tray.clearFeedback()
-                    session.game.hideMystery(); navigation.home(session.level.id); update()
+                    hideMysteryWithSound(); audio.play(AudioCue.BUTTON); navigation.home(session.level.id); update()
                 }
             }
         }
@@ -498,6 +498,7 @@ class MainActivity : Activity() {
 
     private fun advance() {
         if (!online || AdExposure.busy || pendingVictory != null || GameStore.transitioning || !session.canAdvance) return
+        audio.play(AudioCue.BUTTON)
         GameStore.advance(applicationContext)
         update()
         root.postDelayed(loadingRefresh, 250)
@@ -752,8 +753,14 @@ class MainActivity : Activity() {
             }
     }
 
-    private fun returnHomeFromBack() {
+    private fun hideMysteryWithSound() {
+        val revealed = session.game.activeMysteryId != null
         session.game.hideMystery()
+        if (revealed) audio.play(AudioCue.HIDE)
+    }
+
+    private fun returnHomeFromBack() {
+        hideMysteryWithSound()
         if (!online) return
         navigation.back(session.level.id, game.status == Status.WON, GameStore.transitioning)
         if (::board.isInitialized) { hintRequest++; hintPending = false; board.clearFeedback(); tray.clearFeedback() }
@@ -820,7 +827,6 @@ class MainActivity : Activity() {
         ProgressRepository.awaitWrites()
     }
     override fun onDestroy() {
-        audioDialog?.dismiss()
         audio.close()
         loadingScreen?.stopAnimation(); root.removeCallbacks(loadingRefresh)
         if (AdExposure.changed === exposureChanged) AdExposure.changed = null
@@ -868,6 +874,7 @@ class MainActivity : Activity() {
         muteButtons.forEach {
             it.setImageResource(if (audio.policy.preferences.muted) R.drawable.ic_sound_off else R.drawable.ic_sound_on)
             it.contentDescription = getString(if (audio.policy.preferences.muted) R.string.audio_unmute else R.string.audio_mute)
+            it.isSoundEffectsEnabled = false
         }
     }
     private fun audioControls(): LinearLayout = LinearLayout(this).apply {
@@ -882,31 +889,7 @@ class MainActivity : Activity() {
             audio.preferences(audio.policy.preferences.copy(muted = !audio.policy.preferences.muted)); refreshAudioControls()
         }
         muteButtons.add(mute); addView(mute, LinearLayout.LayoutParams(dp(48), dp(48)))
-        addView(icon(R.drawable.ic_audio_settings, R.string.audio_settings) { showAudioSettings() },
-            LinearLayout.LayoutParams(dp(48), dp(48)).apply { marginStart = dp(8) })
         refreshAudioControls()
     }
-    private fun showAudioSettings() {
-        if (audioDialog?.isShowing == true) return
-        val panel = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL; setPadding(dp(24), dp(20), dp(24), dp(16))
-            addView(textLabel(22f, GardenStyle.gold).apply { setText(R.string.audio_title) })
-        }
-        fun toggle(label: Int, checked: Boolean, change: (Boolean) -> Unit) {
-            panel.addView(Switch(this).apply {
-                setText(label); setTextColor(GardenStyle.ivory); textSize = 16f
-                minHeight = dp(56); isChecked = checked
-                thumbTintList = android.content.res.ColorStateList.valueOf(GardenStyle.gold)
-                setOnCheckedChangeListener { _, value -> change(value); refreshAudioControls() }
-            }, LinearLayout.LayoutParams(-1, -2))
-        }
-        toggle(R.string.audio_effects, audio.policy.preferences.effects) { audio.preferences(audio.policy.preferences.copy(effects = it)) }
-        toggle(R.string.audio_music, audio.policy.preferences.music) { audio.preferences(audio.policy.preferences.copy(music = it)) }
-        toggle(R.string.audio_mute_all, audio.policy.preferences.muted) { audio.preferences(audio.policy.preferences.copy(muted = it)) }
-        audioDialog = AlertDialog.Builder(this).setView(panel).setPositiveButton(android.R.string.ok, null).create().also {
-            it.show(); it.window?.setBackgroundDrawable(GardenStyle.surface(this, GardenStyle.panel))
-        }
-    }
-
     private fun dp(value: Int) = GardenStyle.dp(this, value)
 }

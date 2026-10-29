@@ -1,17 +1,15 @@
-TileBloom garden audio — original procedural composition
+TileBloom sound effects — original procedural synthesis
 
-All nine effects and the 48-second Zen Garden loop in app/src/main/res/raw
-were synthesized specifically for TileBloom with tools/generate_audio.py.
-No samples, recordings, melodies, or music from external works were used.
-The score, synthesis source, and generated audio assets are dedicated under
-CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/).
+Ten short mono 22.05 kHz 16-bit PCM effects in app/src/main/res/raw are
+synthesized specifically for TileBloom by tools/generate_audio.py (Python
+standard library only). No external samples or recordings were used.
+The synthesis source and generated audio assets are dedicated under CC0 1.0
+Universal: https://creativecommons.org/publicdomain/zero/1.0/.
 
-The track uses slow pentatonic arpeggios, decaying piano/harp-like harmonic
-partials and a quiet ambient bass texture. It has no vocals or percussion.
-Note tails wrap around the phrase boundary before encoding as Ogg Vorbis.
-Effects are mono 22.05 kHz 16-bit PCM for inexpensive SoundPool preloading;
-the music is streamed from the bundled Ogg resource by MediaPlayer.
-Regenerate with: python3 tools/generate_audio.py (Python stdlib + ffmpeg).
+Effects: ceramic-inspired selection, reveal, hide, crystalline match, hint,
+undo, restart, victory, defeat, and a short button click. These are procedural
+timbres, not recordings of acoustic instruments. There are no music or ambient
+assets. Regenerate with: python3 tools/generate_audio.py.
 
-Real listening, device loop continuity and artistic quality are pending;
-procedural timbres should not be represented as recorded acoustic instruments.
+SoundPool preloads all effects and plays at 30% normalized gain, with at most
+three streams. Real listening and artistic quality verification remain pending.

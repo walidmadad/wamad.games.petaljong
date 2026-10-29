@@ -1,24 +1,22 @@
-# Host/device verification still required
+# Android playback verification pending
 
-Use Java 17 and run tools/host_verify.sh. Keep player data and the existing
-signing identity. Install with adb install -r; never uninstall or clear data.
-Verify the fresh APK certificate, raw resources, package, timestamp/hash and
-alignment. Existing APK evidence here is explicitly old.
+Use Java 17 and run tools/host_verify.sh on the host. Verify the new APK's
+certificate equals fc1828f63432530e788baa4d69c70594157dfad0312a977e710158393e4110f6.
+Only install with adb install -r; do not uninstall or clear player data.
 
-Listen with speakers/headphones at normal system media volume:
-- Select available/blocked tiles; reveal/switch/hide mysteries; ordinary/direct
-  matches, rapid pairs, Hint, successful/unsuccessful Undo, Restart, win/loss.
-- Enable music and listen across at least three 48-second boundaries. Review
-  timbre, loudness, fatigue, transitions and clicks by ear.
-- Toggle each independent switch and master mute; confirm previous choices
-  return. Check Home, game, offline Home and offline gameplay overlay.
-- Relaunch and recreate the Activity; verify preferences and one music player.
-- Background/foreground, system media volume, phone/focus interruptions,
-  focus denial, headphones/Bluetooth and mute while interrupted.
-- Play both rewarded and interstitial test ads. Confirm game audio suspends
-  before presentation and resumes only when permitted, rewards remain exact,
-  and victory is not replayed. The toggle does not control ad SDK audio.
-- Check TalkBack, large text, small portrait/landscape and loading/next level.
+- Listen to selection, reveal, switching/hiding, ordinary/direct matching,
+  Hint, Undo, Restart, victory and defeat through speakers and headphones.
+- Verify blocked/repeated taps and unsuccessful Hint/Undo produce no effects.
+- Verify win/loss effects occur once and rapid taps have bounded overlap.
+- Check comfortable loudness at normal system media volume; tune timbres by ear.
+- Verify no music or continuous ambience plays anywhere.
+- Toggle the single speaker control on Home and gameplay; mute must stop active
+  effects immediately. Check level changes, relaunch and Activity recreation.
+- Check TalkBack labels and 48 dp targets in portrait, landscape and large text.
+- Background, interrupt audio focus, resume and verify no stale effects replay.
+- Show rewarded/interstitial test ads; game effects must stop before presentation
+  and must not queue. Check mute while interrupted; leave SDK audio unchanged.
+- Run AudioPreferencesDeviceTest in its isolated namespace. It does not change
+  real progression, credits or audio preferences.
 
-AudioPreferencesDeviceTest uses an isolated storage namespace and does not
-change real audio preferences, progression or credits.
+No listening, live-ad playback, or device interaction has been verified here.
