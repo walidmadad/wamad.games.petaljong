@@ -133,3 +133,10 @@ The existing five level themes now supply an immutable screen palette: full-scre
 ### CODEX 32: next-level preparation
 
 Next Level now shares a background preparation task begun after durable victory. Slow preparation shows a theme-aware botanical loading surface with the real next level and Retry; ready boards skip it. Search/geometry optimizations retain generator version, difficulty and witness validation. See [CODEX_32_REPORT.md](CODEX_32_REPORT.md) and [host JVM measurements](docs/codex32/isolated-performance.md). Android runtime, fresh standard APK and screenshots remain pending because Gradle cannot run in this sandbox.
+
+
+## CODEX 34 strategic difficulty
+
+Generator v9 constructs verified individual tray selections with delayed partners. Frozen v8 regeneration preserves existing in-progress saves. Candidate evaluation uses production-rule greedy, simple and visibility-restricted lookahead players; all eight layout families and the four-slot rules remain.
+
+[Measured before/after results](docs/codex34/benchmark-summary.md), [full report](CODEX_34_REPORT.md), and [human playtest protocol](docs/codex34/playtest.md). Expert holdout simple wins fall from 36/36 to 18/36 while lookahead remains 36/36; some profiles still miss their target. Gradle/APK verification is blocked by this environment, and the existing APK does not contain these changes. Reproduce JVM checks with Java 17 using `python3 tools/test34.py`; run `python3 tools/benchmark34.py` for the fixed-seed matrix.

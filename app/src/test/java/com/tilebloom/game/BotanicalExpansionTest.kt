@@ -17,10 +17,9 @@ class BotanicalExpansionTest {
                 assertEquals(level, Levels.get(id))
                 assertTrue(level.tiles.count { it.symbol == symbol } >= 2)
                 val game = Game(level.tiles)
-                level.witness.forEach { pair ->
-                    assertTrue(game.isAvailable(pair.first)); assertTrue(game.select(pair.first))
-                    assertTrue(game.isAvailable(pair.second)); assertTrue(game.select(pair.second))
-                    assertTrue(game.tray.isEmpty()); assertNotEquals(Status.LOST, game.status)
+                level.winningSelections.forEach { id ->
+                    assertTrue(game.isAvailable(id)); assertTrue(game.select(id))
+                    assertNotEquals(Status.LOST, game.status)
                 }
                 assertEquals(Status.WON, game.status); assertTrue(game.remaining.isEmpty())
             }
@@ -30,7 +29,7 @@ class BotanicalExpansionTest {
     @Test fun historicalVersionFiveAndCurrentSavesRestoreTrayAndCreditsExactly() {
         for (id in listOf(6L,11L,21L,41L,101L)) for (level in listOf(VersionFiveGenerator.generate(id), Levels.get(id))) {
             val game = Game(level.tiles)
-            assertTrue(game.select(level.witness.first().first))
+            assertTrue(game.select(level.winningSelections.first()))
             val saved = PlayerProgress(active = SessionSnapshot(id, level.seed, level.version, game.snapshot()),
                 highestCompleted = id - 1, undoCredits = 2, hintCredits = 1)
             val restored = ProgressController(ProgressCodec.decode(ProgressCodec.encode(saved)))
@@ -43,22 +42,16 @@ class BotanicalExpansionTest {
     }
     @Test fun newSymbolsSupportHintMatchingAndUndo() {
         for (symbol in Symbol.entries.filter { it.stableId >= 16 }) {
-            val level = Levels.get(symbol.introducedAt)
-            val game = Game(level.tiles)
-            for (pair in level.witness) {
-                if (level.tiles.first { it.id == pair.first }.symbol == symbol) {
-                    val before = game.snapshot()
-                    assertTrue(game.select(pair.first)); assertEquals(symbol, game.tray.single().symbol)
-                    val hint = HintPolicy.suggest(level.tiles, game.snapshot())!!
-                    assertTrue(game.isAvailable(hint.id!!))
-                    assertEquals(symbol, game.remaining.first { it.id == hint.id }.symbol)
-                    assertTrue(game.select(pair.second)); assertTrue(game.tray.isEmpty())
-                    assertTrue(game.undo()); assertEquals(symbol, game.tray.single().symbol)
-                    assertTrue(game.undo()); assertEquals(before, game.snapshot())
-                    break
-                }
-                assertTrue(game.select(pair.first)); assertTrue(game.select(pair.second))
-            }
+            val tiles = listOf(Tile(0,symbol,0.0,0.0,0), Tile(1,symbol,2.0,0.0,0),
+                Tile(2,Symbol.LEAF,4.0,0.0,0),Tile(3,Symbol.LEAF,6.0,0.0,0))
+            val game = Game(tiles)
+            val before = game.snapshot()
+            assertTrue(game.select(0)); assertEquals(symbol, game.tray.single().symbol)
+            val hint = HintPolicy.suggest(tiles, game.snapshot())
+            assertTrue(game.isAvailable(hint.id!!)); assertEquals(symbol,tiles.first { it.id == hint.id }.symbol)
+            assertTrue(game.select(1)); assertTrue(game.tray.isEmpty())
+            assertTrue(game.undo()); assertEquals(symbol,game.tray.single().symbol)
+            assertTrue(game.undo()); assertEquals(before,game.snapshot())
         }
     }
     @Test fun handoverBlocksInputImmediatelyWithoutFlashingOrExtendingTheDeadline() {

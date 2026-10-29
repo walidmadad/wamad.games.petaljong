@@ -53,7 +53,7 @@ class AdvancedBoardVisualTest : InstrumentationTestCase() {
                     assertEquals(id,game.tray.single().id)
                     view.clearFeedback(); capture("upper-removed")
                     assertTrue(game.undo()); assertEquals(level.tiles,game.tiles)
-                    level.witness.take(3).forEach { assertTrue(game.match(it.first,it.second)) }
+                    level.winningSelections.take(6).forEach { assertTrue(game.select(it)) }
                     view.load(game); capture("opened")
                     assertEquals(4,game.traySlots.size)
                 }

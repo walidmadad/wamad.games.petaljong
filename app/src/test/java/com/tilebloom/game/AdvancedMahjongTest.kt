@@ -19,14 +19,15 @@ class AdvancedMahjongTest {
             if(id >= 8) { assertTrue(metric.layers >= 3); assertTrue(metric.coveredPositions >= 18) }
             if(id >= 31) {
                 assertEquals(4,metric.layers); assertTrue(metric.overlapRelationships >= 70)
-                assertTrue(metric.initiallyBlocked >= 34); assertTrue(analysis.consequenceChoiceStates >= 8)
-                assertTrue(tray.threeHeldStates >= 6); assertTrue(level.qualityTargetMet)
+                assertTrue(metric.initiallyBlocked >= 34); assertTrue(PuzzleAnalyzer.strategic(level).delayedMatches >= 3)
+                assertTrue(PuzzleAnalyzer.strategic(level).witnessPressure >= 6)
+                assertEquals(PuzzleAnalyzer.strategic(level).meets(Difficulty.EXPERT), level.qualityTargetMet)
             }
             for(width in listOf(320f,360f,400f,800f)) {
                 val geo = BoardGeometry(width-32f,480f,tiles=level.tiles)
                 assertTrue(geo.scale >= 38f)
                 val game = Game(level.tiles)
-                for(pair in level.witness) for(tid in listOf(pair.first,pair.second)) {
+                for(tid in level.winningSelections) {
                     val tile = game.remaining.first { it.id == tid }
                     val center = geo.face(tile).center
                     assertEquals(tid,geo.hitTest(game.tiles,center.x,center.y)?.id)
@@ -53,7 +54,7 @@ class AdvancedMahjongTest {
     @Test fun coverageUnlockAndUndoAreExact() {
         val level = Levels.get(31); val game = Game(level.tiles)
         var unlocked = false
-        for(pair in level.witness) for(id in listOf(pair.first,pair.second)) {
+        for(id in level.winningSelections) {
             val before = game.snapshot(); val free = game.remaining.filter { game.isAvailable(it.id) }.map { it.id }.toSet()
             assertTrue(game.select(id))
             if(game.remaining.any { it.id !in free && game.isAvailable(it.id) }) unlocked = true
@@ -90,7 +91,7 @@ class AdvancedMahjongTest {
     @Test fun historicalV5AndV6RestoreExactTrayHistoryAndBalances() {
         for(version in listOf(5,6)) for(id in listOf(7L,15,30,31,1000)) {
             val level = if(version == 5) VersionFiveGenerator.generate(id) else VersionSixGenerator.generate(id)
-            val game = Game(level.tiles); assertTrue(game.select(level.witness.first().first))
+            val game = Game(level.tiles); assertTrue(game.select(level.winningSelections.first()))
             val progress = PlayerProgress(active=SessionSnapshot(id,level.seed,version,game.snapshot()),highestCompleted=id-1,undoCredits=2,hintCredits=1)
             val restored = ProgressController(ProgressCodec.decode(ProgressCodec.encode(progress)))
             assertFalse(restored.recovered); assertEquals(level,restored.session.level)

@@ -113,7 +113,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
     }
     fun testCreditBalanceRemainsVisibleAfterVictory() {
         activity; instrumentation.waitForIdleSync()
-        Levels.get(1).witness.forEach { tap(it.first); tap(it.second) }
+        Levels.get(1).winningSelections.forEach { tap(it) }
         ui {
             val undo = activity.findViewById<GardenIconButton>(R.id.undo)
             assertTrue(undo.isShown)
@@ -227,7 +227,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
     }
     fun testCompletionDurableAndReplayPreservesIt() {
         activity
-        Levels.get(1).witness.forEach { tap(it.first); tap(it.second) }
+        Levels.get(1).winningSelections.forEach { tap(it) }
         ui { assertNull(activity.findViewById<Button>(R.id.replay_level)); activity.findViewById<Button>(R.id.next_level).performClick() }
         waitNext(2)
         com.tilebloom.game.storage.ProgressRepository.awaitWrites()
@@ -341,7 +341,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             activity.findViewById<Button>(R.id.next_level).performClick()
         }
         waitNext(2); assertCount(Levels.get(2).tiles.size)
-        tap(Levels.get(2).witness.first().first)
+        tap(Levels.get(2).winningSelections.first())
     }
     fun testCoordinateDeadlockAndRestart() {
         activity; deadlockMoves.forEach { tap(it.first); tap(it.second) }
@@ -465,7 +465,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         for (id in 1..7) {
             val definition = Levels.get(id)
             assertCount(definition.tiles.size)
-            definition.witness.forEach { tap(it.first); tap(it.second) }
+            definition.winningSelections.forEach { tap(it) }
             ui {
                 assertFalse(activity.findViewById<Button>(R.id.restart).isShown)
                 assertNull(activity.findViewById<Button>(R.id.replay_level))
@@ -475,7 +475,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             waitNext(id.toLong()+1)
             val nextDefinition=Levels.get(id+1)
             assertCount(nextDefinition.tiles.size)
-            val pair=nextDefinition.witness.first(); tap(pair.first); tap(pair.second)
+            val opening=nextDefinition.winningSelections.take(2); opening.forEach { tap(it) }
             ui { activity.findViewById<Button>(R.id.restart).performClick() }
             assertCount(nextDefinition.tiles.size)
             assertEquals(id.toLong()+1,com.tilebloom.game.storage.GameStore.get(instrumentation.targetContext).session.level.id)
@@ -483,7 +483,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
     }
     fun testPendingVictoryRecreation() {
         activity
-        Levels.get(1).witness.forEach { tap(it.first); tap(it.second) }
+        Levels.get(1).winningSelections.forEach { tap(it) }
         val monitor=Instrumentation.ActivityMonitor(MainActivity::class.java.name,null,false)
         instrumentation.addMonitor(monitor)
         var replacement: MainActivity?=null
@@ -520,13 +520,13 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             .writeText(com.tilebloom.game.domain.ProgressCodec.encode(c.capture()))
         activity
         val level=Levels.get(id)
-        level.witness.forEach { tap(it.first); tap(it.second) }
+        level.winningSelections.forEach { tap(it) }
         ui { val next=activity.findViewById<Button>(R.id.next_level); next.performClick(); next.performClick() }
         waitNext(id+1)
         val next=Levels.get(id+1)
         assertCount(next.tiles.size)
         assertTrue(com.tilebloom.game.domain.DifficultyPolicy.transitionMessage(id+1)!!.contains("New tiles discovered"))
-        val opening=next.witness.first(); tap(opening.first); tap(opening.second)
+        next.winningSelections.take(2).forEach { tap(it) }
         ui { activity.findViewById<Button>(R.id.restart).performClick() }
         assertCount(next.tiles.size)
         assertEquals(next,com.tilebloom.game.storage.GameStore.get(instrumentation.targetContext).session.level)
@@ -534,7 +534,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
             val image=android.graphics.Bitmap.createBitmap(board().width,board().height,android.graphics.Bitmap.Config.ARGB_8888)
             board().draw(android.graphics.Canvas(image)); image.recycle()
         }
-        next.witness.forEach { pair -> tap(pair.first); tap(pair.second) }
+        next.winningSelections.forEach { tap(it) }
         ui { assertEquals("1",activity.findViewById<GardenIconButton>(R.id.undo).badge.toString()) }
         assertCount(0)
     }
@@ -545,8 +545,8 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         java.io.File(instrumentation.targetContext.filesDir,"test-smoke-progress")
             .writeText(com.tilebloom.game.domain.ProgressCodec.encode(c.capture()))
         activity
-        val level=Levels.get(21); val pair=level.witness.first()
-        tap(pair.first); tap(pair.second)
+        val level=Levels.get(21)
+        level.winningSelections.take(2).forEach { tap(it) }
         val monitor=Instrumentation.ActivityMonitor(MainActivity::class.java.name,null,false)
         instrumentation.addMonitor(monitor)
         var replacement: MainActivity?=null

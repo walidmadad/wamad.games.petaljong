@@ -82,7 +82,7 @@ class ProgressController(saved: PlayerProgress = PlayerProgress()) {
             val compatible = active?.takeIf { it.id == id }
             if (compatible == null || !session.restore(compatible)) {
                 recovered = active != null
-                check(session.restore(SessionSnapshot(id, level.seed, level.version, GameSnapshot(if (completed == Long.MAX_VALUE) level.witness else emptyList(), null))))
+                check(session.restore(SessionSnapshot(id, level.seed, level.version, GameSnapshot(emptyList(), null, if (completed == Long.MAX_VALUE) level.winningSelections else emptyList()))))
             }
         }
         capture()

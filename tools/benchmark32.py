@@ -16,7 +16,10 @@ if '--original' in sys.argv:
     import subprocess
     original = out/'original'; original.mkdir(exist_ok=True)
     frozen = []
+    tracked = set(subprocess.check_output(['git','--git-dir=.tilebloom-git','ls-tree','-r','--name-only','HEAD'], text=True).splitlines())
     for path in sources:
+        if str(path.relative_to(ROOT)) not in tracked:
+            continue
         target = original/path.name
         if path.name in ('PreparationMetrics.kt', 'LevelPreparation.kt'):
             target.write_text(path.read_text())
@@ -24,5 +27,6 @@ if '--original' in sys.argv:
             target.write_text(subprocess.check_output(['git','--git-dir=.tilebloom-git','--work-tree=.','show',f'HEAD:{path.relative_to(ROOT)}'], text=True))
         frozen.append(target)
     sources = frozen
+sources += list((ROOT/'app/src/main/java/com/tilebloom/game/presentation/board').glob('*.kt'))
 kotlin(sources+[source],out,':'.join([stdlib,annotations]))
 run('java','-cp',f'{out}:{stdlib}', 'BaselineKt', *sys.argv[1:])

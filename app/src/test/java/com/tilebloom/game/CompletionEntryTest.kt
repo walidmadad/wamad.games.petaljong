@@ -9,8 +9,8 @@ class CompletionEntryTest {
     private fun decode(p: PlayerProgress) = ProgressCodec.decode(ProgressCodec.encode(p))
     private fun won(id: Long): ProgressController {
         val c = ProgressController(PlayerProgress(highestCompleted=id-1, undoCredits=1, hintCredits=0))
-        c.session.level.witness.forEach {
-            assertTrue(c.session.game.select(it.first)); assertTrue(c.session.game.select(it.second))
+        c.session.level.winningSelections.forEach {
+            assertTrue(c.session.game.select(it))
         }
         assertEquals(id, c.capture().frontier)
         return c
@@ -59,7 +59,7 @@ class CompletionEntryTest {
     @Test fun unfinishedAndDefeatKeepExactTrayHistoryAndBalances() {
         for (lost in listOf(false,true)) {
             val c=ProgressController(PlayerProgress(undoCredits=0,hintCredits=1))
-            val ids=if(lost) listOf(23,21,18,20) else listOf(c.session.level.witness.first().first)
+            val ids=if(lost) listOf(23,21,18,20) else listOf(c.session.level.winningSelections.first())
             ids.forEach { assertTrue(c.session.game.select(it)) }
             val before=decode(c.capture()); val restored=ProgressController(before)
             assertTrue(restored.finalizeCompletedEntry { fail("No victory"); false })

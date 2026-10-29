@@ -89,6 +89,11 @@ class Game(definition: List<Tile>) {
         selected = null
         return true
     }
+    /** Immutable lists make a search branch cheap; selections still use the same controller. */
+    internal fun fork(): Game = Game(initial).also {
+        it.current = current; it.history = history; it.actions = actions; it.held = held
+        it.selected = selected
+    }
     fun snapshot() = GameSnapshot(history.toList(), null, actions.toList())
     // Replay exact accepted moves; arbitrary re-pairing of removed IDs can deadlock.
     // Validate on a candidate first so corrupt state never partially changes this game.

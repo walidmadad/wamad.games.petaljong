@@ -33,7 +33,7 @@ class GardenDiversityTest {
             val durationMs = (System.nanoTime()-start)/1000000
             LevelValidator.validate(level)
             val game = Game(level.tiles)
-            for (pair in level.witness) for (tile in listOf(pair.first,pair.second)) {
+            for (tile in level.winningSelections) {
                 assertTrue(game.isAvailable(tile)); assertTrue(game.select(tile)); assertNotEquals(Status.LOST,game.status)
             }
             assertEquals(Status.WON,game.status); assertTrue(game.tray.isEmpty())
@@ -57,7 +57,7 @@ class GardenDiversityTest {
     }
     @Test fun versionSevenSaveStillRestores() {
         val level = VersionSevenGenerator.generate(17)
-        val game = Game(level.tiles); assertTrue(game.select(level.witness.first().first))
+        val game = Game(level.tiles); assertTrue(game.select(level.winningSelections.first()))
         val session = GardenSession()
         assertTrue(session.restore(SessionSnapshot(level.id,level.seed,level.version,game.snapshot())))
         assertEquals(level,session.level); assertEquals(game.snapshot(),session.game.snapshot())

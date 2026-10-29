@@ -6,12 +6,18 @@ data class TileSlot(val id: Int, val x: Double, val y: Double, val layer: Int)
 data class BoardLayout(val id: String, val slots: List<TileSlot>)
 data class CandidateQuality(val index: Int, val consequenceChoices: Int, val riskyChoices: Int,
     val searchNodes: Int, val unknownAlternatives: Int, val targetMet: Boolean,
-    val overlapRelationships: Int = 0, val trayThreeHeldStates: Int = 0, val trayProbeLosses: Int = 0)
+    val overlapRelationships: Int = 0, val trayThreeHeldStates: Int = 0, val trayProbeLosses: Int = 0,
+    val strategic: StrategicAnalysis? = null)
 data class LevelDefinition(val id: Long, val seed: Long, val version: Int, val layout: BoardLayout,
     val tiles: List<Tile>, val witness: List<PairMove>, val attempts: Int,
     val qualityTargetMet: Boolean = false, val candidatesEvaluated: Int = 0,
     val candidateQuality: List<CandidateQuality> = emptyList(),
-    val noveltyLimited: Boolean = false)
+    val noveltyLimited: Boolean = false,
+    /** Individual winning actions for v9; witness retains its historical immediate-pair meaning. */
+    val selectionWitness: List<Int>? = null,
+    val strategicAnalysis: StrategicAnalysis? = null) {
+    val winningSelections get() = selectionWitness ?: witness.flatMap { listOf(it.first, it.second) }
+}
 
 object Layouts {
     private fun layout(id: String, rows: List<Pair<Int, Int>>, top: List<Pair<Double, Double>>): BoardLayout {
@@ -44,9 +50,10 @@ object LevelValidator {
         require(tiles.all { a -> tiles.none { b -> a.id != b.id && a.layer == b.layer && Rules.overlaps(a, b) } })
         require(tiles.any { a -> tiles.any { b -> b.layer > a.layer && Rules.overlaps(a, b) } })
         require(tiles.filter { it.layer > 0 }.all { a -> tiles.any { b -> b.layer < a.layer && Rules.overlaps(a, b) } })
-        require(level.witness.size * 2 == tiles.size)
+        require(level.winningSelections.size == tiles.size)
         val game = Game(tiles)
-        require(level.witness.all { game.select(it.first) && game.select(it.second) && game.tray.isEmpty() })
+        require(level.winningSelections.all { game.select(it) })
+        if (level.selectionWitness == null) require(game.snapshot().moves == level.witness)
         require(game.status == Status.WON && game.remaining.isEmpty())
     }
 }
@@ -146,6 +153,15 @@ object Levels {
         3 to LevelGenerator.generate(3, 303L, Layouts.woodland),
         4 to LevelGenerator.generate(4, 404L, Layouts.courtyard),
         5 to LevelGenerator.generate(5, 511L, Layouts.woodland)) }
+    private val prepared = object : LinkedHashMap<Long, LevelDefinition>(16, .75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Long, LevelDefinition>?) = size > 12
+    }
+    private fun endless(id: Long): LevelDefinition {
+        synchronized(prepared) { prepared[id]?.let { return it } }
+        val result = EndlessGenerator.generate(id)
+        synchronized(prepared) { prepared[id] = result }
+        return result
+    }
     fun get(id: Int): LevelDefinition = get(id.toLong())
     fun get(id: Long): LevelDefinition = when (id) {
         1L -> introductory
@@ -153,7 +169,7 @@ object Levels {
         3L -> generated.getValue(3)
         4L -> generated.getValue(4)
         5L -> generated.getValue(5)
-        else -> EndlessGenerator.generate(id)
+        else -> endless(id)
     }
 }
 
@@ -181,7 +197,7 @@ class GardenSession {
     fun restore(saved: SessionSnapshot): Boolean {
         // Restoration may resume this board or a later one, never an earlier board.
         if (saved.id < level.id) return false
-        val candidate = try { if (saved.id >= 6 && saved.version == 4) LegacyEndlessGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 5) VersionFiveGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 6) VersionSixGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 7) VersionSevenGenerator.generate(saved.id) else Levels.get(saved.id) } catch (_: Exception) { return false }
+        val candidate = try { if (saved.id >= 6 && saved.version == 4) LegacyEndlessGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 5) VersionFiveGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 6) VersionSixGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 7) VersionSevenGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 8) VersionEightGenerator.generate(saved.id) else Levels.get(saved.id) } catch (_: Exception) { return false }
         if (candidate.seed != saved.seed || candidate.version != saved.version) return false
         val restored = Game(candidate.tiles)
         if (!restored.restore(saved.game)) return false

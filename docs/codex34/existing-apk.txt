@@ -1,0 +1,2 @@
+2026-10-29 01:20:01.460437432 +0100 7565391 bytes
+a27abc37b9ba483b186436d1df556cf5e5839eaffe999eacefb9678c5b1244c7  app/build/outputs/apk/debug/app-debug.apk

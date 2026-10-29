@@ -44,7 +44,8 @@ data class PuzzleAnalysis(
     val forced: Int, val multiple: Int, val upperUnlockMoves: Int,
     val consequenceChoiceStates: Int, val riskyChoiceStates: Int,
     val solvableAlternatives: Int, val unsolvableAlternatives: Int, val unknownAlternatives: Int,
-    val searchNodes: Int, val layout: String, val seed: Long
+    val searchNodes: Int, val layout: String, val seed: Long,
+    val strategic: StrategicAnalysis? = null
 ) {
     val initialBlocked get() = tileCount - initialFree
     val pairRemovals get() = tileCount / 2
@@ -52,6 +53,7 @@ data class PuzzleAnalysis(
 }
 data class MoveImpact(val move: PairMove, val newlyAvailable: Set<Int>, val result: SearchResult)
 object PuzzleAnalyzer {
+    fun strategic(level: LevelDefinition, budget: Int = 1800) = StrategicAnalyzer.analyze(level, budget)
     fun analyzeTray(tiles: List<Tile>, snapshot: GameSnapshot, budget: Int = 2000) =
         TrayAnalyzer.analyze(tiles, snapshot, budget)
     /** Every legal association, with a shared budget. Empty unlock sets can be equivalent
@@ -70,6 +72,40 @@ object PuzzleAnalyzer {
         }
     }
 
+    /** Full-state alternatives sampled along the individual-action witness. Shared hard node cap.
+     * Unexamined states are not called safe or losing. Pair-era metrics remain historical only. */
+    private fun analyzeSelections(level: LevelDefinition, budget: Int): PuzzleAnalysis {
+        val game = Game(level.tiles)
+        val free = game.remaining.count { game.isAvailable(it.id) }
+        val pairs = game.matchingPairs()
+        val branching = mutableListOf<Int>()
+        var nodes = 0; var safe = 0; var dead = 0; var unknown = 0
+        var consequences = 0; var risky = 0; var unlocks = 0
+        level.winningSelections.forEachIndexed { index, id ->
+            val legal = game.remaining.filter { game.isAvailable(it.id) }
+            branching.add(legal.size)
+            if (index % 6 == 0) {
+                val a = TrayAnalyzer.analyze(level.tiles, game.snapshot(), budget - nodes)
+                nodes += a.result.nodes; safe += a.safeContinuations
+                dead += a.losingContinuations; unknown += a.unknownContinuations
+                if (a.safeContinuations > 0 && a.losingContinuations > 0) risky++
+                val signatures = legal.map { tile ->
+                    val next = game.fork(); check(next.select(tile.id))
+                    next.remaining.filter { next.isAvailable(it.id) && legal.none { before -> before.id == it.id } }
+                        .map { it.id }.toSet() to next.tray.map { it.symbol }.toSet()
+                }.distinct()
+                if (signatures.size > 1) consequences++
+            }
+            check(game.select(id))
+            if (game.remaining.any { game.isAvailable(it.id) && legal.none { old -> old.id == it.id } }) unlocks++
+        }
+        return PuzzleAnalysis(level.tiles.size, level.tiles.map { it.layer }.distinct().size,
+            level.tiles.map { it.symbol }.distinct().size, free, pairs.size,
+            pairs.map { p -> level.tiles.first { it.id == p.first }.symbol }.distinct().size,
+            branching, branching.count { it == 1 }, branching.count { it > 1 }, unlocks,
+            consequences, risky, safe, dead, unknown, nodes, level.layout.id, level.seed, level.strategicAnalysis)
+    }
+
     /** Entire analysis shares a strict node budget, including all witness alternatives. */
     fun analyze(level: LevelDefinition, budget: Int = 10000): PuzzleAnalysis {
         require(budget >= 0)
@@ -78,6 +114,7 @@ object PuzzleAnalyzer {
             return PuzzleAnalysis(0,0,0,0,0,0,emptyList(),0,0,0,0,0,0,0,0,0,level.layout.id,level.seed)
         }
         LevelValidator.validate(level)
+        if (level.selectionWitness != null) return analyzeSelections(level, budget)
         val game = Game(level.tiles)
         val initialFree = game.remaining.count { game.isAvailable(it.id) }
         val initialPairs = game.matchingPairs()
@@ -133,7 +170,7 @@ object TrayAnalyzer {
             nodes++
             var unknown = false
             for (tile in g.remaining.filter { g.isAvailable(it.id) }) {
-                val next = Game(tiles); check(next.restore(g.snapshot())); check(next.select(tile.id))
+                val next = g.fork(); check(next.select(tile.id))
                 when (visit(next)) {
                     Solvability.SOLVABLE -> { memo[key] = Solvability.SOLVABLE; return Solvability.SOLVABLE }
                     Solvability.UNKNOWN_BUDGET_EXCEEDED -> unknown = true

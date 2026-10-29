@@ -19,8 +19,8 @@ class LevelNavigationTest {
     @Test fun homeAndPlayReuseExactBoardTrayHistorySeedAndWallet() {
         val c=ProgressController(PlayerProgress(highestCompleted=20,undoCredits=2))
         val nav=LevelNavigation(c.session.level.id); val game=c.session.game
-        val move=c.session.level.witness.first()
-        nav.play(c.session.level.id); assertTrue(game.select(move.first))
+        val move=c.session.level.winningSelections.first()
+        nav.play(c.session.level.id); assertTrue(game.select(move))
         val before=c.capture(); val tiles=game.tiles; val tray=game.tray
         repeat(5) {
             nav.home(c.session.level.id); assertEquals(GardenScreen.START,nav.state.screen)
@@ -33,7 +33,7 @@ class LevelNavigationTest {
     }
     @Test fun recreationRestoresOnlyNavigationForTheSameLevel() {
         val c=ProgressController(); val nav=LevelNavigation(c.session.level.id)
-        nav.play(c.session.level.id); c.session.game.select(c.session.level.witness.first().first)
+        nav.play(c.session.level.id); c.session.game.select(c.session.level.winningSelections.first())
         val saved=c.capture(); val bundleState=nav.state
         val restored=reload(c); val rotated=LevelNavigation(restored.session.level.id,bundleState)
         assertEquals(GardenScreen.GAME,rotated.state.screen); assertEquals(saved,restored.capture())
@@ -45,7 +45,7 @@ class LevelNavigationTest {
     }
     @Test fun pendingVictoryCannotReplayAndNextEntersGameplayExactlyOnce() {
         val c=ProgressController(PlayerProgress(highestCompleted=19,undoCredits=1))
-        c.session.level.witness.forEach { assertTrue(c.session.game.select(it.first)); assertTrue(c.session.game.select(it.second)) }
+        c.session.level.winningSelections.forEach { assertTrue(c.session.game.select(it)) }
         val restored=reload(c); val nav=LevelNavigation(restored.session.level.id)
         nav.play(restored.session.level.id)
         assertEquals(Status.WON,restored.session.game.status); assertFalse(restored.session.restart())
@@ -60,7 +60,7 @@ class LevelNavigationTest {
     @Test fun staleRecreationDuringAdvanceKeepsGameplay() {
         val c=ProgressController(); val nav=LevelNavigation(1); nav.play(1)
         val oldUi=nav.state
-        c.session.level.witness.forEach { c.session.game.select(it.first); c.session.game.select(it.second) }
+        c.session.level.winningSelections.forEach { c.session.game.select(it) }
         val next=c.prepareNext()!!; val committedSave=c.nextProgress(next)!!
         val afterProcessDeath=ProgressController(ProgressCodec.decode(ProgressCodec.encode(committedSave)))
         val restored=LevelNavigation(afterProcessDeath.session.level.id,oldUi)
@@ -82,7 +82,7 @@ class LevelNavigationTest {
     }
     @Test fun backPreservesTrayWalletAndPendingVictory() {
         val c=ProgressController(PlayerProgress(undoCredits=1)); val nav=LevelNavigation(1)
-        nav.play(1); c.session.game.select(c.session.level.witness.first().first)
+        nav.play(1); c.session.game.select(c.session.level.winningSelections.first())
         val before=c.capture()
         nav.back(1,false,false); assertEquals(GardenScreen.START,nav.state.screen)
         assertEquals(before,c.capture()); nav.play(1); assertEquals(before,c.capture())
@@ -93,7 +93,7 @@ class LevelNavigationTest {
         for (level in listOf(4L,20L,40L,100L)) {
             val c=ProgressController(PlayerProgress(highestCompleted=level-1,undoCredits=1))
             val nav=LevelNavigation(level); nav.play(level)
-            c.session.level.witness.forEach { c.session.game.select(it.first); c.session.game.select(it.second) }
+            c.session.level.winningSelections.forEach { c.session.game.select(it) }
             assertEquals(Status.WON,c.session.game.status)
             val before=c.capture()
             nav.back(level,true,false); assertEquals(GardenScreen.GAME,nav.state.screen)

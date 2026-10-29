@@ -59,7 +59,7 @@ class HintPresentationTest {
         val won = Game(level.tiles)
         val effect = HintPresentation()
         effect.show(HintPolicy.suggest(won.tiles, won.snapshot()).id!!, won, 0L)
-        level.witness.forEach { assertTrue(won.match(it.first, it.second)) }
+        level.winningSelections.forEach { assertTrue(won.select(it)) }
         assertEquals(Status.WON, won.status)
         effect.validate(won, 1L)
         assertNull(effect.targetId)

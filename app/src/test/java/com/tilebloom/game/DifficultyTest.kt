@@ -38,17 +38,18 @@ class DifficultyTest {
             assertTrue(level.tiles.groupingBy { it.symbol }.eachCount().values.all { it>=2 && it%2==0 })
             if(id>=6) { val p=DifficultyPolicy.profile(id)
                 assertTrue(level.tiles.size in p.targetTiles); assertEquals(p.activeSymbols,level.tiles.map { it.symbol }.distinct().size)
-                assertTrue(level.candidatesEvaluated<=p.candidateBudget)
+                assertTrue(level.candidatesEvaluated <= if (level.version >= 9) EndlessGenerator.CANDIDATES else p.candidateBudget)
                 assertTrue(level.candidateQuality.all { it.searchNodes<=p.analysisBudget })
             }
             for((w,h) in listOf(284f to 300f,360f to 520f,600f to 260f)) {
                 val geo=BoardGeometry(w,h,tiles=level.tiles); val game=Game(level.tiles)
                 assertTrue(geo.scale >= 30f)
-                level.witness.forEach { pair ->
-                    for(id2 in listOf(pair.first,pair.second)) { val tile=game.remaining.first { it.id==id2 }; val point=geo.face(tile).center
-                        assertEquals(id2,geo.hitTest(game.tiles,point.x,point.y)?.id)
-                    }; assertTrue(game.match(pair.first,pair.second))
+                level.winningSelections.forEach { id2 ->
+                    val tile=game.remaining.first { it.id==id2 }; val point=geo.face(tile).center
+                    assertEquals(id2,geo.hitTest(game.tiles,point.x,point.y)?.id)
+                    assertTrue(game.select(id2)); assertNotEquals(Status.LOST, game.status)
                 }
+                assertEquals(Status.WON, game.status)
             }
         }
     }
@@ -65,7 +66,7 @@ class DifficultyTest {
     @Test fun transitionsAreExactlyOneAndPersistCredits() {
         for(id in listOf(7L,15,30,31,40,100)) {
             val c=ProgressController(PlayerProgress(highestCompleted=id-1,undoCredits=1))
-            c.session.level.witness.forEach { assertTrue(c.session.game.match(it.first,it.second)) }
+            c.session.level.winningSelections.forEach { assertTrue(c.session.game.select(it)) }
             val next=c.prepareNext()!!; assertTrue(c.commitNext(next)); assertFalse(c.commitNext(next))
             assertEquals(id+1,c.session.level.id); assertEquals(1,c.wallet.balance); assertFalse(c.select(id.toInt()))
             assertTrue(c.session.restart()); assertEquals(id+1,c.session.level.id)

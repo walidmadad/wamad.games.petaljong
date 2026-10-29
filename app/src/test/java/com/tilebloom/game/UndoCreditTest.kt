@@ -49,14 +49,14 @@ class UndoCreditTest {
         val c=ProgressController(PlayerProgress(setOf(1,2),undoCredits=1))
         match(c); assertTrue(c.undo()); c.session.restart(); assertEquals(0,c.wallet.balance)
         assertFalse(c.select(2)); assertEquals(0,c.wallet.balance)
-        c.session.level.witness.forEach { assertTrue(c.session.game.match(it.first,it.second)) }
+        c.session.level.winningSelections.forEach { assertTrue(c.session.game.select(it)) }
         assertTrue(c.session.advance()); assertEquals(0,c.wallet.balance)
         assertEquals(0,reload(c).wallet.balance)
     }
     @Test fun replayAfterVictoryKeepsSpentCreditsAndUnlockedLevel() {
         val c = ProgressController()
         match(c); assertTrue(c.undo()); assertEquals(2, c.wallet.balance)
-        c.session.level.witness.forEach { assertTrue(c.session.game.match(it.first, it.second)) }
+        c.session.level.winningSelections.forEach { assertTrue(c.session.game.select(it)) }
         assertEquals(Status.WON, c.session.game.status)
         assertEquals(setOf(1), c.capture().completed)
         c.session.restart() // Same operation as the victory Replay Level button.

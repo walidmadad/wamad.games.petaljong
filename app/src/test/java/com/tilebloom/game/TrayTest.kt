@@ -27,13 +27,13 @@ class TrayTest {
     @Test fun generatedWitnessesAndAllSymbols() {
         for(id in listOf(1L,6L,21L,41L,81L,101L,1001L)) {
             val l=Levels.get(id); val g=Game(l.tiles)
-            l.witness.forEach{ assertTrue(g.select(it.first)); assertTrue(g.select(it.second)); assertTrue(g.tray.isEmpty()) }
+            l.winningSelections.forEach { assertTrue(g.select(it)); assertNotEquals(Status.LOST,g.status) }
             assertEquals(Status.WON,g.status)
         }
         val g=Game(fixture()); fixture().forEach{ assertTrue(g.select(it.id)) }; assertEquals(Status.WON,g.status)
     }
     @Test fun codecAndLegacyMigration() {
-        val c=ProgressController(); c.session.game.select(c.session.level.witness.first().first)
+        val c=ProgressController(); c.session.game.select(c.session.level.winningSelections.first())
         val p=c.capture(); assertEquals(p,ProgressController(ProgressCodec.decode(ProgressCodec.encode(p))).capture())
         val l=Levels.get(1); val pair=l.witness.first()
         val old="3\n0\n1,${l.seed},${l.version}\n${pair.first},${pair.second}\n2"

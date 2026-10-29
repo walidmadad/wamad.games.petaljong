@@ -25,7 +25,7 @@ class GardenRenderingTest {
             val level = Levels.get(id)
             val game = Game(level.tiles)
             val theme = GardenTheme.forLevel(id)
-            assertTrue(game.select(level.witness.first().first))
+            assertTrue(game.select(level.winningSelections.first()))
             val snapshot = game.snapshot()
             val restored = Game(level.tiles)
             assertTrue(restored.restore(snapshot))

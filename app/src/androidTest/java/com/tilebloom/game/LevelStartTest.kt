@@ -154,7 +154,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
     fun testCoordinateVictoryNextEntersGameplayAndDoubleTapCannotSkip() {
         seed(ProgressController(PlayerProgress(highestCompleted=3,undoCredits=1)))
         val screen=activity; enter(screen)
-        state().session.level.witness.forEach { tapTile(screen,it.first); tapTile(screen,it.second) }
+        state().session.level.winningSelections.forEach { tapTile(screen,it) }
         waitVisible(screen,R.id.next_level)
         instrumentation.sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
         waitVisible(screen,R.id.next_level)
@@ -173,7 +173,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         assertFalse(state().select(4)); assertTrue(state().session.game.tray.isEmpty())
         assertEquals(1,state().wallet.balance)
         assertEquals(Levels.get(5).tiles,state().session.game.tiles)
-        tapTile(screen,state().session.level.witness.first().first)
+        tapTile(screen,state().session.level.winningSelections.first())
         val before=state().capture()
         ui { screen.findViewById<View>(R.id.home).performClick() }
         waitVisible(screen,R.id.play); enter(screen)
@@ -183,7 +183,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
     }
     fun testRecreationKeepsGameButFreshRelaunchRequiresPlayAndRestoresTray() {
         val screen=activity; enter(screen)
-        val id=Levels.get(1).witness.first().first; tapTile(screen,id)
+        val id=Levels.get(1).winningSelections.first(); tapTile(screen,id)
         val before=state().capture()
         val monitor=Instrumentation.ActivityMonitor(MainActivity::class.java.name,null,false)
         instrumentation.addMonitor(monitor)
@@ -251,7 +251,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
     }
     fun testSavedPendingVictoryFinalizesBeforePlay() {
         val c=ProgressController(PlayerProgress(highestCompleted=19,undoCredits=1))
-        c.session.level.witness.forEach { check(c.session.game.select(it.first)); check(c.session.game.select(it.second)) }; seed(c)
+        c.session.level.winningSelections.forEach { check(c.session.game.select(it)) }; seed(c)
         val screen=activity; waitVisible(screen,R.id.play)
         ui { assertEquals(screen.getString(R.string.start_level,21L),screen.findViewById<TextView>(R.id.start_level).text.toString()) }
         assertEquals(21L,state().session.level.id)
@@ -264,7 +264,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
     fun testCoordinateLevelSixVictoryFreshRelaunchFinalizesOnlyOnce() {
         seed(ProgressController(PlayerProgress(highestCompleted=5,undoCredits=1,hintCredits=0)))
         val screen=activity; enter(screen)
-        state().session.level.witness.forEach { tapTile(screen,it.first); tapTile(screen,it.second) }
+        state().session.level.winningSelections.forEach { tapTile(screen,it) }
         waitVisible(screen,R.id.next_level)
         assertEquals(6L,ProgressRepository.load(instrumentation.targetContext).frontier)
         ui { screen.finish() }

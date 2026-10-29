@@ -6,7 +6,7 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class LevelsTest {
-    private fun finish(s: GardenSession) { s.level.witness.forEach { assertTrue(s.game.match(it.first, it.second)) } }
+    private fun finish(s: GardenSession) { s.level.winningSelections.forEach { assertTrue(s.game.select(it)) } }
     private fun rejected(level: LevelDefinition) {
         try { LevelValidator.validate(level); fail("Accepted corrupt level") } catch (_: IllegalArgumentException) { }
     }

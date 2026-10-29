@@ -83,7 +83,7 @@ class ConnectivityInteractionTest : ActivityInstrumentationTestCase2<MainActivit
         instrumentation.waitForIdleSync()
         val controller = GameStore.get(instrumentation.targetContext)
         ui {
-            assertTrue(controller.session.game.select(controller.session.level.witness.first().first))
+            assertTrue(controller.session.game.select(controller.session.level.winningSelections.first()))
             GameStore.persist(screen)
         }
         val before = controller.capture()
@@ -230,7 +230,7 @@ class ConnectivityInteractionTest : ActivityInstrumentationTestCase2<MainActivit
         val screen = activity; ready(screen)
         ui { screen.findViewById<View>(R.id.play).performClick() }
         val controller = GameStore.get(instrumentation.targetContext)
-        ui { assertTrue(controller.session.game.select(controller.session.level.witness.first().first)) }
+        ui { assertTrue(controller.session.game.select(controller.session.level.winningSelections.first())) }
         network(false)
         val before = controller.capture()
         val previous = source
