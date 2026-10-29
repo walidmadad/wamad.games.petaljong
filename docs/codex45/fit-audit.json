@@ -1,0 +1,439 @@
+[
+  {
+    "symbol": "LEAF",
+    "stableId": 0,
+    "alphaBounds": [
+      23,
+      16,
+      233,
+      240
+    ],
+    "oldInkTileUnits": [
+      0.6247500000000001,
+      0.6664000000000001
+    ],
+    "newInkTileUnits": [
+      0.782,
+      0.8341333333333333
+    ],
+    "linearIncreasePercent": 25.170068027210867
+  },
+  {
+    "symbol": "LOTUS",
+    "stableId": 1,
+    "alphaBounds": [
+      16,
+      33,
+      240,
+      223
+    ],
+    "oldInkTileUnits": [
+      0.6664000000000001,
+      0.56525
+    ],
+    "newInkTileUnits": [
+      0.782,
+      0.6633035714285715
+    ],
+    "linearIncreasePercent": 17.34693877551019
+  },
+  {
+    "symbol": "FERN",
+    "stableId": 2,
+    "alphaBounds": [
+      22,
+      16,
+      234,
+      240
+    ],
+    "oldInkTileUnits": [
+      0.6307000000000001,
+      0.6664000000000001
+    ],
+    "newInkTileUnits": [
+      0.782,
+      0.8262641509433962
+    ],
+    "linearIncreasePercent": 23.989218328840956
+  },
+  {
+    "symbol": "FLOWER",
+    "stableId": 3,
+    "alphaBounds": [
+      16,
+      23,
+      240,
+      233
+    ],
+    "oldInkTileUnits": [
+      0.6664000000000001,
+      0.6247500000000001
+    ],
+    "newInkTileUnits": [
+      0.7956,
+      0.745875
+    ],
+    "linearIncreasePercent": 19.38775510204078
+  },
+  {
+    "symbol": "BERRIES",
+    "stableId": 4,
+    "alphaBounds": [
+      16,
+      17,
+      240,
+      239
+    ],
+    "oldInkTileUnits": [
+      0.6664000000000001,
+      0.6604500000000001
+    ],
+    "newInkTileUnits": [
+      0.782,
+      0.7750178571428571
+    ],
+    "linearIncreasePercent": 17.34693877551019
+  },
+  {
+    "symbol": "SUNFLOWER",
+    "stableId": 5,
+    "alphaBounds": [
+      16,
+      19,
+      240,
+      237
+    ],
+    "oldInkTileUnits": [
+      0.6664000000000001,
+      0.6485500000000001
+    ],
+    "newInkTileUnits": [
+      0.7548000000000001,
+      0.734582142857143
+    ],
+    "linearIncreasePercent": 13.265306122448983
+  },
+  {
+    "symbol": "MUSHROOM",
+    "stableId": 6,
+    "alphaBounds": [
+      18,
+      16,
+      238,
+      240
+    ],
+    "oldInkTileUnits": [
+      0.6545000000000002,
+      0.6664000000000001
+    ],
+    "newInkTileUnits": [
+      0.782,
+      0.7962181818181818
+    ],
+    "linearIncreasePercent": 19.480519480519476
+  },
+  {
+    "symbol": "BUTTERFLY",
+    "stableId": 7,
+    "alphaBounds": [
+      16,
+      42,
+      240,
+      214
+    ],
+    "oldInkTileUnits": [
+      0.6664000000000001,
+      0.5117
+    ],
+    "newInkTileUnits": [
+      0.8092,
+      0.62135
+    ],
+    "linearIncreasePercent": 21.428571428571395
+  },
+  {
+    "symbol": "BAMBOO",
+    "stableId": 8,
+    "alphaBounds": [
+      26,
+      16,
+      229,
+      240
+    ],
+    "oldInkTileUnits": [
+      0.603925,
+      0.6664000000000001
+    ],
+    "newInkTileUnits": [
+      0.782,
+      0.8628965517241379
+    ],
+    "linearIncreasePercent": 29.486277269528482
+  },
+  {
+    "symbol": "ACORN",
+    "stableId": 9,
+    "alphaBounds": [
+      46,
+      16,
+      210,
+      240
+    ],
+    "oldInkTileUnits": [
+      0.48790000000000006,
+      0.6664000000000001
+    ],
+    "newInkTileUnits": [
+      0.6571714285714287,
+      0.8976000000000001
+    ],
+    "linearIncreasePercent": 34.6938775510204
+  },
+  {
+    "symbol": "MAPLE_LEAF",
+    "stableId": 10,
+    "alphaBounds": [
+      16,
+      16,
+      239,
+      240
+    ],
+    "oldInkTileUnits": [
+      0.6634250000000002,
+      0.6664000000000001
+    ],
+    "newInkTileUnits": [
+      0.782,
+      0.7855067264573992
+    ],
+    "linearIncreasePercent": 17.873158231902607
+  },
+  {
+    "symbol": "PINECONE",
+    "stableId": 11,
+    "alphaBounds": [
+      38,
+      16,
+      218,
+      240
+    ],
+    "oldInkTileUnits": [
+      0.5355000000000001,
+      0.6664000000000001
+    ],
+    "newInkTileUnits": [
+      0.7595357142857143,
+      0.9452
+    ],
+    "linearIncreasePercent": 41.836734693877546
+  },
+  {
+    "symbol": "IRIS",
+    "stableId": 12,
+    "alphaBounds": [
+      28,
+      16,
+      227,
+      240
+    ],
+    "oldInkTileUnits": [
+      0.5920250000000001,
+      0.6664000000000001
+    ],
+    "newInkTileUnits": [
+      0.7752,
+      0.8725869346733668
+    ],
+    "linearIncreasePercent": 30.940416367552025
+  },
+  {
+    "symbol": "GINKGO_LEAF",
+    "stableId": 13,
+    "alphaBounds": [
+      16,
+      29,
+      240,
+      226
+    ],
+    "oldInkTileUnits": [
+      0.6664000000000001,
+      0.5860750000000001
+    ],
+    "newInkTileUnits": [
+      0.782,
+      0.6877410714285714
+    ],
+    "linearIncreasePercent": 17.34693877551019
+  },
+  {
+    "symbol": "CHERRY_BLOSSOM",
+    "stableId": 14,
+    "alphaBounds": [
+      16,
+      22,
+      240,
+      234
+    ],
+    "oldInkTileUnits": [
+      0.6664000000000001,
+      0.6307000000000001
+    ],
+    "newInkTileUnits": [
+      0.7956,
+      0.7529785714285713
+    ],
+    "linearIncreasePercent": 19.38775510204078
+  },
+  {
+    "symbol": "DRAGONFLY",
+    "stableId": 15,
+    "alphaBounds": [
+      16,
+      40,
+      240,
+      215
+    ],
+    "oldInkTileUnits": [
+      0.6664000000000001,
+      0.5206250000000001
+    ],
+    "newInkTileUnits": [
+      0.8092,
+      0.6321875
+    ],
+    "linearIncreasePercent": 21.428571428571395
+  },
+  {
+    "symbol": "CACTUS",
+    "stableId": 16,
+    "alphaBounds": [
+      47,
+      16,
+      208,
+      240
+    ],
+    "oldInkTileUnits": [
+      0.4789750000000001,
+      0.6664000000000001
+    ],
+    "newInkTileUnits": [
+      0.6793625,
+      0.9452
+    ],
+    "linearIncreasePercent": 41.836734693877546
+  },
+  {
+    "symbol": "LAVENDER",
+    "stableId": 17,
+    "alphaBounds": [
+      45,
+      16,
+      210,
+      240
+    ],
+    "oldInkTileUnits": [
+      0.49087500000000006,
+      0.6664000000000001
+    ],
+    "newInkTileUnits": [
+      0.7363125,
+      0.9996
+    ],
+    "linearIncreasePercent": 49.99999999999998
+  },
+  {
+    "symbol": "LADYBUG",
+    "stableId": 18,
+    "alphaBounds": [
+      26,
+      16,
+      230,
+      240
+    ],
+    "oldInkTileUnits": [
+      0.6069000000000001,
+      0.6664000000000001
+    ],
+    "newInkTileUnits": [
+      0.782,
+      0.8586666666666667
+    ],
+    "linearIncreasePercent": 28.851540616246485
+  },
+  {
+    "symbol": "SNAIL",
+    "stableId": 19,
+    "alphaBounds": [
+      16,
+      43,
+      240,
+      213
+    ],
+    "oldInkTileUnits": [
+      0.6664000000000001,
+      0.50575
+    ],
+    "newInkTileUnits": [
+      0.782,
+      0.5934821428571428
+    ],
+    "linearIncreasePercent": 17.34693877551019
+  },
+  {
+    "symbol": "VEINED_LEAF",
+    "stableId": 20,
+    "alphaBounds": [
+      21,
+      16,
+      234,
+      240
+    ],
+    "oldInkTileUnits": [
+      0.6336750000000001,
+      0.6664000000000001
+    ],
+    "newInkTileUnits": [
+      0.782,
+      0.8223849765258215
+    ],
+    "linearIncreasePercent": 23.40710932260226
+  },
+  {
+    "symbol": "DOUBLE_LEAF",
+    "stableId": 21,
+    "alphaBounds": [
+      16,
+      29,
+      240,
+      227
+    ],
+    "oldInkTileUnits": [
+      0.6664000000000001,
+      0.5890500000000001
+    ],
+    "newInkTileUnits": [
+      0.782,
+      0.6912321428571429
+    ],
+    "linearIncreasePercent": 17.34693877551019
+  },
+  {
+    "symbol": "YELLOW_DAISY",
+    "stableId": 22,
+    "alphaBounds": [
+      19,
+      16,
+      237,
+      240
+    ],
+    "oldInkTileUnits": [
+      0.6485500000000001,
+      0.6664000000000001
+    ],
+    "newInkTileUnits": [
+      0.7956,
+      0.8174972477064221
+    ],
+    "linearIncreasePercent": 22.67365661861074
+  }
+]

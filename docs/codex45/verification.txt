@@ -1,0 +1,24 @@
+CODEX45 verification
+
+PASS: fresh production domain/board-presentation JVM sources and all unit tests compiled using cached Kotlin 1.9.24 / JDK 17.
+PASS: JUnitCore OK (308 tests), 304.624 seconds. See jvm-tests.log.
+PASS: final Android resources compile/link, production + all Android-test Kotlin sources compile using cached tooling / JDK 17. Existing deprecation warnings. See diagnostic-final-compile.log.
+PASS: 23 original stable IDs/resources, unchanged artwork SHA-256s, image dimensions, proportional alpha-bounds fitting, safe extents and increased ink scale. See fit-audit.json and tools/check_botanical_fit.py.
+PASS: staged Git diff whitespace check.
+
+BLOCKED: requested Gradle unit/build/lint commands fail before tasks execute: read-only wrapper lock.
+BLOCKED: installed Gradle 8.13 under JDK 17 with writable /tmp cache cannot initialize wildcard IP/socket service.
+BLOCKED: ADB cannot install its local socket listener (Operation not permitted).
+NOT EXECUTED: Android instrumentation, screenshots, touch/runtime checks, actual-size visual approval and frame profiling.
+UNAVAILABLE: user screenshots and authoritative app-icon image; direct visual comparison not performed.
+NOT PRODUCED: fresh APK. No new APK timestamp/size/SHA-256/package/alignment/signature/content verification.
+
+Existing APK only (STALE, predates this change):
+Timestamp: 2026-10-29 15:28:18.404615653 +0100
+Size: 8722826 bytes
+SHA-256: f9d94f13cff45439ce3310997779e4f61ad87cf52317f2a1994197f5ffde859a
+Existing certificate matches required fc1828f63432530e788baa4d69c70594157dfad0312a977e710158393e4110f6.
+This existing artifact is not CODEX45 output.
+
+No install/uninstall/clear-data/progression writes, publishing or push.
+No changes to domain, persistence, generator/version, hit geometry or home rendering behavior.

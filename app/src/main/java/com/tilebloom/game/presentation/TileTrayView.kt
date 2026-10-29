@@ -14,7 +14,7 @@ class TileTrayView(context: Context, private val tiles: () -> List<Tile>) : View
         set(value) { field = value; invalidate() }
     private val ink = Paint(Paint.ANTI_ALIAS_FLAG)
     private val ivory = LinearGradient(0f, 0f, 0f, 1f,
-        intArrayOf(0xfffffdf5.toInt(), 0xfff8f2e3.toInt(), 0xffe2d2b1.toInt()),
+        intArrayOf(0xfffffdf5.toInt(), 0xfffaf5e9.toInt(), 0xffe5d7bc.toInt()),
         floatArrayOf(0f, .65f, 1f), Shader.TileMode.CLAMP)
     private val materialMatrix = Matrix()
     private var previous = tiles().map { it.id }
@@ -69,7 +69,7 @@ class TileTrayView(context: Context, private val tiles: () -> List<Tile>) : View
             c.drawRoundRect(r, gap, gap, ink)
             tile?.let {
                 c.save(); c.translate(r.centerX(), r.centerY()); c.scale(size * .34f, size * .34f)
-                BotanicalSymbols.draw(c, ink, it.symbol, context); c.restore()
+                BotanicalSymbols.drawTile(c, ink, it.symbol, context); c.restore()
             }
         }
         val timeLeft = pulseUntil - android.os.SystemClock.uptimeMillis()
@@ -78,7 +78,7 @@ class TileTrayView(context: Context, private val tiles: () -> List<Tile>) : View
                 c.saveLayerAlpha(0f, 0f, width.toFloat(), height.toFloat(), (timeLeft.coerceAtMost(180) * 180 / 180).toInt())
                 c.translate(width / 2f + (i - .5f) * size, height / 2f)
                 c.scale(size * .28f, size * .28f)
-                BotanicalSymbols.draw(c, ink, tile.symbol, context); c.restore()
+                BotanicalSymbols.drawTile(c, ink, tile.symbol, context); c.restore()
             }
             ink.style = Paint.Style.STROKE; ink.color = (theme.palette.primaryAccent and 0x00ffffff) or (90 shl 24); ink.strokeWidth = 2f
             c.drawRoundRect(2f, 2f, width - 2f, height - 2f, gap, gap, ink)

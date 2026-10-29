@@ -19,8 +19,8 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     // Unit-space shaders are shared across every tile; only their local matrix changes.
     private val ceramicLight = LinearGradient(0f, 0f, 0f, 1f,
-        intArrayOf(0xfffffdf5.toInt(), 0xfff8f2e3.toInt(), 0xfff0e7d3.toInt(), 0xffe2d2b1.toInt()),
-        floatArrayOf(0f, .3f, .88f, 1f), Shader.TileMode.CLAMP)
+        intArrayOf(0xfffffdf5.toInt(), 0xfffaf5e9.toInt(), 0xfff1e9d8.toInt(), 0xffe5d7bc.toInt()),
+        floatArrayOf(0f, .24f, .84f, 1f), Shader.TileMode.CLAMP)
     private val ceramicMuted = LinearGradient(0f, 0f, 0f, 1f,
         0xffdeded1.toInt(), 0xffc9cbbd.toInt(), Shader.TileMode.CLAMP)
     private val jade = LinearGradient(0f, 0f, 1f, 1f,
@@ -28,6 +28,12 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         floatArrayOf(0f, .4f, 1f), Shader.TileMode.CLAMP)
     private val glaze = RadialGradient(.2f, .08f, .85f,
         0x66ffffff, 0x00ffffff, Shader.TileMode.CLAMP)
+    private val goldTrim = LinearGradient(0f, 0f, 1f, 1f,
+        intArrayOf(0xffdfc78b.toInt(), 0xffae8543.toInt(), 0xffead7a2.toInt(), 0xff99783f.toInt()),
+        floatArrayOf(0f, .4f, .65f, 1f), Shader.TileMode.CLAMP)
+    private val wall = LinearGradient(0f, 0f, 1f, 1f,
+        intArrayOf(0xffe6dbc4.toInt(), 0xffb7a586.toInt(), 0xff938268.toInt()),
+        floatArrayOf(0f, .65f, 1f), Shader.TileMode.CLAMP)
     private val surfaceMatrix = Matrix()
     // Concealed backs use an identity-independent engraved laurel, never the assigned art.
     private val sealLeaf = Path().apply {
@@ -127,13 +133,15 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             val selected = available && game.selected == tile.id
             paint.style = Paint.Style.FILL
             // Two offset shadow bands: soft penumbra and a stronger contact shadow.
-            paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (tile.layer > 0) 38 else 26) shl 24)
-            canvas.drawRoundRect(layout.shadow(tile).offset(scale * .045f).android(), layout.radius * 1.2f, layout.radius * 1.2f, paint)
-            paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (tile.layer > 0) 96 else 68) shl 24)
-            canvas.drawRoundRect(layout.shadow(tile).android(), layout.radius, layout.radius, paint)
-            paint.color = if (back) 0xff123e32.toInt() else 0xffa99468.toInt()
+            paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (tile.layer > 0) 44 else 30) shl 24)
+            canvas.drawRoundRect(layout.shadow(tile).offset(scale * .045f).android().apply { offset(scale * .035f, 0f) }, layout.radius * 1.2f, layout.radius * 1.2f, paint)
+            paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (tile.layer > 0) 104 else 76) shl 24)
+            canvas.drawRoundRect(layout.shadow(tile).android().apply { offset(scale * .015f, 0f) }, layout.radius, layout.radius, paint)
+            paint.color = if (back) 0xff123e32.toInt() else 0xffa39478.toInt()
+            if (!back) surface(wall, face)
             canvas.drawRoundRect(layout.body(tile).android(), layout.radius, layout.radius, paint)
-            paint.color = if (back) 0xff3a7259.toInt() else 0xffd8c49b.toInt()
+            paint.shader = null
+            paint.color = if (back) 0xff3a7259.toInt() else 0xffd9ccb2.toInt()
             canvas.drawRoundRect(layout.edge(tile).android(), layout.radius, layout.radius, paint)
             surface(if (available) ceramicLight else ceramicMuted, face)
             canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
@@ -144,9 +152,15 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             paint.shader = null
             // One fine warm rim; the highlight follows only the upper edge.
             paint.style = Paint.Style.STROKE
-            paint.strokeWidth = scale * .012f
+            paint.strokeWidth = scale * .016f
             paint.color = if (available) 0xffbd9750.toInt() else 0xffa99670.toInt()
+            if (available) surface(goldTrim, face)
             canvas.drawRoundRect(face.inset(paint.strokeWidth / 2).android(), layout.radius, layout.radius, paint)
+            paint.shader = null
+            // Fine inner bevel catches the same upper-left light as the ceramic wall.
+            paint.strokeWidth = scale * .009f
+            paint.color = if (available) 0x90fffdf2.toInt() else 0x35fffdf2
+            canvas.drawRoundRect(face.inset(scale * .027f).android(), layout.radius * .85f, layout.radius * .85f, paint)
             paint.strokeWidth = scale * .014f
             paint.color = if (available) 0xcffffef7.toInt() else 0x55fffef7
             canvas.drawLine(face.left + layout.radius, face.top + scale * .022f,
@@ -164,7 +178,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
                 canvas.save()
                 canvas.translate(r.centerX(), r.centerY())
                 canvas.scale(scale * .34f, scale * .34f)
-                if (!back) BotanicalSymbols.draw(canvas, paint, tile.symbol, context)
+                if (!back) BotanicalSymbols.drawTile(canvas, paint, tile.symbol, context)
                 canvas.restore()
                 if (!available) {
                     paint.color = (theme.palette.tileShadow and 0x00ffffff) or (22 shl 24)
@@ -184,7 +198,12 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         c.drawRoundRect(face, radius, radius, paint)
         surface(glaze, BoardRect(face.left, face.top, face.right, face.bottom))
         c.drawRoundRect(face, radius, radius, paint); paint.shader = null
-        paint.style = Paint.Style.STROKE; paint.strokeWidth = scale * .014f
+        paint.style = Paint.Style.STROKE; paint.strokeWidth = scale * .016f
+        surface(goldTrim, BoardRect(face.left, face.top, face.right, face.bottom))
+        c.drawRoundRect(face.left + scale * .008f, face.top + scale * .008f,
+            face.right - scale * .008f, face.bottom - scale * .008f, radius, radius, paint)
+        paint.shader = null
+        paint.strokeWidth = scale * .014f
         paint.color = Color.rgb(193, 174, 113)
         val inset = RectF(face).apply { inset(scale * .055f, scale * .055f) }
         c.drawRoundRect(inset, radius * .7f, radius * .7f, paint)
@@ -344,7 +363,19 @@ internal object BotanicalSymbols {
     // Bounded process cache: 23 x 256 x 256 ARGB pixels = at most 5.75 MiB.
     // Android resources are local; no Context or Activity is retained.
     private val artwork = arrayOfNulls<Bitmap>(23)
-    private val destination = RectF(-1.12f, -1.12f, 1.12f, 1.12f)
+    private val sources = arrayOfNulls<Rect>(23)
+    private val destinations = arrayOfNulls<RectF>(23)
+    // Maximum ink extents in shared symbol coordinates: board uses .34 × tile width.
+    // Tall sprigs get portrait space; round flowers stay balanced; wings favor width.
+    private fun opticalSize(symbol: Symbol): Pair<Float, Float> = when (symbol) {
+        Symbol.LAVENDER, Symbol.FERN, Symbol.BAMBOO -> 2.30f to 2.94f
+        Symbol.IRIS, Symbol.CACTUS, Symbol.PINECONE -> 2.28f to 2.78f
+        Symbol.LEAF, Symbol.VEINED_LEAF, Symbol.DOUBLE_LEAF -> 2.30f to 2.70f
+        Symbol.BUTTERFLY, Symbol.DRAGONFLY -> 2.38f to 2.58f
+        Symbol.SUNFLOWER -> 2.22f to 2.50f
+        Symbol.FLOWER, Symbol.CHERRY_BLOSSOM, Symbol.YELLOW_DAISY -> 2.34f to 2.60f
+        else -> 2.30f to 2.64f
+    }
     private val artworkPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
     private val resourceIds = intArrayOf(
         R.drawable.botanical_leaf, R.drawable.botanical_lotus, R.drawable.botanical_fern,
@@ -364,11 +395,38 @@ internal object BotanicalSymbols {
         BitmapFactory.decodeResource(context.resources, resourceIds[id], BitmapFactory.Options().apply {
             inScaled = false; inPreferredConfig = Bitmap.Config.ARGB_8888
         })
-    ).also { artwork[id] = it }
+    ).also { bitmap ->
+        // Scan once on decode, preserving every nontransparent pixel and aspect ratio.
+        val row = IntArray(bitmap.width)
+        var left = bitmap.width; var top = bitmap.height; var right = -1; var bottom = -1
+        for (y in 0 until bitmap.height) {
+            bitmap.getPixels(row, 0, bitmap.width, 0, y, bitmap.width, 1)
+            for (x in row.indices) if (Color.alpha(row[x]) > 0) {
+                left = minOf(left, x); right = maxOf(right, x)
+                top = minOf(top, y); bottom = maxOf(bottom, y)
+            }
+        }
+        require(right >= left && bottom >= top) { "Empty botanical asset $id" }
+        val source = Rect(left, top, right + 1, bottom + 1)
+        val symbol = Symbol.entries.single { it.stableId == id }
+        val (maxWidth, maxHeight) = opticalSize(symbol)
+        val factor = minOf(maxWidth / source.width(), maxHeight / source.height())
+        val halfWidth = source.width() * factor / 2
+        val halfHeight = source.height() * factor / 2
+        sources[id] = source
+        destinations[id] = RectF(-halfWidth, -halfHeight, halfWidth, halfHeight)
+        artwork[id] = bitmap
+    }
+    private val welcomeDestination = RectF(-1.12f, -1.12f, 1.12f, 1.12f)
+    // Home artwork retains its original composition; only gameplay uses optical fitting.
     fun draw(c: Canvas, p: Paint, symbol: Symbol, context: Context) {
+        c.drawBitmap(load(context, symbol.stableId), null, welcomeDestination, artworkPaint)
+        p.style = Paint.Style.FILL
+    }
+    fun drawTile(c: Canvas, p: Paint, symbol: Symbol, context: Context) {
         val bitmap = load(context, symbol.stableId)
         // Dedicated paint prevents caller stroke style, alpha, or tint leaking into artwork.
-        c.drawBitmap(bitmap, null, destination, artworkPaint)
+        c.drawBitmap(bitmap, sources[symbol.stableId], requireNotNull(destinations[symbol.stableId]), artworkPaint)
         p.style = Paint.Style.FILL
     }
 }

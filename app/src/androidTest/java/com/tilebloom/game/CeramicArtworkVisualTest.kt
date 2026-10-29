@@ -3,6 +3,8 @@ package com.tilebloom.game
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import com.tilebloom.game.presentation.BotanicalSymbols
 import android.test.InstrumentationTestCase
 import android.view.View
 import com.tilebloom.game.domain.*
@@ -20,6 +22,30 @@ class CeramicArtworkVisualTest : InstrumentationTestCase() {
         view.layout(0, 0, width, width * 3 / 2)
         return Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888).also {
             val canvas = Canvas(it); canvas.drawColor(Color.rgb(25, 48, 40)); view.draw(canvas)
+        }
+    }
+    fun testNormalizedArtFitsPortraitFaceWithSafeMargins() {
+        instrumentation.runOnMainSync {
+            for (symbol in Symbol.entries) {
+                val bitmap = Bitmap.createBitmap(360, 440, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bitmap)
+                canvas.translate(180f, 220f); canvas.scale(100f, 100f)
+                BotanicalSymbols.drawTile(canvas, Paint(), symbol, instrumentation.targetContext)
+                var left = bitmap.width; var right = -1
+                var top = bitmap.height; var bottom = -1
+                for (y in 0 until bitmap.height) for (x in 0 until bitmap.width) {
+                    if (Color.alpha(bitmap.getPixel(x, y)) > 0) {
+                        left = minOf(left, x); right = maxOf(right, x)
+                        top = minOf(top, y); bottom = maxOf(bottom, y)
+                    }
+                }
+                // The real face is .93 × 1.23 tile units; artwork transform is .34.
+                assertTrue("Horizontal safe margin $symbol", left >= 60 && right <= 300)
+                assertTrue("Vertical safe margin $symbol", top >= 70 && bottom <= 370)
+                assertTrue("Empty art $symbol", right > left && bottom > top)
+                assertTrue("Undersized art $symbol", maxOf(right-left, bottom-top) >= 215)
+                bitmap.recycle()
+            }
         }
     }
     fun testCatalogIsDistinctDeterministicAndHiddenBacksConcealEveryIdentity() {
@@ -71,16 +97,17 @@ class CeramicArtworkVisualTest : InstrumentationTestCase() {
         val symbols = listOf(Symbol.LEAF, Symbol.LAVENDER, Symbol.FLOWER,
             Symbol.SUNFLOWER, Symbol.CACTUS, Symbol.BUTTERFLY, Symbol.MUSHROOM,
             Symbol.VEINED_LEAF, Symbol.DOUBLE_LEAF, Symbol.YELLOW_DAISY,
-            Symbol.CHERRY_BLOSSOM, Symbol.IRIS, Symbol.LOTUS, Symbol.FERN)
+            Symbol.CHERRY_BLOSSOM, Symbol.IRIS, Symbol.LOTUS, Symbol.FERN, Symbol.LADYBUG)
         val tiles = symbols.mapIndexed { i, symbol ->
             Tile(i, symbol, (i % 4 * 2).toDouble(), (i / 4 * 2).toDouble(), 0)
-        } + listOf(Tile(90, Symbol.FLOWER, 4.0, 6.0, 0, mystery = true),
-            Tile(91, Symbol.FLOWER, 6.0, 6.0, 0, mystery = true, revealed = true),
+        } + listOf(Tile(90, Symbol.FLOWER, 0.0, 8.0, 0, mystery = true),
+            Tile(91, Symbol.FLOWER, 2.0, 8.0, 0, mystery = true, revealed = true),
             // Center leaf has both lateral neighbors: visibly blocked, with no covering tile.
-            Tile(92, Symbol.FERN, 0.0, 8.0, 0), Tile(93, Symbol.LEAF, 1.0, 8.0, 0),
-            Tile(94, Symbol.FERN, 2.0, 8.0, 0))
+            Tile(92, Symbol.FERN, 4.0, 8.0, 0), Tile(93, Symbol.LEAF, 5.0, 8.0, 0),
+            Tile(94, Symbol.FERN, 6.0, 8.0, 0),
+            Tile(95, Symbol.LAVENDER, 0.0, 10.0, 0), Tile(96, Symbol.FLOWER, .5, 10.0, 1))
         instrumentation.runOnMainSync {
-            val output = File(instrumentation.targetContext.filesDir, "codex44-visual").apply { mkdirs() }
+            val output = File(instrumentation.targetContext.filesDir, "codex45-visual").apply { mkdirs() }
             for (width in listOf(360, 800)) {
                 val bitmap = render(tiles, width, GardenTheme.forLevel(1))
                 File(output, "premium-showcase-${width}px.png").outputStream().use {
@@ -90,8 +117,10 @@ class CeramicArtworkVisualTest : InstrumentationTestCase() {
             }
         }
     }
-    fun testResponsiveCatalogAndDenseLevel33Fixtures() {
-        val level = Levels.get(33L) // Generate off the UI thread, exactly as production does.
+    fun testResponsiveCatalogAndDenseLevel33Fixtures() = responsiveFixtures(33L)
+    fun testResponsiveCatalogAndDenseLevel37Fixtures() = responsiveFixtures(37L)
+    private fun responsiveFixtures(levelNumber: Long) {
+        val level = Levels.get(levelNumber) // Generate off the UI thread, exactly as production does.
         val atlas = Symbol.entries.mapIndexed { i, s -> Tile(i, s, (i % 6 * 2).toDouble(), (i / 6 * 2).toDouble(), 0) }
         val overlap = listOf(Tile(0, Symbol.LEAF, 0.0, 0.0, 0),
             Tile(1, Symbol.LOTUS, .5, 0.0, 1), Tile(2, Symbol.BUTTERFLY, 3.0, 0.0, 0),
@@ -99,9 +128,9 @@ class CeramicArtworkVisualTest : InstrumentationTestCase() {
             Tile(4, Symbol.LAVENDER, 5.0, 0.0, 0, mystery = true),
             Tile(5, Symbol.LAVENDER, 7.0, 0.0, 0, mystery = true, revealed = true))
         instrumentation.runOnMainSync {
-            val output = File(instrumentation.targetContext.filesDir, "codex44-visual").apply { mkdirs() }
+            val output = File(instrumentation.targetContext.filesDir, "codex45-visual").apply { mkdirs() }
             for (width in listOf(320, 360, 400, 800)) for (theme in GardenTheme.all) {
-                for ((name, tiles) in listOf("catalog" to atlas, "level33" to level.tiles, "occlusion" to overlap)) {
+                for ((name, tiles) in listOf("catalog" to atlas, "level$levelNumber" to level.tiles, "occlusion" to overlap)) {
                     val pixels = (width * instrumentation.targetContext.resources.displayMetrics.density).toInt()
                     val bitmap = render(tiles, pixels, theme)
                     File(output, "$name-${theme.id}-${width}dp.png").outputStream().use {
