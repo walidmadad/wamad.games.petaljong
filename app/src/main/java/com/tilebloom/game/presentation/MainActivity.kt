@@ -21,6 +21,9 @@ import com.tilebloom.game.storage.GameStore
 import com.tilebloom.game.storage.ProgressRepository
 
 class MainActivity : Activity() {
+    private lateinit var audio: com.tilebloom.game.audio.GameAudioManager
+    private val muteButtons = mutableListOf<ImageButton>()
+    private var audioDialog: AlertDialog? = null
     private lateinit var progress: ProgressController
     private val session get() = progress.session
     private val game get() = session.game
@@ -68,7 +71,7 @@ class MainActivity : Activity() {
     private var resumed = false
     private var focused = false
     private var pendingVictory: Long? = null
-    private val exposureChanged: () -> Unit = { if (!isDestroyed) { accountGameplay(); if (::navigation.isInitialized) update() } }
+    private val exposureChanged: () -> Unit = { if (!isDestroyed) { audio.advertisement(AdExposure.busy); accountGameplay(); if (::navigation.isInitialized) update() } }
     private var timingEligible = false
     private fun accountGameplay() {
         val ready = ::navigation.isInitialized
@@ -126,6 +129,8 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        volumeControlStream = android.media.AudioManager.STREAM_MUSIC
+        audio = com.tilebloom.game.audio.GameAudioManager(applicationContext)
         AdExposure.initialize(applicationContext)
         AdExposure.changed = exposureChanged
         // Decode only the bounded save envelope; generation/restoration stays off the UI thread.
@@ -199,6 +204,7 @@ class MainActivity : Activity() {
         fun add(view: View, top: Int = 0, height: Int = -2) {
             content.addView(view, LinearLayout.LayoutParams(-1, height).apply { topMargin = dp(top) })
         }
+        add(audioControls())
         add(textLabel(42f).apply {
             setText(R.string.app_name); typeface = Typeface.create("serif", Typeface.NORMAL)
             letterSpacing = .03f; maxLines = 1
@@ -276,6 +282,7 @@ class MainActivity : Activity() {
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
         connection.background = null
+        connection.addView(audioControls(), LinearLayout.LayoutParams(-1, dp(48)))
         connection.addView(ImageView(this).apply {
             id = R.id.offline_icon
             setImageResource(R.drawable.ic_network_off)
@@ -343,10 +350,14 @@ class MainActivity : Activity() {
             setPadding(dp(16), dp(8), dp(16), dp(10))
         }
         gameplay = column
-        column.addView(textLabel(if (compact) 25f else 29f).apply {
+        val header = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
+        header.addView(textLabel(if (compact) 25f else 29f).apply {
             setText(R.string.app_name); typeface = Typeface.create("serif", Typeface.NORMAL)
-            letterSpacing = .03f
-        }, LinearLayout.LayoutParams(-1, -2))
+            maxLines = 1
+            setAutoSizeTextTypeUniformWithConfiguration(14, 29, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
+        }, LinearLayout.LayoutParams(0, -2, 1f))
+        header.addView(audioControls(), LinearLayout.LayoutParams(-2, dp(48)))
+        column.addView(header, LinearLayout.LayoutParams(-1, -2))
         val status = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             background = GardenStyle.surface(this@MainActivity, GardenStyle.panel, 16, false)
@@ -364,7 +375,7 @@ class MainActivity : Activity() {
         column.addView(status, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(8); bottomMargin = dp(10) })
         tray = TileTrayView(this) { game.tray }.apply { id = R.id.tray }
         column.addView(tray, LinearLayout.LayoutParams(-1, dp(if (compact) 76 else 84)))
-        board = MahjongBoardView(this, game) { completedByPlayer() }.apply { id = R.id.board }
+        board = MahjongBoardView(this, game) { completedByPlayer() }.apply { id = R.id.board; audioCue = { audio.play(it) } }
         val area = FrameLayout(this)
         column.addView(area, LinearLayout.LayoutParams(-1, 0, 1f).apply { topMargin = dp(4) })
         area.addView(board, FrameLayout.LayoutParams(-1, -1))
@@ -409,6 +420,7 @@ class MainActivity : Activity() {
                                 if (online && navigation.state.screen == GardenScreen.GAME && session.level.id == identity && game.snapshot() == expected) {
                                     val id = result?.id
                                     if (id != null && progress.acceptHint(id, expected)) {
+                                        audio.play(AudioCue.HINT)
                                         board.showHint(id)
                                         update()
                                         Toast.makeText(this@MainActivity, if (result.kind == ActionKind.REVEAL) R.string.hint_reveal else R.string.hint_collect, Toast.LENGTH_SHORT).show()
@@ -428,7 +440,7 @@ class MainActivity : Activity() {
             setOnClickListener {
                 if (!online) return@setOnClickListener
                 if (progress.wallet.balance == 0) { requestReward(RewardPurpose.UNDO); return@setOnClickListener }
-                if (!GameStore.transitioning && progress.undo()) {
+                if (!GameStore.transitioning && audio.perform(AudioCue.UNDO) { progress.undo() }) {
                     hintRequest++; hintPending = false; board.clearFeedback(); tray.clearFeedback(); update()
                 }
             }
@@ -436,7 +448,7 @@ class MainActivity : Activity() {
         restart = GardenIconButton(this, R.drawable.ic_restart).apply {
             id = R.id.restart; contentDescription = getString(R.string.restart_description); tooltipText = contentDescription
             setOnClickListener {
-                if (online && !GameStore.transitioning && session.restart()) {
+                if (online && !GameStore.transitioning && audio.perform(AudioCue.RESTART) { session.restart() }) {
                     hintRequest++; hintPending = false; board.clearFeedback(); tray.clearFeedback(); update()
                 }
             }
@@ -777,10 +789,10 @@ class MainActivity : Activity() {
         }
     }
     override fun onResume() {
-        super.onResume(); resumed = true; update(); loadingScreen?.let { it.visibility = View.GONE }; loadingRefresh.run()
+        super.onResume(); resumed = true; audio.advertisement(AdExposure.busy); audio.foreground(focused); update(); loadingScreen?.let { it.visibility = View.GONE }; loadingRefresh.run()
     }
     override fun onPause() {
-        resumed = false; pendingVictory = null
+        resumed = false; audio.foreground(false); pendingVictory = null
         loadingScreen?.stopAnimation(); root.removeCallbacks(loadingRefresh)
         accountGameplay(); AdExposure.save()
         super.onPause()
@@ -788,6 +800,7 @@ class MainActivity : Activity() {
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         focused = hasFocus
+        if (::audio.isInitialized) audio.foreground(resumed && hasFocus)
         if (!hasFocus) pendingVictory = null
         accountGameplay(); AdExposure.save()
     }
@@ -807,6 +820,8 @@ class MainActivity : Activity() {
         ProgressRepository.awaitWrites()
     }
     override fun onDestroy() {
+        audioDialog?.dismiss()
+        audio.close()
         loadingScreen?.stopAnimation(); root.removeCallbacks(loadingRefresh)
         if (AdExposure.changed === exposureChanged) AdExposure.changed = null
         connectivity.destroy()
@@ -847,6 +862,50 @@ class MainActivity : Activity() {
         levelLabel.setTextColor(palette.primaryAccent)
         counter.setTextColor(palette.textSecondary)
         feedback.setTextColor(palette.textSecondary)
+    }
+
+    private fun refreshAudioControls() {
+        muteButtons.forEach {
+            it.setImageResource(if (audio.policy.preferences.muted) R.drawable.ic_sound_off else R.drawable.ic_sound_on)
+            it.contentDescription = getString(if (audio.policy.preferences.muted) R.string.audio_unmute else R.string.audio_mute)
+        }
+    }
+    private fun audioControls(): LinearLayout = LinearLayout(this).apply {
+        gravity = Gravity.END or Gravity.CENTER_VERTICAL
+        fun icon(resource: Int, description: Int, action: () -> Unit): ImageButton = ImageButton(this@MainActivity).apply {
+            setImageResource(resource); contentDescription = getString(description)
+            imageTintList = android.content.res.ColorStateList.valueOf(GardenStyle.gold)
+            background = GardenStyle.surface(this@MainActivity, GardenStyle.panel, 24, false)
+            setPadding(dp(12), dp(12), dp(12), dp(12)); setOnClickListener { action() }
+        }
+        val mute = icon(R.drawable.ic_sound_on, R.string.audio_mute) {
+            audio.preferences(audio.policy.preferences.copy(muted = !audio.policy.preferences.muted)); refreshAudioControls()
+        }
+        muteButtons.add(mute); addView(mute, LinearLayout.LayoutParams(dp(48), dp(48)))
+        addView(icon(R.drawable.ic_audio_settings, R.string.audio_settings) { showAudioSettings() },
+            LinearLayout.LayoutParams(dp(48), dp(48)).apply { marginStart = dp(8) })
+        refreshAudioControls()
+    }
+    private fun showAudioSettings() {
+        if (audioDialog?.isShowing == true) return
+        val panel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL; setPadding(dp(24), dp(20), dp(24), dp(16))
+            addView(textLabel(22f, GardenStyle.gold).apply { setText(R.string.audio_title) })
+        }
+        fun toggle(label: Int, checked: Boolean, change: (Boolean) -> Unit) {
+            panel.addView(Switch(this).apply {
+                setText(label); setTextColor(GardenStyle.ivory); textSize = 16f
+                minHeight = dp(56); isChecked = checked
+                thumbTintList = android.content.res.ColorStateList.valueOf(GardenStyle.gold)
+                setOnCheckedChangeListener { _, value -> change(value); refreshAudioControls() }
+            }, LinearLayout.LayoutParams(-1, -2))
+        }
+        toggle(R.string.audio_effects, audio.policy.preferences.effects) { audio.preferences(audio.policy.preferences.copy(effects = it)) }
+        toggle(R.string.audio_music, audio.policy.preferences.music) { audio.preferences(audio.policy.preferences.copy(music = it)) }
+        toggle(R.string.audio_mute_all, audio.policy.preferences.muted) { audio.preferences(audio.policy.preferences.copy(muted = it)) }
+        audioDialog = AlertDialog.Builder(this).setView(panel).setPositiveButton(android.R.string.ok, null).create().also {
+            it.show(); it.window?.setBackgroundDrawable(GardenStyle.surface(this, GardenStyle.panel))
+        }
     }
 
     private fun dp(value: Int) = GardenStyle.dp(this, value)

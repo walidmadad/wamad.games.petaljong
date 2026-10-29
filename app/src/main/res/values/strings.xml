@@ -116,4 +116,11 @@
     <string name="mystery_revealed">%1$s revealed. Tap again to collect.</string>
     <string name="hint_reveal">Reveal the highlighted jade tile.</string>
     <string name="hint_collect">Collect the highlighted tile.</string>
+    <string name="audio_title">AUDIO</string>
+    <string name="audio_settings">Audio settings</string>
+    <string name="audio_effects">Sound Effects</string>
+    <string name="audio_music">Background Music</string>
+    <string name="audio_mute_all">Mute All Game Audio</string>
+    <string name="audio_mute">Mute game audio</string>
+    <string name="audio_unmute">Unmute game audio</string>
 </resources>

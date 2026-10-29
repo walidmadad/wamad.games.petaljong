@@ -40,6 +40,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
     private fun geometry() = cachedGeometry ?: BoardGeometry(width.toFloat(), height.toFloat(),
         BoardPadding(paddingLeft.toFloat(), paddingTop.toFloat(), paddingRight.toFloat(), paddingBottom.toFloat()), game.tiles).also { cachedGeometry = it }
     // Read-only presentation queries also allow instrumentation to assert real touch results.
+    var audioCue: (com.tilebloom.game.domain.AudioCue) -> Unit = {}
     val selectedTileId get() = game.selected
     val remainingTileCount get() = game.remaining.size
     fun tileCenter(id: Int): BoardPoint? = game.remaining.find { it.id == id }?.let { geometry().face(it).center }
@@ -254,7 +255,8 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
                         clearHint()
                         val before = game.tiles
                         val concealed = before.first { it.id == id }.concealed
-                        if (!game.interact(id)) return true
+                        val cues = com.tilebloom.game.domain.GameplayAudio.events(game) { game.interact(id) }
+                        cues.forEach(audioCue)
                         if (concealed) {
                             reveals.revealed(id, SystemClock.uptimeMillis())
                             announceForAccessibility(context.getString(R.string.mystery_revealed, BotanicalSymbols.label(context, before.first { it.id == id }.symbol)))
