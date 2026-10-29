@@ -1,0 +1,209 @@
+[
+  {
+    "stableId": 0,
+    "symbol": "LEAF",
+    "sha256": "b14c2372443076e625baa297478cad1818c4ed81fc53b2d32b132f1a473b2491",
+    "resource": "botanical_leaf.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 45142
+  },
+  {
+    "stableId": 1,
+    "symbol": "LOTUS",
+    "sha256": "8fbe0d4aaa8507c211880b2cca68d6c4a78ce28bac4daa232d0dbee651fbe2f9",
+    "resource": "botanical_lotus.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 64368
+  },
+  {
+    "stableId": 2,
+    "symbol": "FERN",
+    "sha256": "5fdef41b80d4c59d6c85d516b8cbccd2c8ba7917b4638e020d2db7eda828b9c1",
+    "resource": "botanical_fern.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 61590
+  },
+  {
+    "stableId": 3,
+    "symbol": "FLOWER",
+    "sha256": "6938fb555ae594f787c282b485a2ba2bc85457c4948276e69baad61e42af2411",
+    "resource": "botanical_flower.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 60048
+  },
+  {
+    "stableId": 4,
+    "symbol": "BERRIES",
+    "sha256": "e32fea074e349e019c93d5c94fc90c96df0f1d17a82f640e2640424652cd8925",
+    "resource": "botanical_berries.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 69274
+  },
+  {
+    "stableId": 5,
+    "symbol": "SUNFLOWER",
+    "sha256": "51a430a0c0b8610fb334b5aafad0fcb6ff8cee0c3718765512c767b86bebbcb3",
+    "resource": "botanical_sunflower.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 64820
+  },
+  {
+    "stableId": 6,
+    "symbol": "MUSHROOM",
+    "sha256": "e83874e694fc3d19921b6ffd0d67586ea53632711c659489cebd3f00b89a5f57",
+    "resource": "botanical_mushroom.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 64700
+  },
+  {
+    "stableId": 7,
+    "symbol": "BUTTERFLY",
+    "sha256": "cb3bcdea4d42757bf0e5fb1a7e5792c221672ff43491486bdf07652988400d77",
+    "resource": "botanical_butterfly.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 61888
+  },
+  {
+    "stableId": 8,
+    "symbol": "BAMBOO",
+    "sha256": "fdbcd9f9b33c86e27447da9390b01898c87ec6978b29993db9c9853bae4e377e",
+    "resource": "botanical_bamboo.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 53478
+  },
+  {
+    "stableId": 9,
+    "symbol": "ACORN",
+    "sha256": "89c160aaed50cdebac7110c21f0e3c7f78855d5de0cef8d3c2bb26dda858b120",
+    "resource": "botanical_acorn.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 48082
+  },
+  {
+    "stableId": 10,
+    "symbol": "MAPLE_LEAF",
+    "sha256": "bba391072fcbbb14985cb5538c740890e7c929200ce86c0dc2c29363dd042fe8",
+    "resource": "botanical_maple_leaf.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 57150
+  },
+  {
+    "stableId": 11,
+    "symbol": "PINECONE",
+    "sha256": "401b12801a8eec9015b00bd43ca1f0228f8e9bb8c3eef34a8554a9121dc80034",
+    "resource": "botanical_pinecone.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 65428
+  },
+  {
+    "stableId": 12,
+    "symbol": "IRIS",
+    "sha256": "87a7231f3564998fc929a75200e781c267e1c4e61e77ff0005038f6e04532f9a",
+    "resource": "botanical_iris.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 51996
+  },
+  {
+    "stableId": 13,
+    "symbol": "GINKGO_LEAF",
+    "sha256": "cf8dc2b6c4e0b7cbfb2672230ea5c463bd08bf9e5486bf01d570e00c35b743fa",
+    "resource": "botanical_ginkgo_leaf.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 45068
+  },
+  {
+    "stableId": 14,
+    "symbol": "CHERRY_BLOSSOM",
+    "sha256": "361ff74b5314a004da1a10232ded4e2cc52ce464ec32870695a7a051437189d6",
+    "resource": "botanical_cherry_blossom.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 58062
+  },
+  {
+    "stableId": 15,
+    "symbol": "DRAGONFLY",
+    "sha256": "3aee8d2e501fa33676df1ef07ed7ed1ce7f67ec756541999a0ee544e5eb92318",
+    "resource": "botanical_dragonfly.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 45682
+  },
+  {
+    "stableId": 16,
+    "symbol": "CACTUS",
+    "sha256": "e1d8abc3bd86b935f88e78c5a77e6ff1073f3ceffffc88645e3057cfbd88aed7",
+    "resource": "botanical_cactus.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 50170
+  },
+  {
+    "stableId": 17,
+    "symbol": "LAVENDER",
+    "sha256": "8dd9b8fe9f3ce7609bb220a29b7650a3850bee547c0a43b47e10343aa2b50102",
+    "resource": "botanical_lavender.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 49434
+  },
+  {
+    "stableId": 18,
+    "symbol": "LADYBUG",
+    "sha256": "e99b411b3ac26665e4ef82bfb610589a55c629d70a5faffdff28d47b0b7f15f5",
+    "resource": "botanical_ladybug.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 48758
+  },
+  {
+    "stableId": 19,
+    "symbol": "SNAIL",
+    "sha256": "6b32bf7af33c85c4c83d66a6cc41eba6fbceed7134e7677e4f5e29934d76102b",
+    "resource": "botanical_snail.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 52740
+  },
+  {
+    "stableId": 20,
+    "symbol": "VEINED_LEAF",
+    "sha256": "767b8c50697f33a0789850baccd5013bc09875e435bb4035ee8a78c1dba68c3c",
+    "resource": "botanical_veined_leaf.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 65286
+  },
+  {
+    "stableId": 21,
+    "symbol": "DOUBLE_LEAF",
+    "sha256": "c92705c36cb282981d10ffcbdaa3258e16127bfb5c238b1d0a18142ec55a68c7",
+    "resource": "botanical_double_leaf.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 34714
+  },
+  {
+    "stableId": 22,
+    "symbol": "YELLOW_DAISY",
+    "sha256": "9454a3cb7e24c58c1ce97e3c19df1dad8413dc06082a9ca85dec23635b687cb5",
+    "resource": "botanical_yellow_daisy.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 63718
+  }
+]

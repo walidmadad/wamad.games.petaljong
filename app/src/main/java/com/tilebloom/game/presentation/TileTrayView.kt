@@ -9,10 +9,14 @@ import com.tilebloom.game.R
 
 /** Presentation only; replayable engine state owns every tile. */
 class TileTrayView(context: Context, private val tiles: () -> List<Tile>) : View(context) {
-    init { layoutDirection = View.LAYOUT_DIRECTION_LTR }
+    init { layoutDirection = View.LAYOUT_DIRECTION_LTR; BotanicalSymbols.prepare(context) }
     var theme = GardenTheme.forLevel(1)
         set(value) { field = value; invalidate() }
     private val ink = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val ivory = LinearGradient(0f, 0f, 0f, 1f,
+        intArrayOf(0xfffffdf5.toInt(), 0xfff8f2e3.toInt(), 0xffe2d2b1.toInt()),
+        floatArrayOf(0f, .65f, 1f), Shader.TileMode.CLAMP)
+    private val materialMatrix = Matrix()
     private var previous = tiles().map { it.id }
     private var ghosts = emptyList<Tile>()
     private var lastTiles = tiles().toList()
@@ -52,14 +56,20 @@ class TileTrayView(context: Context, private val tiles: () -> List<Tile>) : View
             val r = slots[i]
             val tile = tiles().getOrNull(i)
             ink.style = Paint.Style.FILL
-            ink.color = if (tile == null) theme.palette.emptyTraySlot else theme.palette.availableTileFace
+            ink.color = if (tile == null) theme.palette.emptyTraySlot else GardenStyle.ivory
+            if (tile != null) {
+                materialMatrix.setScale(r.width(), r.height())
+                materialMatrix.postTranslate(r.left, r.top)
+                ivory.setLocalMatrix(materialMatrix); ink.shader = ivory
+            }
             c.drawRoundRect(r, gap, gap, ink)
+            ink.shader = null
             ink.style = Paint.Style.STROKE; ink.strokeWidth = resources.displayMetrics.density
-            ink.color = if (tiles().size == 4) theme.palette.secondaryAccent else if (tile == null) theme.palette.border else theme.palette.primaryAccent
+            ink.color = if (tiles().size == 4) theme.palette.secondaryAccent else if (tile == null) theme.palette.border else GardenStyle.gold
             c.drawRoundRect(r, gap, gap, ink)
             tile?.let {
                 c.save(); c.translate(r.centerX(), r.centerY()); c.scale(size * .34f, size * .34f)
-                BotanicalSymbols.draw(c, ink, it.symbol); c.restore()
+                BotanicalSymbols.draw(c, ink, it.symbol, context); c.restore()
             }
         }
         val timeLeft = pulseUntil - android.os.SystemClock.uptimeMillis()
@@ -68,7 +78,7 @@ class TileTrayView(context: Context, private val tiles: () -> List<Tile>) : View
                 c.saveLayerAlpha(0f, 0f, width.toFloat(), height.toFloat(), (timeLeft.coerceAtMost(180) * 180 / 180).toInt())
                 c.translate(width / 2f + (i - .5f) * size, height / 2f)
                 c.scale(size * .28f, size * .28f)
-                BotanicalSymbols.draw(c, ink, tile.symbol); c.restore()
+                BotanicalSymbols.draw(c, ink, tile.symbol, context); c.restore()
             }
             ink.style = Paint.Style.STROKE; ink.color = (theme.palette.primaryAccent and 0x00ffffff) or (90 shl 24); ink.strokeWidth = 2f
             c.drawRoundRect(2f, 2f, width - 2f, height - 2f, gap, gap, ink)

@@ -1,0 +1,14 @@
+Required Gradle unit/build/lint commands: attempted; all blocked before task execution by the read-only wrapper lock.
+Installed Gradle + writable /tmp cache: blocked before task execution by the unavailable wildcard IP/socket service.
+ADB: unavailable; cannot install local socket listener (Operation not permitted).
+JVM sources: compiled with cached Kotlin 1.9.24 / JDK 17.
+JVM regression tests: PASS, 308 tests, 219.75 seconds (enumerated compiled *Test.class files).
+First fallback runner invocation: initialization failure loading helper-only WitnessReplayTest.kt; corrected compiled-class runner used above.
+Existing APK certificate: matches fc1828f63432530e788baa4d69c70594157dfad0312a977e710158393e4110f6.
+No fresh APK, installation, uninstallation, data clearing, executed Android instrumentation or runtime frame measurement.
+Android resources: aapt2 compile/link PASS.
+Production + Android test sources: diagnostic JDK 17 / Kotlin 1.9.24 compile PASS (existing deprecation warnings); instrumentation NOT executed.
+Assets: 23 unique transparent lossless WebP resources, all 256x256, total 1,281,596 bytes.
+Asset contact sheets: inspected all identities and 16/24/32/48px samples; not Android screenshots.
+Authoritative icon image: not available in this session; direct comparison not performed.
+Git diff whitespace check: PASS.

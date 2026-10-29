@@ -5,10 +5,12 @@ import android.graphics.*
 import android.view.View
 import com.tilebloom.game.domain.Symbol
 
-/** Static original botanical composition. No generation, bitmaps or perpetual redraw. */
+/** Static original botanical composition. Shared bundled botanical artwork; no perpetual redraw. */
 class GardenWelcomeArt(context: Context) : View(context) {
     private val ink = Paint(Paint.ANTI_ALIAS_FLAG)
-    init { importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO }
+    private val ivory = LinearGradient(-25f, -47f, 25f, 39f,
+        0xfffffdf5.toInt(), 0xffe9ddc3.toInt(), Shader.TileMode.CLAMP)
+    init { importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO; BotanicalSymbols.prepare(context) }
     override fun onDraw(c: Canvas) {
         super.onDraw(c)
         val unit = minOf(width / 280f, height / 210f)
@@ -24,9 +26,12 @@ class GardenWelcomeArt(context: Context) : View(context) {
             c.drawRoundRect(-32f, -41f, 34f, 47f, 8f, 8f, ink)
             ink.color = Color.rgb(181, 167, 126)
             c.drawRoundRect(-33f, -45f, 33f, 43f, 8f, 8f, ink)
-            ink.color = GardenStyle.ivory
+            ink.shader = ivory
             c.drawRoundRect(-33f, -47f, 33f, 39f, 8f, 8f, ink)
-            c.scale(23f, 23f); BotanicalSymbols.draw(c, ink, symbol); c.restore()
+            ink.shader = null; ink.color = GardenStyle.gold
+            ink.style = Paint.Style.STROKE; ink.strokeWidth = .7f
+            c.drawRoundRect(-32.5f, -46.5f, 32.5f, 38.5f, 8f, 8f, ink)
+            c.scale(23f, 23f); BotanicalSymbols.draw(c, ink, symbol, context); c.restore()
         }
         tile(-49f, 9f, -22f, Symbol.FERN)
         tile(48f, 9f, 22f, Symbol.FLOWER)

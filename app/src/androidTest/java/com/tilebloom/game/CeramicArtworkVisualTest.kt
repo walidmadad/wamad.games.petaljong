@@ -66,6 +66,30 @@ class CeramicArtworkVisualTest : InstrumentationTestCase() {
             before.recycle(); restored.recycle()
         }
     }
+    fun testPremiumReferenceTrioAndMysteryShowcase() {
+        // Explicit reference order, followed by materially different silhouettes and near variants.
+        val symbols = listOf(Symbol.LEAF, Symbol.LAVENDER, Symbol.FLOWER,
+            Symbol.SUNFLOWER, Symbol.CACTUS, Symbol.BUTTERFLY, Symbol.MUSHROOM,
+            Symbol.VEINED_LEAF, Symbol.DOUBLE_LEAF, Symbol.YELLOW_DAISY,
+            Symbol.CHERRY_BLOSSOM, Symbol.IRIS, Symbol.LOTUS, Symbol.FERN)
+        val tiles = symbols.mapIndexed { i, symbol ->
+            Tile(i, symbol, (i % 4 * 2).toDouble(), (i / 4 * 2).toDouble(), 0)
+        } + listOf(Tile(90, Symbol.FLOWER, 4.0, 6.0, 0, mystery = true),
+            Tile(91, Symbol.FLOWER, 6.0, 6.0, 0, mystery = true, revealed = true),
+            // Center leaf has both lateral neighbors: visibly blocked, with no covering tile.
+            Tile(92, Symbol.FERN, 0.0, 8.0, 0), Tile(93, Symbol.LEAF, 1.0, 8.0, 0),
+            Tile(94, Symbol.FERN, 2.0, 8.0, 0))
+        instrumentation.runOnMainSync {
+            val output = File(instrumentation.targetContext.filesDir, "codex44-visual").apply { mkdirs() }
+            for (width in listOf(360, 800)) {
+                val bitmap = render(tiles, width, GardenTheme.forLevel(1))
+                File(output, "premium-showcase-${width}px.png").outputStream().use {
+                    assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it))
+                }
+                bitmap.recycle()
+            }
+        }
+    }
     fun testResponsiveCatalogAndDenseLevel33Fixtures() {
         val level = Levels.get(33L) // Generate off the UI thread, exactly as production does.
         val atlas = Symbol.entries.mapIndexed { i, s -> Tile(i, s, (i % 6 * 2).toDouble(), (i / 6 * 2).toDouble(), 0) }
@@ -75,7 +99,7 @@ class CeramicArtworkVisualTest : InstrumentationTestCase() {
             Tile(4, Symbol.LAVENDER, 5.0, 0.0, 0, mystery = true),
             Tile(5, Symbol.LAVENDER, 7.0, 0.0, 0, mystery = true, revealed = true))
         instrumentation.runOnMainSync {
-            val output = File(instrumentation.targetContext.filesDir, "codex43-visual").apply { mkdirs() }
+            val output = File(instrumentation.targetContext.filesDir, "codex44-visual").apply { mkdirs() }
             for (width in listOf(320, 360, 400, 800)) for (theme in GardenTheme.all) {
                 for ((name, tiles) in listOf("catalog" to atlas, "level33" to level.tiles, "occlusion" to overlap)) {
                     val pixels = (width * instrumentation.targetContext.resources.displayMetrics.density).toInt()

@@ -13,19 +13,32 @@ import com.tilebloom.game.presentation.board.*
 import kotlin.math.*
 
 class MahjongBoardView(context: Context, private var game: Game, private val changed: () -> Unit) : View(context) {
-    init { layoutDirection = View.LAYOUT_DIRECTION_LTR }
+    init { layoutDirection = View.LAYOUT_DIRECTION_LTR; BotanicalSymbols.prepare(context) }
     var theme = GardenTheme.forLevel(1)
         set(value) { field = value; invalidate() }
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     // Unit-space shaders are shared across every tile; only their local matrix changes.
     private val ceramicLight = LinearGradient(0f, 0f, 0f, 1f,
-        intArrayOf(0xfffaf8ef.toInt(), 0xfff1eee2.toInt(), 0xffe8e3d4.toInt()),
-        floatArrayOf(0f, .65f, 1f), Shader.TileMode.CLAMP)
+        intArrayOf(0xfffffdf5.toInt(), 0xfff8f2e3.toInt(), 0xfff0e7d3.toInt(), 0xffe2d2b1.toInt()),
+        floatArrayOf(0f, .3f, .88f, 1f), Shader.TileMode.CLAMP)
     private val ceramicMuted = LinearGradient(0f, 0f, 0f, 1f,
         0xffdeded1.toInt(), 0xffc9cbbd.toInt(), Shader.TileMode.CLAMP)
     private val jade = LinearGradient(0f, 0f, 1f, 1f,
-        0xff347d65.toInt(), 0xff174e40.toInt(), Shader.TileMode.CLAMP)
+        intArrayOf(0xff50967b.toInt(), 0xff185c48.toInt(), 0xff103d32.toInt()),
+        floatArrayOf(0f, .4f, 1f), Shader.TileMode.CLAMP)
+    private val glaze = RadialGradient(.2f, .08f, .85f,
+        0x66ffffff, 0x00ffffff, Shader.TileMode.CLAMP)
     private val surfaceMatrix = Matrix()
+    // Concealed backs use an identity-independent engraved laurel, never the assigned art.
+    private val sealLeaf = Path().apply {
+        moveTo(0f, .08f)
+        cubicTo(.02f, -.2f, .24f, -.32f, .39f, -.3f)
+        cubicTo(.39f, -.1f, .2f, .1f, 0f, .08f)
+        close()
+    }
+    private val sealStem = Path().apply {
+        moveTo(.04f, .75f); cubicTo(.58f, .45f, .67f, -.14f, .28f, -.72f)
+    }
     private val emblemSides = floatArrayOf(-1f, 1f)
     private fun surface(shader: Shader, face: BoardRect) {
         surfaceMatrix.setScale(face.right - face.left, face.bottom - face.top)
@@ -118,17 +131,21 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             canvas.drawRoundRect(layout.shadow(tile).offset(scale * .045f).android(), layout.radius * 1.2f, layout.radius * 1.2f, paint)
             paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (tile.layer > 0) 96 else 68) shl 24)
             canvas.drawRoundRect(layout.shadow(tile).android(), layout.radius, layout.radius, paint)
-            paint.color = 0xffaaa998.toInt()
+            paint.color = if (back) 0xff123e32.toInt() else 0xffa99468.toInt()
             canvas.drawRoundRect(layout.body(tile).android(), layout.radius, layout.radius, paint)
-            paint.color = 0xffd6d1bd.toInt()
+            paint.color = if (back) 0xff3a7259.toInt() else 0xffd8c49b.toInt()
             canvas.drawRoundRect(layout.edge(tile).android(), layout.radius, layout.radius, paint)
             surface(if (available) ceramicLight else ceramicMuted, face)
             canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
+            if (available) {
+                surface(glaze, face)
+                canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
+            }
             paint.shader = null
             // One fine warm rim; the highlight follows only the upper edge.
             paint.style = Paint.Style.STROKE
             paint.strokeWidth = scale * .012f
-            paint.color = if (available) 0xffc7c3af.toInt() else 0xffb7bba9.toInt()
+            paint.color = if (available) 0xffbd9750.toInt() else 0xffa99670.toInt()
             canvas.drawRoundRect(face.inset(paint.strokeWidth / 2).android(), layout.radius, layout.radius, paint)
             paint.strokeWidth = scale * .014f
             paint.color = if (available) 0xcffffef7.toInt() else 0x55fffef7
@@ -147,7 +164,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
                 canvas.save()
                 canvas.translate(r.centerX(), r.centerY())
                 canvas.scale(scale * .34f, scale * .34f)
-                if (!back) BotanicalSymbols.draw(canvas, paint, tile.symbol)
+                if (!back) BotanicalSymbols.draw(canvas, paint, tile.symbol, context)
                 canvas.restore()
                 if (!available) {
                     paint.color = (theme.palette.tileShadow and 0x00ffffff) or (22 shl 24)
@@ -164,6 +181,8 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
     private fun drawMystery(c: Canvas, face: RectF, radius: Float, scale: Float) {
         paint.style = Paint.Style.FILL
         surface(jade, BoardRect(face.left, face.top, face.right, face.bottom))
+        c.drawRoundRect(face, radius, radius, paint)
+        surface(glaze, BoardRect(face.left, face.top, face.right, face.bottom))
         c.drawRoundRect(face, radius, radius, paint); paint.shader = null
         paint.style = Paint.Style.STROKE; paint.strokeWidth = scale * .014f
         paint.color = Color.rgb(193, 174, 113)
@@ -172,18 +191,28 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         c.save(); c.translate(face.centerX(), face.centerY()); c.scale(scale * .25f, scale * .25f)
         paint.color = Color.rgb(214, 197, 126); paint.strokeWidth = .045f
         c.drawCircle(0f, 0f, 1f, paint)
-        repeat(5) {
-            c.save(); c.rotate(it * 72f)
-            c.drawOval(-.14f, -.62f, .14f, -.12f, paint); c.restore()
-        }
-        c.drawCircle(0f, 0f, .12f, paint)
-        c.drawLine(0f, .7f, 0f, .15f, paint)
-        paint.style = Paint.Style.FILL
+        // Raised central seed, framed by two engraved laurel branches.
+        paint.strokeWidth = .035f
         for (side in emblemSides) {
-            c.save(); c.scale(side, 1f); c.rotate(-25f)
-            c.drawOval(.03f, .22f, .48f, .43f, paint)
-            c.drawOval(.03f, .5f, .37f, .65f, paint); c.restore()
+            c.save(); c.scale(side, 1f)
+            c.drawPath(sealStem, paint)
+            for (i in 0..3) {
+                c.save(); c.translate(.28f + .05f * i, .45f - .27f * i)
+                c.rotate(-25f - i * 17f)
+                paint.style = Paint.Style.FILL; paint.color = 0xffb69751.toInt()
+                c.drawPath(sealLeaf, paint)
+                paint.style = Paint.Style.STROKE; paint.color = 0xffefdda1.toInt()
+                paint.strokeWidth = .018f
+                c.drawPath(sealLeaf, paint)
+                c.drawLine(.025f, .05f, .32f, -.24f, paint)
+                c.restore()
+            }
+            c.restore()
         }
+        paint.style = Paint.Style.FILL; paint.color = 0xffe6cb85.toInt()
+        c.drawOval(-.09f, -.36f, .09f, .18f, paint)
+        paint.style = Paint.Style.STROKE; paint.strokeWidth = .022f
+        c.drawLine(0f, .16f, 0f, .56f, paint)
         c.restore()
         paint.style = Paint.Style.FILL
     }
@@ -287,14 +316,6 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
 }
 
 internal object BotanicalSymbols {
-    private val green = Color.rgb(43, 100, 69)
-    private val leafPath = Path().apply {
-        moveTo(-.7f, .85f)
-        cubicTo(-1.2f, -.4f, -.2f, -1.1f, .8f, -.9f)
-        cubicTo(1.1f, .2f, .3f, .9f, -.7f, .85f)
-    }
-    private val lotusAngles = floatArrayOf(-55f, -28f, 0f, 28f, 55f)
-    private val berryCenters = listOf(-.43f to -.25f, .35f to -.1f, -.4f to .45f, .32f to .6f)
     fun label(context: Context, symbol: Symbol): String = context.getString(when (symbol) {
         Symbol.LEAF -> R.string.symbol_leaf
         Symbol.LOTUS -> R.string.symbol_lotus
@@ -320,329 +341,34 @@ internal object BotanicalSymbols {
         Symbol.DOUBLE_LEAF -> R.string.symbol_double_leaf
         Symbol.YELLOW_DAISY -> R.string.symbol_yellow_daisy
     })
-    // Record vector commands once per stable identity. No bitmap, path, or trigonometric
-    // construction occurs when a cached symbol is replayed during an animation.
-    private val illustrations = mutableMapOf<Symbol, Picture>()
-    fun draw(c: Canvas, p: Paint, symbol: Symbol) {
-        val picture = illustrations.getOrPut(symbol) {
-            Picture().also { picture ->
-                val recording = picture.beginRecording(320, 320)
-                recording.translate(160f, 160f); recording.scale(128f, 128f)
-                val ink = Paint(Paint.ANTI_ALIAS_FLAG)
-                ink.strokeJoin = Paint.Join.ROUND; ink.strokeCap = Paint.Cap.ROUND
-                drawIllustration(recording, ink, symbol)
-                details(recording, ink, symbol)
-                picture.endRecording()
-            }
-        }
-        c.save(); c.scale(1f / 128f, 1f / 128f); c.translate(-160f, -160f)
-        c.drawPicture(picture); c.restore()
+    // Bounded process cache: 23 x 256 x 256 ARGB pixels = at most 5.75 MiB.
+    // Android resources are local; no Context or Activity is retained.
+    private val artwork = arrayOfNulls<Bitmap>(23)
+    private val destination = RectF(-1.12f, -1.12f, 1.12f, 1.12f)
+    private val artworkPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+    private val resourceIds = intArrayOf(
+        R.drawable.botanical_leaf, R.drawable.botanical_lotus, R.drawable.botanical_fern,
+        R.drawable.botanical_flower, R.drawable.botanical_berries, R.drawable.botanical_sunflower,
+        R.drawable.botanical_mushroom, R.drawable.botanical_butterfly, R.drawable.botanical_bamboo,
+        R.drawable.botanical_acorn, R.drawable.botanical_maple_leaf, R.drawable.botanical_pinecone,
+        R.drawable.botanical_iris, R.drawable.botanical_ginkgo_leaf, R.drawable.botanical_cherry_blossom,
+        R.drawable.botanical_dragonfly, R.drawable.botanical_cactus, R.drawable.botanical_lavender,
+        R.drawable.botanical_ladybug, R.drawable.botanical_snail, R.drawable.botanical_veined_leaf,
+        R.drawable.botanical_double_leaf, R.drawable.botanical_yellow_daisy
+    )
+    // Warm once at view creation, before layout/drawing and animated interactions.
+    fun prepare(context: Context) {
+        for (id in resourceIds.indices) load(context, id)
+    }
+    private fun load(context: Context, id: Int): Bitmap = artwork[id] ?: requireNotNull(
+        BitmapFactory.decodeResource(context.resources, resourceIds[id], BitmapFactory.Options().apply {
+            inScaled = false; inPreferredConfig = Bitmap.Config.ARGB_8888
+        })
+    ).also { artwork[id] = it }
+    fun draw(c: Canvas, p: Paint, symbol: Symbol, context: Context) {
+        val bitmap = load(context, symbol.stableId)
+        // Dedicated paint prevents caller stroke style, alpha, or tint leaking into artwork.
+        c.drawBitmap(bitmap, null, destination, artworkPaint)
         p.style = Paint.Style.FILL
     }
-    private fun drawIllustration(c: Canvas, p: Paint, symbol: Symbol) {
-        p.color = green; p.style = Paint.Style.FILL
-        when (symbol) {
-            Symbol.DOUBLE_LEAF -> {
-                p.strokeWidth = .1f; c.drawLine(0f, 1f, 0f, -.8f, p)
-                c.save(); c.translate(-.18f, -.08f); c.rotate(-38f); c.scale(.48f, .66f)
-                c.drawPath(leafPath, p); c.restore()
-                p.color = Color.rgb(70, 119, 75)
-                c.save(); c.translate(.26f, -.3f); c.rotate(32f); c.scale(.48f, .66f)
-                c.drawPath(leafPath, p); c.restore()
-            }
-            Symbol.VEINED_LEAF -> {
-                c.save(); c.rotate(-20f)
-                c.save(); c.scale(.85f, 1f); c.drawPath(leafPath, p); c.restore()
-                p.color = Color.rgb(210, 220, 166); p.strokeWidth = .09f
-                c.drawLine(0f, .9f, 0f, -.85f, p)
-                for (y in listOf(-.45f, 0f, .45f)) {
-                    c.drawLine(0f, y + .2f, -.45f, y - .15f, p)
-                    c.drawLine(0f, y + .2f, .45f, y - .15f, p)
-                }
-                c.restore()
-            }
-            Symbol.YELLOW_DAISY -> {
-                p.color = Color.rgb(207, 166, 51)
-                repeat(6) { c.save(); c.rotate(it * 60f); c.drawOval(-.3f, -1f, .3f, -.05f, p); c.restore() }
-                p.color = Color.rgb(245, 223, 151); c.drawCircle(0f, 0f, .27f, p)
-            }
-            Symbol.LEAF -> {
-                c.drawPath(leafPath, p)
-                p.color = Color.rgb(210, 220, 166); p.strokeWidth = .07f
-                c.drawLine(-.65f, .8f, .6f, -.65f, p)
-            }
-            Symbol.LOTUS -> {
-                p.color = Color.rgb(161, 92, 119)
-                for (angle in lotusAngles) {
-                    c.save(); c.rotate(angle, 0f, .6f)
-                    c.drawOval(-.27f, -.95f, .27f, .65f, p)
-                    p.color = Color.rgb(188, 123, 145)
-                    c.drawOval(-.17f, -.83f, .12f, .43f, p)
-                    p.color = Color.rgb(161, 92, 119); c.restore()
-                }
-                p.color = green; c.drawOval(-.85f, .6f, .85f, .85f, p)
-            }
-            Symbol.FERN -> {
-                p.strokeWidth = .09f; c.drawLine(0f, 1f, 0f, -1f, p)
-                for (i in 0..4) {
-                    val y = -.65f + i * .32f; val w = .25f + i * .12f
-                    c.save(); c.rotate(-25f, 0f, y); c.drawOval(-w, y - .18f, 0f, y + .1f, p); c.restore()
-                    c.save(); c.rotate(25f, 0f, y); c.drawOval(0f, y - .18f, w, y + .1f, p); c.restore()
-                }
-            }
-            Symbol.FLOWER -> {
-                p.color = Color.rgb(167, 101, 72)
-                repeat(5) {
-                    c.save(); c.rotate(it * 72f)
-                    c.drawOval(-.33f, -.95f, .33f, .15f, p)
-                    p.color = Color.rgb(189, 129, 97)
-                    c.drawOval(-.23f, -.85f, .15f, -.12f, p)
-                    p.color = Color.rgb(167, 101, 72); c.restore()
-                }
-                p.color = Color.rgb(238, 203, 104); c.drawCircle(0f, 0f, .28f, p)
-            }
-            Symbol.BERRIES -> {
-                p.strokeWidth = .09f; c.drawLine(0f, -.85f, 0f, .65f, p)
-                c.drawOval(0f, -.95f, .75f, -.55f, p)
-                p.color = Color.rgb(128, 71, 111)
-                berryCenters.forEach { (x, y) -> c.drawCircle(x, y, .32f, p) }
-            }
-            Symbol.SUNFLOWER -> {
-                p.color = Color.rgb(193, 147, 40)
-                repeat(12) { c.save(); c.rotate(it * 30f); c.drawOval(-.15f, -1f, .15f, -.25f, p); c.restore() }
-                p.color = Color.rgb(91, 76, 43); c.drawCircle(0f, 0f, .48f, p)
-                p.color = Color.rgb(231, 204, 133)
-                repeat(5) { val a = it * 2 * PI / 5; c.drawCircle((cos(a) * .23).toFloat(), (sin(a) * .23).toFloat(), .055f, p) }
-            }
-            Symbol.MUSHROOM -> {
-                p.color = Color.rgb(202, 182, 146)
-                c.drawRoundRect(-.22f, -.15f, .22f, .95f, .12f, .12f, p)
-                p.color = Color.rgb(156, 89, 65)
-                c.drawArc(-.95f, -.9f, .95f, .65f, 180f, 180f, true, p)
-                p.color = Color.rgb(238, 214, 169)
-                c.drawCircle(-.4f, -.38f, .12f, p); c.drawCircle(.25f, -.55f, .14f, p)
-            }
-            Symbol.BUTTERFLY -> {
-                p.color = Color.rgb(144, 112, 159)
-                for (side in listOf(-1f, 1f)) {
-                    c.save(); c.scale(side, 1f)
-                    c.drawOval(.05f, -.9f, .95f, .15f, p)
-                    c.drawOval(.08f, -.05f, .7f, .8f, p); c.restore()
-                }
-                p.color = green; p.strokeWidth = .12f; c.drawLine(0f, -.7f, 0f, .8f, p)
-                p.strokeWidth = .05f; c.drawLine(0f, -.65f, -.22f, -1f, p); c.drawLine(0f, -.65f, .22f, -1f, p)
-            }
-            Symbol.BAMBOO -> {
-                for (x in listOf(-.35f, .3f)) {
-                    c.drawRoundRect(x, -.95f, x + .18f, .95f, .05f, .05f, p)
-                    p.color = Color.rgb(175, 193, 126); p.strokeWidth = .07f
-                    for (y in listOf(-.5f, 0f, .5f)) c.drawLine(x, y, x + .18f, y, p)
-                    p.color = green
-                }
-                c.save(); c.rotate(-35f); c.drawOval(.05f, -.5f, .9f, -.22f, p); c.restore()
-            }
-            Symbol.ACORN -> {
-                p.color = Color.rgb(163, 116, 63); c.drawOval(-.58f, -.35f, .58f, .92f, p)
-                p.color = Color.rgb(98, 79, 49); c.drawOval(-.75f, -.65f, .75f, .02f, p)
-                p.strokeWidth = .15f; c.drawLine(0f, -.5f, .18f, -.95f, p)
-            }
-            Symbol.MAPLE_LEAF -> {
-                p.color = Color.rgb(167, 91, 57)
-                val path = Path().apply {
-                    moveTo(0f, -1f); lineTo(.25f, -.4f); lineTo(.6f, -.7f); lineTo(.55f, -.12f)
-                    lineTo(1f, -.2f); lineTo(.72f, .3f); lineTo(.85f, .5f); lineTo(.1f, .65f)
-                    lineTo(0f, 1f); lineTo(-.1f, .65f); lineTo(-.85f, .5f); lineTo(-.72f, .3f)
-                    lineTo(-1f, -.2f); lineTo(-.55f, -.12f); lineTo(-.6f, -.7f); lineTo(-.25f, -.4f); close()
-                }; c.drawPath(path, p)
-            }
-            Symbol.PINECONE -> {
-                p.color = Color.rgb(120, 87, 57); c.drawOval(-.6f, -.95f, .6f, .95f, p)
-                p.color = Color.rgb(190, 151, 98)
-                for (row in 0..3) for (col in 0..2) {
-                    val x = (col - 1) * .32f; val y = -.65f + row * .4f
-                    c.drawArc(x - .2f, y - .15f, x + .2f, y + .2f, 0f, 180f, true, p)
-                }
-            }
-            Symbol.IRIS -> {
-                p.strokeWidth = .1f; c.drawLine(0f, -.1f, 0f, 1f, p)
-                c.drawOval(.05f, .25f, .35f, 1f, p)
-                p.color = Color.rgb(103, 101, 157)
-                c.drawOval(-.24f, -1f, .24f, .2f, p)
-                c.save(); c.rotate(-45f); c.drawOval(-.24f, -.9f, .24f, .3f, p); c.restore()
-                c.save(); c.rotate(45f); c.drawOval(-.24f, -.9f, .24f, .3f, p); c.restore()
-                p.color = Color.rgb(211, 179, 78); c.drawOval(-.1f, -.35f, .1f, .2f, p)
-            }
-            Symbol.GINKGO_LEAF -> {
-                p.color = Color.rgb(153, 157, 65)
-                val path = Path().apply { moveTo(0f, .65f); lineTo(-.95f, -.4f)
-                    cubicTo(-.9f, -.95f, -.25f, -1f, 0f, -.65f)
-                    cubicTo(.25f, -1f, .9f, -.95f, .95f, -.4f); close() }
-                c.drawPath(path, p); p.strokeWidth = .08f; c.drawLine(0f, .5f, .15f, 1f, p)
-                p.color = Color.rgb(216, 211, 135); p.strokeWidth = .04f
-                for (x in listOf(-.65f, -.3f, .3f, .65f)) c.drawLine(0f, .55f, x, -.5f, p)
-            }
-            Symbol.CHERRY_BLOSSOM -> {
-                p.color = Color.rgb(185, 114, 142)
-                val petal = Path().apply { moveTo(0f, .05f); cubicTo(-.8f, -.35f, -.45f, -1.1f, 0f, -.75f)
-                    cubicTo(.45f, -1.1f, .8f, -.35f, 0f, .05f); close() }
-                repeat(5) { c.save(); c.rotate(it * 72f); c.drawPath(petal, p); c.restore() }
-                p.color = Color.rgb(246, 213, 151); c.drawCircle(0f, 0f, .15f, p)
-            }
-            Symbol.CACTUS -> {
-                c.drawRoundRect(-.25f, -.95f, .25f, .9f, .24f, .24f, p)
-                p.style = Paint.Style.STROKE; p.strokeWidth = .29f; p.strokeCap = Paint.Cap.ROUND
-                val arms = Path().apply { moveTo(-.15f, .2f); lineTo(-.66f, .2f); lineTo(-.66f, -.5f)
-                    moveTo(.15f, -.1f); lineTo(.65f, -.1f); lineTo(.65f, -.7f) }
-                c.drawPath(arms, p)
-                p.strokeCap = Paint.Cap.BUTT; p.strokeWidth = .06f; p.color = Color.rgb(179, 195, 128)
-                c.drawLine(0f, -.65f, 0f, .65f, p)
-                p.style = Paint.Style.FILL; p.color = Color.rgb(160, 110, 74)
-                c.drawRoundRect(-.45f, .65f, .45f, 1f, .08f, .08f, p)
-            }
-            Symbol.LAVENDER -> {
-                p.strokeWidth = .1f; c.drawLine(0f, -.9f, 0f, 1f, p)
-                c.drawOval(-.55f, .45f, 0f, .7f, p); c.drawOval(0f, .2f, .5f, .45f, p)
-                p.color = Color.rgb(119, 89, 150)
-                for (i in 0..3) {
-                    val y = -.75f + i * .3f
-                    c.drawOval(-.4f, y - .19f, -.02f, y + .12f, p)
-                    c.drawOval(.02f, y - .19f, .4f, y + .12f, p)
-                }
-                c.drawOval(-.16f, -1.05f, .16f, -.65f, p)
-            }
-            Symbol.LADYBUG -> {
-                p.color = Color.rgb(49, 58, 43); p.strokeWidth = .1f
-                for (y in listOf(-.3f, .15f, .55f)) c.drawLine(-.9f, y, .9f, y + .12f, p)
-                c.drawCircle(0f, -.7f, .32f, p)
-                c.drawLine(-.13f, -.8f, -.35f, -1f, p); c.drawLine(.13f, -.8f, .35f, -1f, p)
-                p.color = Color.rgb(174, 65, 53); c.drawOval(-.7f, -.65f, .7f, .95f, p)
-                p.color = Color.rgb(49, 58, 43); p.strokeWidth = .09f; c.drawLine(0f, -.62f, 0f, .9f, p)
-                for (x in listOf(-.33f, .33f)) for (y in listOf(-.2f, .4f)) c.drawCircle(x, y, .15f, p)
-            }
-            Symbol.SNAIL -> {
-                p.color = Color.rgb(95, 123, 68); c.drawRoundRect(-.95f, .45f, .95f, .85f, .2f, .2f, p)
-                c.drawOval(.5f, -.05f, .88f, .75f, p); p.strokeWidth = .08f
-                c.drawLine(.63f, .12f, .49f, -.3f, p); c.drawLine(.8f, .1f, .95f, -.3f, p)
-                c.drawCircle(.49f, -.3f, .1f, p); c.drawCircle(.95f, -.3f, .1f, p)
-                p.color = Color.rgb(181, 133, 77); c.drawCircle(-.22f, -.08f, .68f, p)
-                p.color = Color.rgb(102, 73, 47); p.style = Paint.Style.STROKE; p.strokeWidth = .11f
-                val spiral = Path()
-                for (i in 0..48) {
-                    val angle = i * .22; val r = .55 * (1 - i / 56.0)
-                    val x = (-.22 + cos(angle) * r).toFloat(); val y = (-.08 + sin(angle) * r).toFloat()
-                    if (i == 0) spiral.moveTo(x, y) else spiral.lineTo(x, y)
-                }
-                c.drawPath(spiral, p); p.style = Paint.Style.FILL
-            }
-            Symbol.DRAGONFLY -> {
-                p.color = Color.rgb(111, 154, 154)
-                for (angle in listOf(-65f, 65f, -110f, 110f)) {
-                    c.save(); c.rotate(angle, 0f, -.25f); c.drawOval(-.18f, -1.05f, .18f, -.2f, p); c.restore()
-                }
-                p.color = green; p.strokeWidth = .13f; c.drawLine(0f, -.55f, 0f, 1f, p)
-                c.drawCircle(0f, -.65f, .2f, p)
-            }
-
-        }
-    }
-    private fun details(c: Canvas, p: Paint, symbol: Symbol) {
-        p.style = Paint.Style.STROKE; p.strokeWidth = .035f
-        p.color = 0xffb4c595.toInt()
-        when (symbol) {
-            Symbol.LEAF -> {
-                for (i in 0..2) {
-                    val x = -.38f + i * .28f; val y = .5f - i * .32f
-                    c.drawLine(x, y, x - .15f, y - .36f, p)
-                    c.drawLine(x, y, x + .36f, y + .04f, p)
-                }
-            }
-            Symbol.DOUBLE_LEAF -> {
-                c.drawLine(0f, .7f, -.58f, -.55f, p); c.drawLine(0f, .7f, .58f, -.55f, p)
-            }
-            Symbol.VEINED_LEAF -> {
-                p.color = 0xff71894e.toInt(); c.drawArc(-.5f, -.8f, .5f, .7f, 190f, 130f, false, p)
-            }
-            Symbol.FERN -> {
-                for (i in 0..4) {
-                    val y = -.65f + i * .32f; val w = .25f + i * .12f
-                    c.drawLine(0f, y, -w * .75f, y - .12f, p)
-                    c.drawLine(0f, y, w * .75f, y - .12f, p)
-                }
-            }
-            Symbol.FLOWER, Symbol.YELLOW_DAISY, Symbol.CHERRY_BLOSSOM -> {
-                val count = if (symbol == Symbol.YELLOW_DAISY) 6 else 5
-                p.color = if (symbol == Symbol.YELLOW_DAISY) 0xfff0d783.toInt() else 0xffe3b4a3.toInt()
-                repeat(count) { c.save(); c.rotate(it * 360f / count)
-                    c.drawArc(-.18f, -.78f, .18f, -.2f, 160f, 130f, false, p); c.restore() }
-                p.color = 0xff8b683c.toInt()
-                repeat(count) { val a = it * 2 * PI / count
-                    c.drawPoint((cos(a) * .13).toFloat(), (sin(a) * .13).toFloat(), p) }
-            }
-            Symbol.LOTUS, Symbol.IRIS, Symbol.LAVENDER -> {
-                p.color = 0xffd3b8d0.toInt()
-                if (symbol == Symbol.LAVENDER) repeat(4) {
-                    val y = -.78f + it * .3f
-                    c.drawLine(-.28f, y, -.14f, y + .04f, p)
-                    c.drawLine(.12f, y, .25f, y + .04f, p)
-                } else {
-                    c.drawArc(-.16f, -.8f, .16f, .14f, 175f, 130f, false, p)
-                    c.drawLine(-.44f, -.36f, -.2f, .25f, p)
-                    c.drawLine(.44f, -.36f, .2f, .25f, p)
-                }
-            }
-            Symbol.SUNFLOWER -> {
-                p.color = 0xffecc35f.toInt()
-                repeat(12) { c.save(); c.rotate(it * 30f)
-                    c.drawLine(0f, -.85f, 0f, -.56f, p); c.restore() }
-                p.color = 0xffb59a63.toInt(); p.strokeWidth = .045f
-                repeat(12) { val a = it * 2 * PI / 12
-                    c.drawPoint((cos(a) * .35).toFloat(), (sin(a) * .35).toFloat(), p) }
-            }
-            Symbol.MUSHROOM -> {
-                p.color = 0xffdcad8b.toInt(); p.strokeWidth = .065f
-                c.drawArc(-.7f, -.73f, .7f, .35f, 210f, 75f, false, p)
-                p.color = 0xffe2c9a5.toInt(); c.drawLine(-.08f, .17f, -.08f, .76f, p)
-            }
-            Symbol.BUTTERFLY -> {
-                repeat(2) { c.save(); if (it == 1) c.scale(-1f, 1f)
-                    p.color = 0xffcbb8d0.toInt()
-                    c.drawOval(.25f, -.68f, .75f, -.08f, p)
-                    c.drawOval(.24f, .16f, .5f, .58f, p)
-                    c.drawLine(.1f, -.1f, .64f, -.53f, p); c.restore() }
-            }
-            Symbol.BERRIES -> {
-                p.color = 0xffc394ae.toInt(); p.strokeWidth = .06f
-                berryCenters.forEach { (x,y) -> c.drawArc(x-.2f,y-.21f,x+.18f,y+.13f,195f,85f,false,p) }
-            }
-            Symbol.BAMBOO -> { c.drawLine(-.29f,-.88f,-.29f,.85f,p); c.drawLine(.36f,-.88f,.36f,.85f,p) }
-            Symbol.ACORN -> {
-                p.color = 0xffdbb780.toInt(); c.drawArc(-.4f,-.2f,.35f,.75f,110f,100f,false,p)
-                p.color = 0xffb39a6c.toInt()
-                for (i in -2..2) c.drawLine(i*.19f,-.48f,i*.19f+.12f,-.18f,p)
-            }
-            Symbol.MAPLE_LEAF -> {
-                p.color = 0xffd9ae75.toInt(); c.drawLine(0f,.75f,0f,-.72f,p)
-                c.drawLine(0f,.35f,-.57f,-.24f,p); c.drawLine(0f,.35f,.57f,-.24f,p)
-            }
-            Symbol.GINKGO_LEAF -> { p.color=0xffe1d99b.toInt(); c.drawLine(0f,.5f,0f,-.5f,p) }
-            Symbol.PINECONE -> { p.color=0xffdfbe89.toInt(); c.drawArc(-.4f,-.78f,.35f,.65f,170f,75f,false,p) }
-            Symbol.CACTUS -> {
-                c.drawLine(-.62f,-.37f,-.62f,.08f,p); c.drawLine(.62f,-.58f,.62f,-.18f,p)
-                p.color=0xffd3ad83.toInt(); c.drawLine(-.32f,.76f,.32f,.76f,p)
-            }
-            Symbol.LADYBUG -> {
-                p.color=0xffe49a80.toInt(); p.strokeWidth=.055f
-                c.drawArc(-.51f,-.48f,.51f,.73f,192f,70f,false,p)
-            }
-            Symbol.SNAIL -> { p.color=0xffe2bd83.toInt(); c.drawArc(-.74f,-.59f,.3f,.42f,190f,100f,false,p) }
-            Symbol.DRAGONFLY -> {
-                p.color=0xffc9d8c7.toInt()
-                for (angle in floatArrayOf(-65f,65f,-110f,110f)) {
-                    c.save(); c.rotate(angle,0f,-.25f); c.drawLine(0f,-.95f,0f,-.35f,p); c.restore()
-                }
-            }
-        }
-        p.style = Paint.Style.FILL
-    }
-
 }

@@ -257,7 +257,7 @@ class ConnectivityInteractionTest : ActivityInstrumentationTestCase2<MainActivit
         for (symbol in Symbol.entries) for (scale in listOf(10f, 30f)) {
             bitmap.eraseColor(android.graphics.Color.TRANSPARENT)
             canvas.save(); canvas.translate(80f, 80f); canvas.scale(scale, scale)
-            BotanicalSymbols.draw(canvas, paint, symbol); canvas.restore()
+            BotanicalSymbols.draw(canvas, paint, symbol, instrumentation.targetContext); canvas.restore()
             val pixels = IntArray(160 * 160); bitmap.getPixels(pixels, 0, 160, 0, 0, 160, 160)
             assertTrue(symbol.name, pixels.count { it != 0 } > 30)
             assertTrue(BotanicalSymbols.label(instrumentation.targetContext, symbol).isNotBlank())
