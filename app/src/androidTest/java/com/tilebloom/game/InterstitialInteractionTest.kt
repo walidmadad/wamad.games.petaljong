@@ -129,24 +129,24 @@ class InterstitialInteractionTest : ActivityInstrumentationTestCase2<MainActivit
             assertEquals(before.undoCredits, current.undoCredits)
             dismiss!!.invoke(); dismiss = null
             assertTrue(screen.findViewById<View>(R.id.outcome).isShown)
-            screen.findViewById<Button>(R.id.next_level).performClick()
+            screen.findViewById<com.tilebloom.game.presentation.ContinueLevelCard>(R.id.next_level).performClick()
         }
         waitFor { GameStore.get(screen).session.level.id == 2L && !GameStore.transitioning }
         assertEquals(1, attempts)
     }
     fun testShortVictorySkipsAd() {
         val screen = enter(); ui { AdExposure.policy.displayed() }
-        win(screen); waitFor { screen.findViewById<Button>(R.id.next_level).isEnabled }
+        win(screen); waitFor { screen.findViewById<com.tilebloom.game.presentation.ContinueLevelCard>(R.id.next_level).isEnabled }
         assertEquals(0, attempts)
     }
     fun testMissingAdNeverDelaysVictory() {
         available = false; val screen = enter(); win(screen)
-        ui { assertTrue(screen.findViewById<Button>(R.id.next_level).isEnabled) }
+        ui { assertTrue(screen.findViewById<com.tilebloom.game.presentation.ContinueLevelCard>(R.id.next_level).isEnabled) }
         assertEquals(0, attempts)
     }
     fun testFailedDisplayReturnsToVictoryWithoutReset() {
         failDisplay = true; val screen = enter(); win(screen)
-        waitFor { attempts == 1 && screen.findViewById<Button>(R.id.next_level).isEnabled }
+        waitFor { attempts == 1 && screen.findViewById<com.tilebloom.game.presentation.ContinueLevelCard>(R.id.next_level).isEnabled }
         ui { assertEquals(180_000L, AdExposure.policy.duration(SystemClock.elapsedRealtime())); assertFalse(AdExposure.busy) }
     }
     fun testReconnectionDoesNotPresentAndOfflineTimeStops() {
@@ -172,7 +172,7 @@ class InterstitialInteractionTest : ActivityInstrumentationTestCase2<MainActivit
             assertEquals(0, GameStore.get(screen).wallet.balance)
         }
         win(screen)
-        waitFor { screen.findViewById<Button>(R.id.next_level).isEnabled }
+        waitFor { screen.findViewById<com.tilebloom.game.presentation.ContinueLevelCard>(R.id.next_level).isEnabled }
         assertEquals(0,attempts)
     }
     fun testPersistedFrequencyReloadDoesNotCountClosedTimeOrLaunchAd() {

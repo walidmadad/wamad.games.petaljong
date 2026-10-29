@@ -83,7 +83,7 @@ class TrayInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(MainA
         ids.forEach{tap(it)}; assertEquals(Status.LOST,game().status); assertEquals(4,game().tray.size)
         instrumentation.runOnMainSync {
             assertTrue(activity.findViewById<Button>(R.id.restart).isShown)
-            assertFalse(activity.findViewById<Button>(R.id.next_level).isShown)
+            assertFalse(activity.findViewById<com.tilebloom.game.presentation.ContinueLevelCard>(R.id.next_level).isShown)
             activity.findViewById<Button>(R.id.undo).performClick()
         }
         assertEquals(Status.PLAYING,game().status); assertEquals(3,game().tray.size)

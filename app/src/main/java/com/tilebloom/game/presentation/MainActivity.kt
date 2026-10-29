@@ -41,7 +41,7 @@ class MainActivity : Activity() {
     private lateinit var outcomeScroll: ScrollView
     private lateinit var outcomeTitle: TextView
     private lateinit var outcomeDetail: TextView
-    private lateinit var next: Button
+    private lateinit var next: ContinueLevelCard
     private lateinit var hint: GardenIconButton
     private var rewardDialog: AlertDialog? = null
     private var hintPending = false
@@ -174,8 +174,9 @@ class MainActivity : Activity() {
         root = FrameLayout(this).apply {
             background = android.graphics.drawable.GradientDrawable(
                 android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
-                intArrayOf(GardenStyle.forest, GardenStyle.theme.palette.backgroundBottom))
+                intArrayOf(HomeTheme.palette.backgroundTop, HomeTheme.palette.backgroundBottom))
         }
+        applyBackground(HomeTheme.palette)
         root.setOnApplyWindowInsetsListener { v, insets ->
             if (Build.VERSION.SDK_INT >= 30) {
                 val safe = insets.getInsets(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
@@ -216,22 +217,11 @@ class MainActivity : Activity() {
             letterSpacing = .03f; maxLines = 1
             setAutoSizeTextTypeUniformWithConfiguration(24, 42, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
         })
-        add(textLabel(16f, GardenStyle.secondary).apply { setText(R.string.subtitle); letterSpacing = .05f }, 6)
+        add(textLabel(16f, HomeTheme.palette.textSecondary).apply { setText(R.string.subtitle); letterSpacing = .05f }, 6)
         add(GardenWelcomeArt(this).apply { id = R.id.home_art }, 10, dp(if (compact) 176 else 220))
-        levelCard = ContinueLevelCard(this).apply {
-            id = R.id.continue_level
-            orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
-            setPadding(dp(18), dp(20), dp(18), dp(20))
-        }
-        startLevel = textLabel(26f, GardenStyle.gold).apply {
-            id = R.id.start_level; typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-            // Allow localized level names to wrap without shrinking text.
-            maxLines = 2
-            accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
-        }
-        levelCard.addView(startLevel, LinearLayout.LayoutParams(-1, -2))
-        startHint = textLabel(16f, GardenStyle.ivory).apply { setPadding(0, dp(8), 0, 0) }
-        levelCard.addView(startHint, LinearLayout.LayoutParams(-1, -2))
+        levelCard = ContinueLevelCard(this).apply { id = R.id.continue_level }
+        startLevel = levelCard.levelLabel.apply { id = R.id.start_level }
+        startHint = levelCard.continuationLabel
         add(levelCard, 8)
         levelCard.apply {
             setOnClickListener {
@@ -455,10 +445,8 @@ class MainActivity : Activity() {
         outcomeDetail = textLabel(15f, GardenStyle.secondary).apply { setPadding(0, dp(12), 0, dp(20)) }
         outcome.addView(outcomeTitle, LinearLayout.LayoutParams(-1, -2))
         outcome.addView(outcomeDetail, LinearLayout.LayoutParams(-1, -2))
-        next = Button(this).apply {
-            id = R.id.next_level; GardenStyle.button(this, true); setText(R.string.next_level)
-            contentDescription = getString(R.string.next_description)
-            GardenStyle.primaryIcon(this, R.drawable.ic_next)
+        next = ContinueLevelCard(this).apply {
+            id = R.id.next_level
             setOnClickListener { advance() }
         }
         outcome.addView(next, LinearLayout.LayoutParams(-1, -2))
@@ -579,7 +567,10 @@ class MainActivity : Activity() {
         if (showingGame) createGameplay()
         gameplay?.visibility = if (showingGame) View.VISIBLE else View.GONE
         gameplay?.importantForAccessibility = if (showConnection) View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS else View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
-        if (!showingGame) return
+        if (!showingGame) {
+            applyBackground(HomeTheme.palette)
+            return
+        }
         applyGameplayTheme(GardenTheme.forLevel(session.level.id))
         board.theme = GardenTheme.forLevel(session.level.id)
         tray.theme = board.theme
@@ -601,8 +592,7 @@ class MainActivity : Activity() {
         } else getString(if (game.tray.size == 4) R.string.tray_full_detail else R.string.unrecoverable_detail)
         next.visibility = if (presentation.advance) View.VISIBLE else View.GONE
         next.isEnabled = online && !GameStore.transitioning && pendingVictory == null && !AdExposure.busy
-        next.setText(R.string.next_level)
-        GardenStyle.primaryIcon(next, R.drawable.ic_next)
+        next.present(progress.highestUnlocked)
         feedback.visibility = if (terminal) View.GONE else View.VISIBLE
         feedback.setText(if (game.status == Status.LOST) R.string.defeat_hint else R.string.instruction)
         val lost = game.status == Status.LOST
@@ -815,20 +805,17 @@ class MainActivity : Activity() {
     }
     private var appliedTheme: GardenTheme? = null
     private fun applyGameplayTheme(theme: GardenTheme) {
-        if (appliedTheme == theme) return
+        if (appliedTheme == theme) { applyBackground(theme.palette); return }
         appliedTheme = theme
         GardenStyle.theme = theme
         val palette = theme.palette
-        root.background = android.graphics.drawable.GradientDrawable(
-            android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(palette.backgroundTop, palette.backgroundBottom))
-        window.statusBarColor = palette.backgroundTop
-        window.navigationBarColor = palette.backgroundBottom
+        applyBackground(palette)
         connectionShade.setBackgroundColor((palette.tileShadow and 0x00ffffff) or (165 shl 24))
         fun tint(view: View) {
+            if (view is ContinueLevelCard) return
             when (view) {
                 is GardenIconButton -> view.invalidate()
-                is Button -> GardenStyle.button(view, view === next)
+                is Button -> GardenStyle.button(view)
                 is TextView -> view.setTextColor(palette.textPrimary)
             }
             if (view is android.view.ViewGroup) {
@@ -840,6 +827,14 @@ class MainActivity : Activity() {
         gameplay?.let { tint(it) }
         levelLabel.setTextColor(palette.primaryAccent)
         feedback.setTextColor(palette.textSecondary)
+    }
+
+    private fun applyBackground(palette: GardenPalette) {
+        root.background = android.graphics.drawable.GradientDrawable(
+            android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(palette.backgroundTop, palette.backgroundBottom))
+        window.statusBarColor = palette.backgroundTop
+        window.navigationBarColor = palette.backgroundBottom
     }
 
     private fun showSettings(anchor: View) {

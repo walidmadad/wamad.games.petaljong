@@ -215,7 +215,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
             assertFalse(screen.findViewById<Button>(R.id.restart).isShown)
             assertFalse(screen.findViewById<Button>(R.id.home).isShown)
             assertNull(screen.findViewById<View>(R.id.replay_level))
-            val next=screen.findViewById<Button>(R.id.next_level); next.performClick(); next.performClick()
+            val next=screen.findViewById<com.tilebloom.game.presentation.ContinueLevelCard>(R.id.next_level); next.performClick(); next.performClick()
         }
         waitAdvanced(screen,5)
         ui {

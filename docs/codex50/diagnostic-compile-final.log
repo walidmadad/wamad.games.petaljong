@@ -1,0 +1,114 @@
+Picked up JAVA_TOOL_OPTIONS: -XX:-UsePerfData -XX:ActiveProcessorCount=2 -Xmx768m
+Picked up JAVA_TOOL_OPTIONS: -XX:-UsePerfData -XX:ActiveProcessorCount=2 -Xmx768m
+app/src/androidTest/java/com/tilebloom/game/AdSdkConfigurationTest.kt:4:21: warning: 'InstrumentationTestCase' is deprecated. Deprecated in Java
+import android.test.InstrumentationTestCase
+                    ^
+app/src/androidTest/java/com/tilebloom/game/AdvancedBoardVisualTest.kt:6:21: warning: 'InstrumentationTestCase' is deprecated. Deprecated in Java
+import android.test.InstrumentationTestCase
+                    ^
+app/src/androidTest/java/com/tilebloom/game/AdvancedBoardVisualTest.kt:57:63: warning: name shadowed: id
+                    level.winningSelections.take(6).forEach { id ->
+                                                              ^
+app/src/androidTest/java/com/tilebloom/game/AudioPreferencesDeviceTest.kt:3:21: warning: 'InstrumentationTestCase' is deprecated. Deprecated in Java
+import android.test.InstrumentationTestCase
+                    ^
+app/src/androidTest/java/com/tilebloom/game/CeramicArtworkVisualTest.kt:8:21: warning: 'InstrumentationTestCase' is deprecated. Deprecated in Java
+import android.test.InstrumentationTestCase
+                    ^
+app/src/androidTest/java/com/tilebloom/game/ConnectivityInteractionTest.kt:3:21: warning: 'ActivityInstrumentationTestCase2<T : Activity!>' is deprecated. Deprecated in Java
+import android.test.ActivityInstrumentationTestCase2
+                    ^
+app/src/androidTest/java/com/tilebloom/game/ContinueCardPresentationTest.kt:4:21: warning: 'AndroidTestCase' is deprecated. Deprecated in Java
+import android.test.AndroidTestCase
+                    ^
+app/src/androidTest/java/com/tilebloom/game/ControlReadabilityTest.kt:5:21: warning: 'InstrumentationTestCase' is deprecated. Deprecated in Java
+import android.test.InstrumentationTestCase
+                    ^
+app/src/androidTest/java/com/tilebloom/game/GameplayHeaderLayoutTest.kt:5:21: warning: 'InstrumentationTestCase' is deprecated. Deprecated in Java
+import android.test.InstrumentationTestCase
+                    ^
+app/src/androidTest/java/com/tilebloom/game/HintInteractionTest.kt:6:21: warning: 'ActivityInstrumentationTestCase2<T : Activity!>' is deprecated. Deprecated in Java
+import android.test.ActivityInstrumentationTestCase2
+                    ^
+app/src/androidTest/java/com/tilebloom/game/HintInteractionTest.kt:52:18: warning: variable 'id' initializer is redundant
+        var id = -1
+                 ^
+app/src/androidTest/java/com/tilebloom/game/InterstitialInteractionTest.kt:6:21: warning: 'ActivityInstrumentationTestCase2<T : Activity!>' is deprecated. Deprecated in Java
+import android.test.ActivityInstrumentationTestCase2
+                    ^
+app/src/androidTest/java/com/tilebloom/game/LanguageSwitchInteractionTest.kt:7:21: warning: 'ActivityInstrumentationTestCase2<T : Activity!>' is deprecated. Deprecated in Java
+import android.test.ActivityInstrumentationTestCase2
+                    ^
+app/src/androidTest/java/com/tilebloom/game/LaunchSmokeTest.kt:6:21: warning: 'ActivityInstrumentationTestCase2<T : Activity!>' is deprecated. Deprecated in Java
+import android.test.ActivityInstrumentationTestCase2
+                    ^
+app/src/androidTest/java/com/tilebloom/game/LevelLoadingPresentationTest.kt:3:21: warning: 'InstrumentationTestCase' is deprecated. Deprecated in Java
+import android.test.InstrumentationTestCase
+                    ^
+app/src/androidTest/java/com/tilebloom/game/LevelLoadingPresentationTest.kt:8:38: warning: 'constructor InstrumentationTestCase()' is deprecated. Deprecated in Java
+class LevelLoadingPresentationTest : InstrumentationTestCase() {
+                                     ^
+app/src/androidTest/java/com/tilebloom/game/LevelLoadingPresentationTest.kt:8:38: warning: 'InstrumentationTestCase' is deprecated. Deprecated in Java
+class LevelLoadingPresentationTest : InstrumentationTestCase() {
+                                     ^
+app/src/androidTest/java/com/tilebloom/game/LevelLoadingPresentationTest.kt:10:9: warning: 'getter for instrumentation: Instrumentation!' is deprecated. Deprecated in Java
+        instrumentation.runOnMainSync {
+        ^
+app/src/androidTest/java/com/tilebloom/game/LevelLoadingPresentationTest.kt:11:27: warning: 'getter for instrumentation: Instrumentation!' is deprecated. Deprecated in Java
+            val context = instrumentation.targetContext
+                          ^
+app/src/androidTest/java/com/tilebloom/game/LevelStartTest.kt:7:21: warning: 'ActivityInstrumentationTestCase2<T : Activity!>' is deprecated. Deprecated in Java
+import android.test.ActivityInstrumentationTestCase2
+                    ^
+app/src/androidTest/java/com/tilebloom/game/LevelStartTest.kt:247:36: warning: unnecessary non-null assertion (!!) on a non-null receiver of type MainActivity
+            val replacement=rotated!!
+                                   ^
+app/src/androidTest/java/com/tilebloom/game/LocalizationDeviceTest.kt:5:21: warning: 'InstrumentationTestCase' is deprecated. Deprecated in Java
+import android.test.InstrumentationTestCase
+                    ^
+app/src/androidTest/java/com/tilebloom/game/MysteryTileVisualTest.kt:6:21: warning: 'InstrumentationTestCase' is deprecated. Deprecated in Java
+import android.test.InstrumentationTestCase
+                    ^
+app/src/androidTest/java/com/tilebloom/game/RewardInteractionTest.kt:6:21: warning: 'ActivityInstrumentationTestCase2<T : Activity!>' is deprecated. Deprecated in Java
+import android.test.ActivityInstrumentationTestCase2
+                    ^
+app/src/androidTest/java/com/tilebloom/game/SettingsPresentationTest.kt:4:21: warning: 'ActivityInstrumentationTestCase2<T : Activity!>' is deprecated. Deprecated in Java
+import android.test.ActivityInstrumentationTestCase2
+                    ^
+app/src/androidTest/java/com/tilebloom/game/TileOcclusionVisualTest.kt:5:21: warning: 'InstrumentationTestCase' is deprecated. Deprecated in Java
+import android.test.InstrumentationTestCase
+                    ^
+app/src/androidTest/java/com/tilebloom/game/TrayInteractionTest.kt:4:21: warning: 'ActivityInstrumentationTestCase2<T : Activity!>' is deprecated. Deprecated in Java
+import android.test.ActivityInstrumentationTestCase2
+                    ^
+app/src/main/java/com/tilebloom/game/domain/Game.kt:155:73: warning: name shadowed: t
+                            candidate.current = candidate.current.map { t -> if (t.id == it.tileId) t.copy(revealed = true) else t }
+                                                                        ^
+app/src/main/java/com/tilebloom/game/presentation/GardenControls.kt:70:54: warning: 'scaledDensity: Float' is deprecated. Deprecated in Java
+            textSize = 12 * resources.displayMetrics.scaledDensity
+                                                     ^
+app/src/main/java/com/tilebloom/game/presentation/GardenControls.kt:82:43: warning: 'scaledDensity: Float' is deprecated. Deprecated in Java
+        val sp = resources.displayMetrics.scaledDensity
+                                          ^
+app/src/main/java/com/tilebloom/game/presentation/GardenControls.kt:93:71: warning: 'scaledDensity: Float' is deprecated. Deprecated in Java
+        val badgeHeight = maxOf(24 * d, 20 * resources.displayMetrics.scaledDensity + 8 * d)
+                                                                      ^
+app/src/main/java/com/tilebloom/game/presentation/GardenControls.kt:111:58: warning: 'scaledDensity: Float' is deprecated. Deprecated in Java
+            ink.textSize = 14 * resources.displayMetrics.scaledDensity
+                                                         ^
+app/src/main/java/com/tilebloom/game/presentation/MahjongBoardView.kt:309:29: warning: 'announceForAccessibility(CharSequence!): Unit' is deprecated. Deprecated in Java
+                            announceForAccessibility(context.getString(R.string.mystery_revealed, BotanicalSymbols.label(context, before.first { it.id == id }.symbol)))
+                            ^
+app/src/main/java/com/tilebloom/game/presentation/MainActivity.kt:297:17: warning: 'announceForAccessibility(CharSequence!): Unit' is deprecated. Deprecated in Java
+                announceForAccessibility(getString(R.string.checking_connection))
+                ^
+app/src/main/java/com/tilebloom/game/presentation/MainActivity.kt:836:16: warning: 'setter for statusBarColor: Int' is deprecated. Deprecated in Java
+        window.statusBarColor = palette.backgroundTop
+               ^
+app/src/main/java/com/tilebloom/game/presentation/MainActivity.kt:837:16: warning: 'setter for navigationBarColor: Int' is deprecated. Deprecated in Java
+        window.navigationBarColor = palette.backgroundBottom
+               ^
+app/src/main/java/com/tilebloom/game/presentation/MainActivity.kt:1000:47: warning: 'setter for isChecked: Boolean' is deprecated. Deprecated in Java
+                info.isCheckable = true; info.isChecked = selected
+                                              ^
+Diagnostic main + Android test compilation PASS; not a Gradle build or executed instrumentation.

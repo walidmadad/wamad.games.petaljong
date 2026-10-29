@@ -1,5 +1,6 @@
 package com.tilebloom.game.presentation
 
+import com.tilebloom.game.presentation.board.HomeTheme
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.*
@@ -148,16 +149,40 @@ private class CenteredIconSpan(drawable: android.graphics.drawable.Drawable) : a
 
 /** One focusable target for the entire saved-level card, including its decoration. */
 class ContinueLevelCard(context: Context) : android.widget.LinearLayout(context) {
+    val levelLabel = android.widget.TextView(context).apply {
+        textSize = 26f; gravity = Gravity.CENTER; maxLines = 2
+        typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+        setTextColor(HomeTheme.palette.primaryAccent)
+    }
+    val continuationLabel = android.widget.TextView(context).apply {
+        textSize = 16f; gravity = Gravity.CENTER
+        setTextColor(HomeTheme.palette.textPrimary)
+        setPadding(0, GardenStyle.dp(context, 8), 0, 0)
+        setText(com.tilebloom.game.R.string.continue_garden)
+    }
+    fun present(level: Long) {
+        levelLabel.text = context.getString(com.tilebloom.game.R.string.start_level, level)
+        contentDescription = context.getString(com.tilebloom.game.R.string.continue_level_description, level)
+    }
     init {
+        orientation = VERTICAL; gravity = Gravity.CENTER
+        setPadding(GardenStyle.dp(context, 18), GardenStyle.dp(context, 20),
+            GardenStyle.dp(context, 18), GardenStyle.dp(context, 20))
+        addView(levelLabel, LayoutParams(-1, -2))
+        addView(continuationLabel, LayoutParams(-1, -2))
         isClickable = true
         isFocusable = true
         isSoundEffectsEnabled = false
         minimumHeight = GardenStyle.dp(context, 112)
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
+        accessibilityLiveRegion = ACCESSIBILITY_LIVE_REGION_POLITE
         descendantFocusability = FOCUS_BLOCK_DESCENDANTS
         background = RippleDrawable(ColorStateList.valueOf(0x22E8CF91),
-            GardenStyle.surface(context, GardenStyle.panel),
-            GardenStyle.surface(context, Color.WHITE, border = false))
+            GradientDrawable().apply {
+                setColor(HomeTheme.palette.headerSurface)
+                cornerRadius = GardenStyle.dp(context, 22).toFloat()
+                setStroke(GardenStyle.dp(context, 1).coerceAtLeast(1), HomeTheme.palette.border)
+            }, GardenStyle.surface(context, Color.WHITE, border = false))
     }
 
     override fun onViewAdded(child: android.view.View) {

@@ -16,7 +16,7 @@ class CompletionEntryTest {
         return c
     }
     @Test fun existingVictoriesFinalizeExactlyOnceBeforePlay() {
-        for (id in listOf(6L,20L,100L)) {
+        for (id in listOf(6L,20L,37L,100L)) {
             val victory = won(id).capture()
             var disk = decode(victory)
             val c = ProgressController(disk)
