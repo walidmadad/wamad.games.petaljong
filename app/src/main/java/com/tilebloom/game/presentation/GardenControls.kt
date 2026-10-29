@@ -55,7 +55,6 @@ class GardenIconButton(context: Context, iconResource: Int, private val iconTint
     var badge: Int? = null
         set(value) { field = value; invalidate() }
     val showsAdIndicator: Boolean get() = badge == 0
-    private val video = context.getDrawable(com.tilebloom.game.R.drawable.ic_play)!!.mutate()
     init {
         GardenStyle.button(this)
         minimumWidth = 0; minimumHeight = 0
@@ -65,11 +64,35 @@ class GardenIconButton(context: Context, iconResource: Int, private val iconTint
         setPadding(0, 0, 0, 0)
         isClickable = true
     }
+    private fun adLayout(availableWidth: Int): android.text.StaticLayout {
+        val paint = android.text.TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            textSize = 12 * resources.displayMetrics.scaledDensity
+            typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+            color = GardenStyle.forest
+        }
+        val label = context.getString(com.tilebloom.game.R.string.ad_label)
+        return android.text.StaticLayout.Builder.obtain(label, 0, label.length, paint,
+            availableWidth.coerceAtLeast(1)).setAlignment(android.text.Layout.Alignment.ALIGN_CENTER)
+            .setIncludePad(false).build()
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val d = resources.displayMetrics.density
+        val sp = resources.displayMetrics.scaledDensity
+        val desired = (60 * d + maxOf(24 * d, 20 * sp + 8 * d) / 2 +
+            maxOf(24 * d, adLayout(android.view.View.MeasureSpec.getSize(widthMeasureSpec) - (10 * d).toInt()).height + 8 * d) + 6 * d).toInt()
+        super.onMeasure(widthMeasureSpec, android.view.View.MeasureSpec.makeMeasureSpec(
+            resolveSize(desired, heightMeasureSpec), android.view.View.MeasureSpec.EXACTLY))
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         val d = resources.displayMetrics.density
-        val cx = width / 2f; val cy = height / 2f
-        val radius = minOf(28 * d, width / 2f, height / 2f)
+        val cx = width / 2f
+        val badgeHeight = maxOf(24 * d, 20 * resources.displayMetrics.scaledDensity + 8 * d)
+        val cy = if (height < 80 * d) height / 2f
+            else badgeHeight / 2 + 30 * d
+        val radius = minOf(30 * d, width / 2f - d, height / 2f)
         ink.style = Paint.Style.FILL
         ink.color = if (isPressed) GardenStyle.theme.palette.traySurface else GardenStyle.theme.palette.buttonSurface
         canvas.drawCircle(cx, cy, radius - d, ink)
@@ -77,16 +100,16 @@ class GardenIconButton(context: Context, iconResource: Int, private val iconTint
         ink.color = GardenStyle.theme.palette.border
         canvas.drawCircle(cx, cy, radius - d, ink)
         ink.style = Paint.Style.FILL
-        val size = GardenStyle.dp(context, 24)
+        val size = GardenStyle.dp(context, 28)
         icon.setTint(if (isEnabled) iconTint ?: GardenStyle.ivory else GardenStyle.secondary)
         icon.setBounds((cx - size / 2).toInt(), (cy - size / 2).toInt(),
             (cx + size / 2).toInt(), (cy + size / 2).toInt())
         icon.draw(canvas)
         badge?.let {
             ink.typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-            ink.textSize = 12 * resources.displayMetrics.scaledDensity
-            val h = maxOf(20 * d, ink.fontSpacing + 2 * d)
-            val w = maxOf(h, ink.measureText(it.toString()) + 6 * d)
+            ink.textSize = 14 * resources.displayMetrics.scaledDensity
+            val h = maxOf(24 * d, ink.fontSpacing + 6 * d)
+            val w = maxOf(h, ink.measureText(it.toString()) + 10 * d)
             val right = width - d; val top = 0f
             ink.color = GardenStyle.gold
             canvas.drawRoundRect(right - w, top, right, h, h / 2, h / 2, ink)
@@ -97,25 +120,16 @@ class GardenIconButton(context: Context, iconResource: Int, private val iconTint
                 h / 2 - (ink.ascent() + ink.descent()) / 2, ink)
         }
         if (showsAdIndicator) {
-            val label = context.getString(com.tilebloom.game.R.string.ad_label)
-            ink.typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-            ink.textSize = 11 * resources.displayMetrics.scaledDensity
-            val videoSize = 12 * d
-            val w = videoSize + ink.measureText(label) + 10 * d
-            val h = maxOf(20 * d, ink.fontSpacing + 2 * d)
-            val left = cx - w / 2; val top = height - h
+            // Long localized labels wrap at the user's font size inside this column.
+            val label = adLayout(width - (10 * d).toInt())
+            val h = maxOf(24 * d, label.height + 8 * d)
+            val left = d; val top = height - h
             ink.color = GardenStyle.gold
-            canvas.drawRoundRect(left, top, left + w, height.toFloat(), h / 2, h / 2, ink)
-            ink.style = Paint.Style.STROKE; ink.strokeWidth = 1.5f * d; ink.color = GardenStyle.forest
-            canvas.drawRoundRect(left, top, left + w, height.toFloat(), h / 2, h / 2, ink)
-            ink.style = Paint.Style.FILL
-            video.setTint(GardenStyle.forest)
-            video.setBounds((left + 3*d).toInt(), (top + (h-videoSize)/2).toInt(),
-                (left + 3*d + videoSize).toInt(), (top + (h+videoSize)/2).toInt())
-            video.draw(canvas)
-            ink.color = GardenStyle.forest
-            canvas.drawText(label, left + videoSize + 5*d,
-                top + h/2 - (ink.ascent()+ink.descent())/2, ink)
+            canvas.drawRoundRect(left, top, width - d, height.toFloat(), 10 * d, 10 * d, ink)
+            canvas.save()
+            canvas.translate(5 * d, top + (h - label.height) / 2)
+            label.draw(canvas)
+            canvas.restore()
         }
     }
 }

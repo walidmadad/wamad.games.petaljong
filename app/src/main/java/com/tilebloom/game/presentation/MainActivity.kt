@@ -216,7 +216,7 @@ class MainActivity : Activity() {
             letterSpacing = .03f; maxLines = 1
             setAutoSizeTextTypeUniformWithConfiguration(24, 42, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
         })
-        add(textLabel(14f, GardenStyle.secondary).apply { setText(R.string.subtitle); letterSpacing = .05f }, 6)
+        add(textLabel(16f, GardenStyle.secondary).apply { setText(R.string.subtitle); letterSpacing = .05f }, 6)
         add(GardenWelcomeArt(this).apply { id = R.id.home_art }, 10, dp(if (compact) 176 else 220))
         levelCard = ContinueLevelCard(this).apply {
             id = R.id.continue_level
@@ -225,12 +225,12 @@ class MainActivity : Activity() {
         }
         startLevel = textLabel(26f, GardenStyle.gold).apply {
             id = R.id.start_level; typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-            maxLines = 1
-            setAutoSizeTextTypeUniformWithConfiguration(12, 26, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
+            // Allow localized level names to wrap without shrinking text.
+            maxLines = 2
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
         levelCard.addView(startLevel, LinearLayout.LayoutParams(-1, -2))
-        startHint = textLabel(14f, GardenStyle.ivory).apply { setPadding(0, dp(8), 0, 0) }
+        startHint = textLabel(16f, GardenStyle.ivory).apply { setPadding(0, dp(8), 0, 0) }
         levelCard.addView(startHint, LinearLayout.LayoutParams(-1, -2))
         add(levelCard, 8)
         levelCard.apply {
@@ -361,7 +361,7 @@ class MainActivity : Activity() {
         column.addView(area, LinearLayout.LayoutParams(-1, 0, 1f).apply { topMargin = dp(4) })
         area.addView(board, FrameLayout.LayoutParams(-1, -1))
         createOutcome(area)
-        feedback = textLabel(12f, GardenStyle.secondary).apply {
+        feedback = textLabel(14f, GardenStyle.secondary).apply {
             id = R.id.feedback; setPadding(0, dp(4), 0, dp(6))
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
@@ -435,11 +435,12 @@ class MainActivity : Activity() {
             }
         }
         listOf(home, hint, undo, restart).forEach { button ->
-            controls.addView(button, LinearLayout.LayoutParams(dp(64), dp(76)).apply {
-                marginStart = dp(2); marginEnd = dp(2)
+            controls.addView(button, LinearLayout.LayoutParams(0, -2, 1f).apply {
+                marginStart = dp(1); marginEnd = dp(1)
             })
         }
-        column.addView(controls, LinearLayout.LayoutParams(-2, -2))
+        column.addView(controls, LinearLayout.LayoutParams(
+            if (resources.configuration.screenWidthDp > 400) dp(368) else -1, -2))
         root.addView(column, FrameLayout.LayoutParams(-1, -1))
     }
 
@@ -610,9 +611,9 @@ class MainActivity : Activity() {
         listOf(undo, restart).forEach { button ->
             if (button.parent !== destination) {
                 (button.parent as? android.view.ViewGroup)?.removeView(button)
-                val params = if (destination === controls) LinearLayout.LayoutParams(dp(64), dp(76)).apply {
-                    marginStart = dp(2); marginEnd = dp(2)
-                } else LinearLayout.LayoutParams(dp(64), dp(56)).apply {
+                val params = if (destination === controls) LinearLayout.LayoutParams(0, -2, 1f).apply {
+                    marginStart = dp(1); marginEnd = dp(1)
+                } else LinearLayout.LayoutParams(dp(72), -2).apply {
                     marginStart = dp(8); marginEnd = dp(8)
                 }
                 destination.addView(button, params)
@@ -667,7 +668,7 @@ class MainActivity : Activity() {
             minimumHeight = dp(28)
         }
         statusRow.addView(loading, LinearLayout.LayoutParams(dp(20), dp(20)).apply { marginEnd = dp(8) })
-        val availability = textLabel(13f, GardenStyle.secondary).apply {
+        val availability = textLabel(15f, GardenStyle.secondary).apply {
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
         statusRow.addView(availability)
@@ -851,7 +852,7 @@ class MainActivity : Activity() {
             id = R.id.settings_sound
             setText(R.string.sound_effects)
             setTextColor(GardenStyle.ivory)
-            textSize = 16f
+            textSize = 17f
             minimumHeight = dp(56)
             switchPadding = dp(12)
             switchMinWidth = dp(52)
@@ -880,11 +881,11 @@ class MainActivity : Activity() {
                 GardenStyle.surface(this@MainActivity, android.graphics.Color.WHITE, 12, false))
             val labels = getChildAt(1) as LinearLayout
             labels.addView(TextView(this@MainActivity).apply {
-                setText(R.string.language); textSize = 14f; setTextColor(GardenStyle.secondary)
+                setText(R.string.language); textSize = 16f; setTextColor(GardenStyle.secondary)
             }, 0)
             setOnClickListener { dialogLanguage(anchor) }
         }, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(8) })
-        content.addView(textLabel(14f, GardenStyle.secondary).apply {
+        content.addView(textLabel(16f, GardenStyle.secondary).apply {
             setText(R.string.settings_privacy_heading)
             setPadding(0, dp(16), 0, dp(4))
         })
@@ -914,7 +915,9 @@ class MainActivity : Activity() {
         dialog.setCanceledOnTouchOutside(false)
         dialog.show()
         styleSettingsWindow(dialog)
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(GardenStyle.gold)
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).apply {
+            setTextColor(GardenStyle.gold); textSize = 16f; minimumHeight = dp(48)
+        }
         accountGameplay()
     }
 
@@ -947,7 +950,9 @@ class MainActivity : Activity() {
         dialog.setCanceledOnTouchOutside(false)
         dialog.show()
         styleSettingsWindow(dialog)
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(GardenStyle.gold)
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).apply {
+            setTextColor(GardenStyle.gold); textSize = 16f; minimumHeight = dp(48)
+        }
         accountGameplay()
     }
 
@@ -963,7 +968,7 @@ class MainActivity : Activity() {
 
     private fun languageRow(tag: String, selected: Boolean): LinearLayout = LinearLayout(this).apply {
         orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
-        minimumHeight = dp(52)
+        minimumHeight = dp(56)
         setPaddingRelative(dp(12), dp(8), dp(12), dp(8))
         background = android.graphics.drawable.RippleDrawable(
             android.content.res.ColorStateList.valueOf(0x33D9C58A),
@@ -981,7 +986,7 @@ class MainActivity : Activity() {
         addView(LinearLayout(this@MainActivity).apply {
             orientation = LinearLayout.VERTICAL
             addView(TextView(this@MainActivity).apply {
-                text = name; textSize = 16f; setTextColor(GardenStyle.ivory)
+                text = name; textSize = 17f; setTextColor(GardenStyle.ivory)
                 // Native names resolve their own bidi direction within the surrounding row.
                 textDirection = View.TEXT_DIRECTION_FIRST_STRONG
                 gravity = Gravity.START or Gravity.CENTER_VERTICAL
@@ -1010,10 +1015,13 @@ class MainActivity : Activity() {
             contentDescription = getString(R.string.settings_label)
             tooltipText = contentDescription
             imageTintList = android.content.res.ColorStateList.valueOf(GardenStyle.gold)
-            background = android.graphics.drawable.RippleDrawable(
-                android.content.res.ColorStateList.valueOf(0x33D9C58A),
-                GardenStyle.surface(this@MainActivity, GardenStyle.panel, 24, false), null)
-            setPadding(dp(12), dp(12), dp(12), dp(12))
+            background = null
+            minimumWidth = dp(48); minimumHeight = dp(48)
+            // A gear has no directional meaning; only its parent placement follows RTL.
+            setPadding(dp(10), dp(10), dp(10), dp(10))
+            imageTintList = android.content.res.ColorStateList(
+                arrayOf(intArrayOf(android.R.attr.state_pressed), intArrayOf()),
+                intArrayOf(GardenStyle.ivory, GardenStyle.gold))
             setOnClickListener { showSettings(this) }
         }
         addView(settings, LinearLayout.LayoutParams(dp(48), dp(48)))

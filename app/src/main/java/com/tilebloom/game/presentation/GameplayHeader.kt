@@ -9,11 +9,11 @@ import android.widget.TextView
 /** One compact, locale-aware row. Board coordinates remain independent of its direction. */
 class GameplayHeader(context: Context, settings: View) : LinearLayout(context) {
     val levelLabel = TextView(context).apply {
-        textSize = 14f
+        textSize = 20f
         setTextColor(GardenStyle.gold)
         gravity = Gravity.END or Gravity.CENTER_VERTICAL
         maxLines = 1
-        setAutoSizeTextTypeUniformWithConfiguration(12, 14, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
+        // Scalable text retains its size rather than shrinking for translations.
     }
     init {
         gravity = Gravity.CENTER_VERTICAL

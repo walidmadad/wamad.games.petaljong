@@ -13,6 +13,16 @@ import com.tilebloom.game.presentation.AppLanguage
 /** Rendering assertions complement, but do not replace, device screenshot review. */
 @Suppress("DEPRECATION")
 class SettingsPresentationTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivity::class.java) {
+    private fun assertBareGear(screen: MainActivity) {
+        val gear = screen.findViewById<View>(R.id.settings)
+        assertNull("Settings must have no background in either state", gear.background)
+        gear.isPressed = true
+        assertNull(gear.background)
+        gear.isPressed = false
+        val d = screen.resources.displayMetrics.density
+        assertTrue(gear.width >= 48 * d && gear.height >= 48 * d)
+        assertTrue(gear.contentDescription.isNotBlank())
+    }
     private fun dialog(): AlertDialog = MainActivity::class.java.getDeclaredField("settingsDialog")
         .apply { isAccessible = true }.get(activity) as AlertDialog
     private fun descendants(view: View): List<View> = listOf(view) +
@@ -31,6 +41,7 @@ class SettingsPresentationTest : ActivityInstrumentationTestCase2<MainActivity>(
             screen.findViewById<View>(R.id.continue_level).performClick()
             val controller = com.tilebloom.game.storage.GameStore.get(screen)
             val before = com.tilebloom.game.domain.ProgressCodec.encode(controller.capture())
+            assertBareGear(screen)
             screen.findViewById<View>(R.id.settings).performClick()
             val settings = dialog()
             assertTrue(settings.isShowing)
@@ -43,7 +54,7 @@ class SettingsPresentationTest : ActivityInstrumentationTestCase2<MainActivity>(
 
     fun testModalSoundPersistenceAndBundledLanguageRows() {
         val screen = activity
-        instrumentation.runOnMainSync { screen.findViewById<View>(R.id.settings).performClick() }
+        instrumentation.runOnMainSync { assertBareGear(screen); screen.findViewById<View>(R.id.settings).performClick() }
         instrumentation.waitForIdleSync()
         instrumentation.runOnMainSync {
             val settings = dialog()
