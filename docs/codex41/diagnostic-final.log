@@ -1,0 +1,16 @@
+app/src/androidTest/java/com/tilebloom/game/SettingsPresentationTest.kt:4:21: warning: 'ActivityInstrumentationTestCase2<T : Activity!>' is deprecated. Deprecated in Java
+import android.test.ActivityInstrumentationTestCase2
+                    ^
+app/src/main/java/com/tilebloom/game/presentation/MainActivity.kt:308:17: warning: 'announceForAccessibility(CharSequence!): Unit' is deprecated. Deprecated in Java
+                announceForAccessibility(getString(R.string.checking_connection))
+                ^
+app/src/main/java/com/tilebloom/game/presentation/MainActivity.kt:846:16: warning: 'setter for statusBarColor: Int' is deprecated. Deprecated in Java
+        window.statusBarColor = palette.backgroundTop
+               ^
+app/src/main/java/com/tilebloom/game/presentation/MainActivity.kt:847:16: warning: 'setter for navigationBarColor: Int' is deprecated. Deprecated in Java
+        window.navigationBarColor = palette.backgroundBottom
+               ^
+app/src/main/java/com/tilebloom/game/presentation/MainActivity.kt:1023:47: warning: 'setter for isChecked: Boolean' is deprecated. Deprecated in Java
+                info.isCheckable = true; info.isChecked = selected
+                                              ^
+Final changed UI + instrumentation diagnostic compilation PASS; device tests NOT executed.

@@ -876,27 +876,38 @@ class MainActivity : Activity() {
             setTextColor(GardenStyle.ivory)
             textSize = 16f
             minimumHeight = dp(56)
-            switchPadding = dp(24)
-            showText = true
+            switchPadding = dp(12)
+            switchMinWidth = dp(52)
+            thumbTintList = android.content.res.ColorStateList.valueOf(GardenStyle.ivory)
+            trackTintList = android.content.res.ColorStateList(
+                arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()),
+                intArrayOf(0xFF64895F.toInt(), 0xFF53645C.toInt()))
+            showText = false
             textOn = getString(R.string.sound_on)
             textOff = getString(R.string.sound_off)
             isSoundEffectsEnabled = false
             isChecked = !audio.policy.preferences.muted
+            if (Build.VERSION.SDK_INT >= 30) stateDescription = getString(if (isChecked) R.string.sound_on else R.string.sound_off)
             setOnCheckedChangeListener { _, enabled ->
                 audio.preferences(audio.policy.preferences.copy(muted = !enabled))
+                if (Build.VERSION.SDK_INT >= 30) stateDescription = getString(if (enabled) R.string.sound_on else R.string.sound_off)
             }
         }
         content.addView(sound, LinearLayout.LayoutParams(-1, -2))
-        content.addView(Button(this).apply {
+        content.addView(languageRow(AppLanguage.selected(this), false).apply {
             id = R.id.settings_language
-            val selected = AppLanguage.tags.indexOf(AppLanguage.selected(this@MainActivity))
-            text = getString(R.string.language_current, getString(R.string.language), if (selected < 0) getString(R.string.language_automatic) else AppLanguage.nativeNames[selected])
-            isAllCaps = false
-            GardenStyle.button(this, false)
-            minimumHeight = dp(64)
+            contentDescription = getString(R.string.language_current, getString(R.string.language), contentDescription)
+            background = android.graphics.drawable.RippleDrawable(
+                android.content.res.ColorStateList.valueOf(0x33D9C58A),
+                GardenStyle.surface(this@MainActivity, GardenStyle.panel, 12),
+                GardenStyle.surface(this@MainActivity, android.graphics.Color.WHITE, 12, false))
+            val labels = getChildAt(1) as LinearLayout
+            labels.addView(TextView(this@MainActivity).apply {
+                setText(R.string.language); textSize = 14f; setTextColor(GardenStyle.secondary)
+            }, 0)
             setOnClickListener { dialogLanguage(anchor) }
-        }, LinearLayout.LayoutParams(-1, -2))
-        content.addView(textLabel(12f, GardenStyle.secondary).apply {
+        }, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(8) })
+        content.addView(textLabel(14f, GardenStyle.secondary).apply {
             setText(R.string.settings_privacy_heading)
             setPadding(0, dp(16), 0, dp(4))
         })
@@ -925,7 +936,7 @@ class MainActivity : Activity() {
         }
         dialog.setCanceledOnTouchOutside(false)
         dialog.show()
-        dialog.window?.setBackgroundDrawable(GardenStyle.surface(this, GardenStyle.panel, 24, false))
+        styleSettingsWindow(dialog)
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(GardenStyle.gold)
         accountGameplay()
     }
@@ -937,22 +948,17 @@ class MainActivity : Activity() {
             setPadding(dp(16), dp(8), dp(16), dp(8))
         }
         val current = AppLanguage.selected(this)
-        val names = listOf(getString(R.string.language_automatic)) + AppLanguage.nativeNames
         val tags = listOf("") + AppLanguage.tags
         val dialog = AlertDialog.Builder(this).setTitle(R.string.language)
             .setView(ScrollView(this).apply { addView(panel) })
             .setPositiveButton(R.string.settings_close, null).create()
-        names.forEachIndexed { index, name ->
-            panel.addView(RadioButton(this).apply {
-                text = name; textSize = 16f; setTextColor(GardenStyle.ivory)
-                buttonTintList = android.content.res.ColorStateList.valueOf(GardenStyle.gold)
-                minimumHeight = dp(52); isChecked = tags[index] == current
-                setPadding(dp(8), dp(4), dp(8), dp(4))
+        tags.forEach { tag ->
+            panel.addView(languageRow(tag, tag == current).apply {
+                this.tag = "language:$tag"
                 setOnClickListener {
-                    if (tags[index] != current) {
+                    if (tag != current) {
                         if (::navigation.isInitialized) GameStore.persist(this@MainActivity)
-                        // Locale changes are configuration changes, never gameplay actions.
-                        AppLanguage.select(this@MainActivity, tags[index])
+                        AppLanguage.select(this@MainActivity, tag)
                         if (Build.VERSION.SDK_INT < 33) recreate()
                     }
                     dialog.dismiss()
@@ -963,10 +969,60 @@ class MainActivity : Activity() {
         dialog.setOnDismissListener { settingsDialog = null; accountGameplay(); if (anchor.isShown) anchor.requestFocus() }
         dialog.setCanceledOnTouchOutside(false)
         dialog.show()
-        dialog.window?.setBackgroundDrawable(GardenStyle.surface(this, GardenStyle.panel, 24, false))
-        dialog.window?.setLayout(minOf(resources.displayMetrics.widthPixels - dp(32), dp(400)), -2)
+        styleSettingsWindow(dialog)
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(GardenStyle.gold)
         accountGameplay()
+    }
+
+    private fun styleSettingsWindow(dialog: AlertDialog) {
+        dialog.window?.apply {
+            // A floating, touch-modal window keeps the Activity's original rendering intact.
+            addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+            setDimAmount(.28f)
+            setBackgroundDrawable(GardenStyle.surface(this@MainActivity, GardenStyle.panel, 24))
+            setLayout(minOf(resources.displayMetrics.widthPixels - dp(24), dp(400)), -2)
+        }
+    }
+
+    private fun languageRow(tag: String, selected: Boolean): LinearLayout = LinearLayout(this).apply {
+        orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+        minimumHeight = dp(52)
+        setPaddingRelative(dp(12), dp(8), dp(12), dp(8))
+        background = android.graphics.drawable.RippleDrawable(
+            android.content.res.ColorStateList.valueOf(0x33D9C58A),
+            GardenStyle.surface(this@MainActivity, GardenStyle.panel, 12, false),
+            GardenStyle.surface(this@MainActivity, android.graphics.Color.WHITE, 12, false))
+        isClickable = true; isFocusable = true
+        val index = AppLanguage.tags.indexOf(tag)
+        val name = if (index < 0) getString(R.string.language_automatic) else AppLanguage.nativeNames[index]
+        addView(android.widget.ImageView(this@MainActivity).apply {
+            setImageResource(LanguageFlags.drawable(tag))
+            scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            layoutDirection = View.LAYOUT_DIRECTION_LTR
+        }, LinearLayout.LayoutParams(dp(28), dp(20)).apply { marginEnd = dp(12) })
+        addView(LinearLayout(this@MainActivity).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(TextView(this@MainActivity).apply {
+                text = name; textSize = 16f; setTextColor(GardenStyle.ivory)
+                // Native names resolve their own bidi direction within the surrounding row.
+                textDirection = View.TEXT_DIRECTION_FIRST_STRONG
+                gravity = Gravity.START or Gravity.CENTER_VERTICAL
+            }, LinearLayout.LayoutParams(-1, -2))
+        }, LinearLayout.LayoutParams(0, -2, 1f))
+        addView(TextView(this@MainActivity).apply {
+            text = if (selected) "✓" else ""; textSize = 20f
+            setTextColor(GardenStyle.gold); gravity = Gravity.CENTER
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        }, LinearLayout.LayoutParams(dp(28), dp(32)))
+        isSelected = selected
+        contentDescription = name
+        accessibilityDelegate = object : View.AccessibilityDelegate() {
+            override fun onInitializeAccessibilityNodeInfo(host: View, info: android.view.accessibility.AccessibilityNodeInfo) {
+                super.onInitializeAccessibilityNodeInfo(host, info)
+                info.isCheckable = true; info.isChecked = selected
+            }
+        }
     }
 
     private fun settingsControls(): LinearLayout = LinearLayout(this).apply {
