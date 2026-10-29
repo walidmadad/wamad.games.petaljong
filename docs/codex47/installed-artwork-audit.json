@@ -1,0 +1,8 @@
+{
+  "installedSha256": "c4d7a5680b040fdd8fd11eb55dc5844daf28b6fcd0d48f4940091a41dc86e313",
+  "expectedSha256": "c4d7a5680b040fdd8fd11eb55dc5844daf28b6fcd0d48f4940091a41dc86e313",
+  "bytes": 8005913,
+  "matchingNewResources": 23,
+  "allResourceHashesMatch": true,
+  "package": "com.tilebloom.game"
+}

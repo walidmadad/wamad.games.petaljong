@@ -1,0 +1,3 @@
+
+com.tilebloom.game.CeramicArtworkVisualTest:INSTRUMENTATION_RESULT: shortMsg=Process crashed.
+INSTRUMENTATION_CODE: 0

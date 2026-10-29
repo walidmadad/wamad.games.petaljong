@@ -82,10 +82,12 @@ class CeramicArtworkVisualTest : InstrumentationTestCase() {
                 leaf.recycle(); flower.recycle()
             }
             val game = Game(listOf(Tile(0, Symbol.LEAF, 0.0, 0.0, 0),
-                Tile(1, Symbol.LEAF, 2.0, 0.0, 0)))
+                Tile(1, Symbol.LEAF, 2.0, 0.0, 0),
+                // Undo is intentionally disabled after victory. Keep a pair on the board.
+                Tile(2, Symbol.FLOWER, 0.0, 2.0, 0), Tile(3, Symbol.FLOWER, 2.0, 2.0, 0)))
             val before = render(game.tiles, 360, GardenTheme.forLevel(1))
             assertTrue(game.select(0)); assertTrue(game.select(1))
-            assertEquals(Status.WON, game.status)
+            assertEquals(Status.PLAYING, game.status)
             assertTrue(game.undo()); assertTrue(game.undo())
             val restored = render(game.tiles, 360, GardenTheme.forLevel(1))
             assertTrue("Undo changed ceramic presentation", before.sameAs(restored))

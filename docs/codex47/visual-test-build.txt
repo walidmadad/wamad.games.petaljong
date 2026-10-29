@@ -1,0 +1,1 @@
+Auxiliary visual-test APK: /home/walid/Documents/projects/androidGames/TileBloom/app/build/codex47-visual-test/artwork-test.apk

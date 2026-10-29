@@ -1,0 +1,9 @@
+{
+  "package": "com.tilebloom.game",
+  "versionCode": 1,
+  "versionName": "0.1",
+  "bytes": 8798812,
+  "sha256": "d2304ac6e85c981928880b45b6db40c00c78eb9e65ace46314b0503594755844",
+  "source": "Pulled from running emulator-5554 installed base.apk before artwork replacement",
+  "certificateSha256": "fc1828f63432530e788baa4d69c70594157dfad0312a977e710158393e4110f6"
+}

@@ -1,0 +1,18 @@
+FATAL EXCEPTION: main
+10-29 17:10:16.353 21726 21726 E AndroidRuntime: Process: com.tilebloom.game, PID: 21726
+10-29 17:10:16.353 21726 21726 E AndroidRuntime: junit.framework.AssertionFailedError: Undersized art CACTUS
+10-29 17:10:16.353 21726 21726 E AndroidRuntime: 	at junit.framework.Assert.fail(Assert.java:50)
+10-29 17:10:16.353 21726 21726 E AndroidRuntime: 	at junit.framework.Assert.assertTrue(Assert.java:20)
+10-29 17:10:16.353 21726 21726 E AndroidRuntime: 	at com.tilebloom.game.CeramicArtworkVisualTest.testNormalizedArtFitsPortraitFaceWithSafeMargins$lambda$1(CeramicArtworkVisualTest.kt:46)
+10-29 17:10:16.353 21726 21726 E AndroidRuntime: 	at com.tilebloom.game.CeramicArtworkVisualTest.$r8$lambda$cAyPYqe9uvblAvSS580E8ASdExo(CeramicArtworkVisualTest.kt:0)
+10-29 17:10:16.353 21726 21726 E AndroidRuntime: 	at com.tilebloom.game.CeramicArtworkVisualTest$$ExternalSyntheticLambda1.run(D8$$SyntheticClass:0)
+10-29 17:10:16.353 21726 21726 E AndroidRuntime: 	at android.app.Instrumentation$SyncRunnable.run(Instrumentation.java:2675)
+10-29 17:10:16.353 21726 21726 E AndroidRuntime: 	at android.os.Handler.handleCallback(Handler.java:1082)
+10-29 17:10:16.353 21726 21726 E AndroidRuntime: 	at android.os.Handler.dispatchMessageImpl(Handler.java:135)
+10-29 17:10:16.353 21726 21726 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:126)
+10-29 17:10:16.353 21726 21726 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:295)
+10-29 17:10:16.353 21726 21726 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:398)
+10-29 17:10:16.353 21726 21726 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:9569)
+10-29 17:10:16.353 21726 21726 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-29 17:10:16.353 21726 21726 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:575)
+10-29 17:10:16.353 21726 21726 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:918)

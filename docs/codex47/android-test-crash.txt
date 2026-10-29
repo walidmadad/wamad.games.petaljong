@@ -1,0 +1,19 @@
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: FATAL EXCEPTION: main
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: Process: com.tilebloom.game, PID: 21227
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: junit.framework.AssertionFailedError
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: 	at junit.framework.Assert.fail(Assert.java:48)
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: 	at junit.framework.Assert.assertTrue(Assert.java:20)
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: 	at junit.framework.Assert.assertTrue(Assert.java:27)
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: 	at com.tilebloom.game.CeramicArtworkVisualTest.testBlockedSymbolsRemainRecognizableAcrossThemesAndUndoRestoresPixels$lambda$6(CeramicArtworkVisualTest.kt:89)
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: 	at com.tilebloom.game.CeramicArtworkVisualTest.$r8$lambda$KXMVIYR_TVzfeRKeYf9xwzJgl1U(CeramicArtworkVisualTest.kt:0)
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: 	at com.tilebloom.game.CeramicArtworkVisualTest$$ExternalSyntheticLambda2.run(D8$$SyntheticClass:0)
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: 	at android.app.Instrumentation$SyncRunnable.run(Instrumentation.java:2675)
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: 	at android.os.Handler.handleCallback(Handler.java:1082)
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: 	at android.os.Handler.dispatchMessageImpl(Handler.java:135)
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:126)
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:295)
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:398)
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:9569)
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:575)
+10-29 17:07:23.854 21227 21227 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:918)

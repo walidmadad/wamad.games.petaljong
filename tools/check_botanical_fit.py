@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """Audit packaged ink bounds and proportional Canvas fit; no Android visual claims.
 Requires Pillow. Writes numerical evidence only; never alters art assets.
+An optional manifest path selects an older catalog. "old" dimensions below compare
+the former fitting formula on the current image, not the old illustration itself.
 """
 import json
 import hashlib
 import re
+import sys
 from pathlib import Path
 from PIL import Image
 
@@ -20,7 +23,8 @@ for line in section.splitlines():
             limits[symbol] = pair
         if 'else' in line:
             fallback = pair
-manifest = json.loads((root / 'docs/codex44/art-manifest.json').read_text())
+manifest_path = Path(sys.argv[1]) if len(sys.argv) > 1 else root / 'docs/codex47/art-manifest.json'
+manifest = json.loads(manifest_path.read_text())
 assert sorted(entry['stableId'] for entry in manifest) == list(range(23))
 assert len({entry['resource'] for entry in manifest}) == 23
 results = []

@@ -1,0 +1,6 @@
+
+com.tilebloom.game.CeramicArtworkVisualTest:......
+Test results for InstrumentationTestRunner=......
+Time: 56.994
+
+OK (6 tests)

@@ -1,0 +1,13 @@
+JVM regressions: PASS, 308 tests, 260.654 seconds (fresh cached Kotlin/JUnitCore; not Gradle).
+Android artwork instrumentation: PASS, 6 tests, 56.994 seconds (auxiliary test APK).
+Final SDK aapt2 resource compile and link: PASS, after alpha-fringe packaging correction.
+Catalog: PASS, 23 unique replacements, stable-ID mapping, no resource overrides, new hashes, transparency and fit.
+Installed APK: PASS, pulled whole-file SHA-256 and all 23 resource hashes equal final artifact and manifest.
+Signing/alignment: PASS, required compatible certificate.
+Save/settings/audio: PASS, all three file hashes unchanged.
+Real gameplay Activity screenshot: VERIFIED, same Level 37 with tray, ordinary and mystery tiles.
+Home shared artwork: VERIFIED in screenshot.
+Gradle unit/assemble/lint: BLOCKED before task execution; wrapper read-only lock, temporary-cache Gradle socket/IP failure.
+Delivered APK type: RESOURCE-ONLY verification APK; NOT a successful Gradle/source build.
+Exact app-icon/reference-attachment comparison: NOT VERIFIED (image unavailable).
+No production Kotlin, domain, generator/version, geometry, languages, ads, sound or persistence changes.
