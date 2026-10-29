@@ -13,6 +13,7 @@ import com.tilebloom.game.presentation.board.*
 import kotlin.math.*
 
 class MahjongBoardView(context: Context, private var game: Game, private val changed: () -> Unit) : View(context) {
+    init { layoutDirection = View.LAYOUT_DIRECTION_LTR }
     var theme = GardenTheme.forLevel(1)
         set(value) { field = value; invalidate() }
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)

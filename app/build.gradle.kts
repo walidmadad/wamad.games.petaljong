@@ -10,6 +10,7 @@ android {
     useLibrary("android.test.base")
     defaultConfig {
         applicationId = "com.tilebloom.game"
+        resourceConfigurations += listOf("en", "fr", "es", "pt-rBR", "ar", "hi", "ja", "de")
         minSdk = 26
         targetSdk = 36
         versionCode = 1

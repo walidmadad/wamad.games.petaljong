@@ -1,0 +1,7 @@
+app/src/main/java/com/tilebloom/game/presentation/GardenControls.kt:87:58: warning: 'scaledDensity: Float' is deprecated. Deprecated in Java
+            ink.textSize = 12 * resources.displayMetrics.scaledDensity
+                                                         ^
+app/src/main/java/com/tilebloom/game/presentation/GardenControls.kt:102:58: warning: 'scaledDensity: Float' is deprecated. Deprecated in Java
+            ink.textSize = 11 * resources.displayMetrics.scaledDensity
+                                                         ^
+Diagnostic main + Android test compilation PASS; not a Gradle build or executed instrumentation.

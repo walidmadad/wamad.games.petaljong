@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TileBloom</string>
+    <string name="app_name" translatable="false">TileBloom</string>
     <string name="subtitle">Mahjong Garden Puzzle</string>
     <string name="level_number">Level %1$d</string>
     <string name="generation_error">The next garden could not be saved or prepared. Your completed level is retained. Tap Next Level to retry.</string>
@@ -122,4 +122,8 @@
     <string name="settings_privacy_heading">PRIVACY</string>
     <string name="settings_privacy">Privacy Settings</string>
     <string name="settings_close">CLOSE</string>
+    <string name="language">Language</string>
+    <string name="language_automatic">Automatic (System Language)</string>
+    <plurals name="pairs_remaining"><item quantity="one">Pair left: %1$d</item><item quantity="other">Pairs left: %1$d</item></plurals>
+    <string name="language_current">%1$s\n%2$s</string>
 </resources>

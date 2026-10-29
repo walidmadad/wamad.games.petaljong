@@ -1,0 +1,15 @@
+JVM diagnostic regression suite: PASS, 307 tests, 187.466 seconds
+Android resources aapt2 compile/link: PASS
+Main + Android instrumentation Kotlin diagnostic compilation: PASS
+Final modified icon code diagnostic compilation: PASS
+Final language-switch interaction test diagnostic compilation: PASS
+Git diff whitespace check: PASS
+Standard Gradle unit tests: BLOCKED before execution (read-only wrapper lock)
+Standard Gradle debug assembly: BLOCKED before execution (read-only wrapper lock)
+Standard Gradle lint: BLOCKED before execution (read-only wrapper lock)
+Installed Gradle with writable cache: BLOCKED (no usable wildcard IP)
+Device instrumentation: NOT EXECUTED
+Screenshots / Arabic RTL / Hindi and Japanese visual shaping: NOT VERIFIED
+Fresh APK: NOT GENERATED
+Existing APK: unchanged; predates this localization change
+Publication / push / uninstall / player-data clearing: NONE

@@ -125,6 +125,10 @@ class MainActivity : Activity() {
     }
     private var backCallback: android.window.OnBackInvokedCallback? = null
 
+    override fun attachBaseContext(newBase: android.content.Context) {
+        super.attachBaseContext(AppLanguage.attach(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         volumeControlStream = android.media.AudioManager.STREAM_MUSIC
@@ -139,7 +143,7 @@ class MainActivity : Activity() {
         connectivity = ConnectivityService.factory(this, ::connectivityChanged)
         AdvertisingService.provider.attach(this)
         Thread {
-            val loaded = runCatching { GameStore.enter(applicationContext, savedInstanceState?.getString("garden_screen") != GardenScreen.GAME.name, ConnectivityMonitor.validated(applicationContext)) }
+            val loaded = runCatching { GameStore.enter(applicationContext, savedInstanceState == null, ConnectivityMonitor.validated(applicationContext)) }
             runOnUiThread {
                 if (!isDestroyed) loaded.onSuccess {
                     progress = it.first
@@ -600,7 +604,7 @@ class MainActivity : Activity() {
         board.theme = GardenTheme.forLevel(session.level.id)
         tray.theme = board.theme
         levelLabel.text = getString(R.string.level_number, session.level.id)
-        counter.text = getString(R.string.pairs, game.remainingPairs)
+        counter.text = resources.getQuantityString(R.plurals.pairs_remaining, game.remainingPairs, game.remainingPairs)
         val presentation = ScreenPresentation.forStatus(game.status, session.canAdvance)
         val terminal = presentation.victory || game.status == Status.LOST
         board.importantForAccessibility = if (terminal) View.IMPORTANT_FOR_ACCESSIBILITY_NO else View.IMPORTANT_FOR_ACCESSIBILITY_YES
@@ -807,7 +811,7 @@ class MainActivity : Activity() {
         online = false
         if (::board.isInitialized) {
             board.isEnabled = false
-            game.hideMystery()
+            if (!isChangingConfigurations) game.hideMystery()
             GameStore.persist(this)
         }
         connectivity.stop()
@@ -883,6 +887,15 @@ class MainActivity : Activity() {
             }
         }
         content.addView(sound, LinearLayout.LayoutParams(-1, -2))
+        content.addView(Button(this).apply {
+            id = R.id.settings_language
+            val selected = AppLanguage.tags.indexOf(AppLanguage.selected(this@MainActivity))
+            text = getString(R.string.language_current, getString(R.string.language), if (selected < 0) getString(R.string.language_automatic) else AppLanguage.nativeNames[selected])
+            isAllCaps = false
+            GardenStyle.button(this, false)
+            minimumHeight = dp(64)
+            setOnClickListener { dialogLanguage(anchor) }
+        }, LinearLayout.LayoutParams(-1, -2))
         content.addView(textLabel(12f, GardenStyle.secondary).apply {
             setText(R.string.settings_privacy_heading)
             setPadding(0, dp(16), 0, dp(4))
@@ -913,6 +926,45 @@ class MainActivity : Activity() {
         dialog.setCanceledOnTouchOutside(false)
         dialog.show()
         dialog.window?.setBackgroundDrawable(GardenStyle.surface(this, GardenStyle.panel, 24, false))
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(GardenStyle.gold)
+        accountGameplay()
+    }
+
+    private fun dialogLanguage(anchor: View) {
+        settingsDialog?.dismiss()
+        val panel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(8), dp(16), dp(8))
+        }
+        val current = AppLanguage.selected(this)
+        val names = listOf(getString(R.string.language_automatic)) + AppLanguage.nativeNames
+        val tags = listOf("") + AppLanguage.tags
+        val dialog = AlertDialog.Builder(this).setTitle(R.string.language)
+            .setView(ScrollView(this).apply { addView(panel) })
+            .setPositiveButton(R.string.settings_close, null).create()
+        names.forEachIndexed { index, name ->
+            panel.addView(RadioButton(this).apply {
+                text = name; textSize = 16f; setTextColor(GardenStyle.ivory)
+                buttonTintList = android.content.res.ColorStateList.valueOf(GardenStyle.gold)
+                minimumHeight = dp(52); isChecked = tags[index] == current
+                setPadding(dp(8), dp(4), dp(8), dp(4))
+                setOnClickListener {
+                    if (tags[index] != current) {
+                        if (::navigation.isInitialized) GameStore.persist(this@MainActivity)
+                        // Locale changes are configuration changes, never gameplay actions.
+                        AppLanguage.select(this@MainActivity, tags[index])
+                        if (Build.VERSION.SDK_INT < 33) recreate()
+                    }
+                    dialog.dismiss()
+                }
+            }, LinearLayout.LayoutParams(-1, -2))
+        }
+        settingsDialog = dialog
+        dialog.setOnDismissListener { settingsDialog = null; accountGameplay(); if (anchor.isShown) anchor.requestFocus() }
+        dialog.setCanceledOnTouchOutside(false)
+        dialog.show()
+        dialog.window?.setBackgroundDrawable(GardenStyle.surface(this, GardenStyle.panel, 24, false))
+        dialog.window?.setLayout(minOf(resources.displayMetrics.widthPixels - dp(32), dp(400)), -2)
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(GardenStyle.gold)
         accountGameplay()
     }

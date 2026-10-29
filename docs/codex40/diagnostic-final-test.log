@@ -1,0 +1,4 @@
+app/src/androidTest/java/com/tilebloom/game/LanguageSwitchInteractionTest.kt:7:21: warning: 'ActivityInstrumentationTestCase2<T : Activity!>' is deprecated. Deprecated in Java
+import android.test.ActivityInstrumentationTestCase2
+                    ^
+Diagnostic main + Android test compilation PASS; not a Gradle build or executed instrumentation.

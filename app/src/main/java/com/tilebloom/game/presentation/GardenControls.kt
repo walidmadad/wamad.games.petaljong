@@ -37,6 +37,7 @@ internal object GardenStyle {
     }
     fun primaryIcon(button: Button, resource: Int, tint: Int = forest) {
         val icon = button.context.getDrawable(resource)!!.mutate()
+        icon.layoutDirection = button.context.resources.configuration.layoutDirection
         icon.setTint(tint)
         val size = dp(button.context, 24); icon.setBounds(0, 0, size, size)
         // An inline image belongs to the centered text run, rather than the button edge.
@@ -49,7 +50,7 @@ internal object GardenStyle {
 
 /** Button remains a single accessible touch target, including its numeric credit badge. */
 class GardenIconButton(context: Context, iconResource: Int, private val iconTint: Int? = null) : Button(context) {
-    private val icon = context.getDrawable(iconResource)!!.mutate()
+    private val icon = context.getDrawable(iconResource)!!.mutate().apply { layoutDirection = context.resources.configuration.layoutDirection }
     private val ink = Paint(Paint.ANTI_ALIAS_FLAG)
     var badge: Int? = null
         set(value) { field = value; invalidate() }

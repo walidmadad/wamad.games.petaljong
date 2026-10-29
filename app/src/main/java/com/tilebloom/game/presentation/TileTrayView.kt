@@ -9,6 +9,7 @@ import com.tilebloom.game.R
 
 /** Presentation only; replayable engine state owns every tile. */
 class TileTrayView(context: Context, private val tiles: () -> List<Tile>) : View(context) {
+    init { layoutDirection = View.LAYOUT_DIRECTION_LTR }
     var theme = GardenTheme.forLevel(1)
         set(value) { field = value; invalidate() }
     private val ink = Paint(Paint.ANTI_ALIAS_FLAG)
