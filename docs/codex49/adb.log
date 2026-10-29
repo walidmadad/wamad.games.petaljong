@@ -7,7 +7,7 @@ Server had pid: 4
 10-29 20:33:16.847     4     4 I adb     : main.cpp:65 Version 37.0.1-15733141
 10-29 20:33:16.847     4     4 I adb     : main.cpp:65 Installed as /home/walid/Android/Sdk/platform-tools/adb
 10-29 20:33:16.847     4     4 I adb     : main.cpp:65 Running on Linux 7.0.0-38-generic (x86_64)
-10-29 20:33:16.847     4     4 I adb     : main.cpp:65 
+10-29 20:33:16.847     4     4 I adb     : main.cpp:65
 10-29 20:33:17.349     4     4 F adb     : main.cpp:168 could not install *smartsocket* listener: Operation not permitted
 
 * failed to start daemon
