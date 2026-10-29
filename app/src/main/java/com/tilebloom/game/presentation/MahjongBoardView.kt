@@ -17,6 +17,22 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
     var theme = GardenTheme.forLevel(1)
         set(value) { field = value; invalidate() }
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    // Unit-space shaders are shared across every tile; only their local matrix changes.
+    private val ceramicLight = LinearGradient(0f, 0f, 0f, 1f,
+        intArrayOf(0xfffaf8ef.toInt(), 0xfff1eee2.toInt(), 0xffe8e3d4.toInt()),
+        floatArrayOf(0f, .65f, 1f), Shader.TileMode.CLAMP)
+    private val ceramicMuted = LinearGradient(0f, 0f, 0f, 1f,
+        0xffdeded1.toInt(), 0xffc9cbbd.toInt(), Shader.TileMode.CLAMP)
+    private val jade = LinearGradient(0f, 0f, 1f, 1f,
+        0xff347d65.toInt(), 0xff174e40.toInt(), Shader.TileMode.CLAMP)
+    private val surfaceMatrix = Matrix()
+    private val emblemSides = floatArrayOf(-1f, 1f)
+    private fun surface(shader: Shader, face: BoardRect) {
+        surfaceMatrix.setScale(face.right - face.left, face.bottom - face.top)
+        surfaceMatrix.postTranslate(face.left, face.top)
+        shader.setLocalMatrix(surfaceMatrix)
+        paint.shader = shader
+    }
     private val effects = MatchEffects()
     private val reveals = MysteryRevealFeedback()
     private var tapStarted = 0L
@@ -98,43 +114,35 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             val selected = available && game.selected == tile.id
             paint.style = Paint.Style.FILL
             // Two offset shadow bands: soft penumbra and a stronger contact shadow.
-            paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (tile.layer > 0) 62 else 34) shl 24)
+            paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (tile.layer > 0) 38 else 26) shl 24)
             canvas.drawRoundRect(layout.shadow(tile).offset(scale * .045f).android(), layout.radius * 1.2f, layout.radius * 1.2f, paint)
-            paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (tile.layer > 0) 136 else 88) shl 24)
+            paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (tile.layer > 0) 96 else 68) shl 24)
             canvas.drawRoundRect(layout.shadow(tile).android(), layout.radius, layout.radius, paint)
-            paint.color = theme.palette.tileSide
+            paint.color = 0xffaaa998.toInt()
             canvas.drawRoundRect(layout.body(tile).android(), layout.radius, layout.radius, paint)
-            paint.color = theme.palette.primaryAccent
+            paint.color = 0xffd6d1bd.toInt()
             canvas.drawRoundRect(layout.edge(tile).android(), layout.radius, layout.radius, paint)
-            paint.color = if (available) theme.palette.availableTileFace else theme.palette.blockedTileFace
-            paint.shader = LinearGradient(face.left, face.top, face.right, face.bottom,
-                if (available) theme.palette.availableTileFace else theme.palette.blockedTileFace,
-                if (available) theme.ceramic else theme.palette.tileSide, Shader.TileMode.CLAMP)
+            surface(if (available) ceramicLight else ceramicMuted, face)
             canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
             paint.shader = null
-            // Inset ceramic rim and top highlight stay inside the established face.
+            // One fine warm rim; the highlight follows only the upper edge.
             paint.style = Paint.Style.STROKE
-            paint.strokeWidth = scale * .018f
-            paint.color = if (available) theme.palette.textPrimary else theme.palette.availableTileFace
-            canvas.drawRoundRect(face.inset(scale * .035f).android(), layout.radius * .8f, layout.radius * .8f, paint)
-            // Keep all border strokes inside the physical face so selection never changes hit bounds.
-            paint.style = Paint.Style.STROKE
-            paint.strokeWidth = if (selected) scale * .045f else scale * .014f
-            paint.color = when {
-                selected -> theme.palette.primaryAccent
-                blockedTileId == tile.id -> theme.palette.secondaryAccent
-                else -> theme.palette.border
-            }
+            paint.strokeWidth = scale * .012f
+            paint.color = if (available) 0xffc7c3af.toInt() else 0xffb7bba9.toInt()
             canvas.drawRoundRect(face.inset(paint.strokeWidth / 2).android(), layout.radius, layout.radius, paint)
-            if (selected) {
-                paint.strokeWidth = scale * .012f
-                paint.color = theme.palette.primaryAccent
-                canvas.drawRoundRect(face.inset(scale * .075f).android(), scale * .06f, scale * .06f, paint)
+            paint.strokeWidth = scale * .014f
+            paint.color = if (available) 0xcffffef7.toInt() else 0x55fffef7
+            canvas.drawLine(face.left + layout.radius, face.top + scale * .022f,
+                face.right - layout.radius, face.top + scale * .022f, paint)
+            if (selected || blockedTileId == tile.id) {
+                paint.strokeWidth = scale * .035f
+                paint.color = if (selected) theme.palette.primaryAccent else theme.palette.secondaryAccent
+                canvas.drawRoundRect(face.inset(paint.strokeWidth / 2).android(), layout.radius, layout.radius, paint)
             }
             paint.style = Paint.Style.FILL
             // Draw the whole lower face first. Opaque upper bodies/faces in the same
             // depth order physically occlude it, including partially covered artwork.
-            if (back) drawMystery(canvas, face.android(), layout.radius, scale, available)
+            if (back) drawMystery(canvas, face.android(), layout.radius, scale)
             if (!tile.removed) {
                 canvas.save()
                 canvas.translate(r.centerX(), r.centerY())
@@ -142,15 +150,9 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
                 if (!back) BotanicalSymbols.draw(canvas, paint, tile.symbol)
                 canvas.restore()
                 if (!available) {
-                    paint.color = (theme.palette.tileShadow and 0x00ffffff) or (48 shl 24)
+                    paint.color = (theme.palette.tileShadow and 0x00ffffff) or (22 shl 24)
                     canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
                 }
-            }
-            if (!available) {
-                // Engraved corner bars distinguish blocking without relying on color.
-                paint.color = theme.background; paint.strokeWidth = scale * .025f
-                canvas.drawLine(face.left + scale * .12f, face.top + scale * .12f, face.left + scale * .25f, face.top + scale * .12f, paint)
-                canvas.drawLine(face.right - scale * .25f, face.top + scale * .12f, face.right - scale * .12f, face.top + scale * .12f, paint)
             }
             canvas.restoreToCount(saved)
         }
@@ -159,36 +161,31 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         hintEffect.face(game, layout)?.let { face -> drawHint(canvas, layout, face, now) }
         if (reveals.active(now, ValueAnimator.areAnimatorsEnabled()) || effects.active.isNotEmpty() || (hintedTileId != null && ValueAnimator.areAnimatorsEnabled())) postInvalidateOnAnimation()
     }
-    private fun drawMystery(c: Canvas, face: RectF, radius: Float, scale: Float, available: Boolean) {
+    private fun drawMystery(c: Canvas, face: RectF, radius: Float, scale: Float) {
         paint.style = Paint.Style.FILL
-        paint.shader = LinearGradient(face.left, face.top, face.right, face.bottom,
-            Color.rgb(64, 160, 117), Color.rgb(15, 86, 65), Shader.TileMode.CLAMP)
+        surface(jade, BoardRect(face.left, face.top, face.right, face.bottom))
         c.drawRoundRect(face, radius, radius, paint); paint.shader = null
-        paint.style = Paint.Style.STROKE; paint.strokeWidth = scale * .025f
-        paint.color = Color.rgb(178, 209, 160)
-        val inset = RectF(face).apply { inset(scale * .065f, scale * .065f) }
+        paint.style = Paint.Style.STROKE; paint.strokeWidth = scale * .014f
+        paint.color = Color.rgb(193, 174, 113)
+        val inset = RectF(face).apply { inset(scale * .055f, scale * .055f) }
         c.drawRoundRect(inset, radius * .7f, radius * .7f, paint)
         c.save(); c.translate(face.centerX(), face.centerY()); c.scale(scale * .25f, scale * .25f)
-        paint.color = Color.rgb(214, 197, 126); paint.strokeWidth = .08f
+        paint.color = Color.rgb(214, 197, 126); paint.strokeWidth = .045f
         c.drawCircle(0f, 0f, 1f, paint)
-        c.drawLine(0f, .7f, 0f, -.6f, paint)
+        repeat(5) {
+            c.save(); c.rotate(it * 72f)
+            c.drawOval(-.14f, -.62f, .14f, -.12f, paint); c.restore()
+        }
+        c.drawCircle(0f, 0f, .12f, paint)
+        c.drawLine(0f, .7f, 0f, .15f, paint)
         paint.style = Paint.Style.FILL
-        for (side in listOf(-1f, 1f)) {
+        for (side in emblemSides) {
             c.save(); c.scale(side, 1f); c.rotate(-25f)
-            c.drawOval(.03f, -.6f, .65f, -.13f, paint)
-            c.drawOval(.03f, -.05f, .55f, .32f, paint); c.restore()
+            c.drawOval(.03f, .22f, .48f, .43f, paint)
+            c.drawOval(.03f, .5f, .37f, .65f, paint); c.restore()
         }
         c.restore()
-        if (available) {
-            // Two bright corner facets suggest a turnable face without exposing its identity.
-            paint.color = Color.rgb(224, 235, 188)
-            val path = Path().apply {
-                moveTo(face.right - scale * .22f, face.bottom - scale * .09f)
-                lineTo(face.right - scale * .09f, face.bottom - scale * .22f)
-                lineTo(face.right - scale * .09f, face.bottom - scale * .09f); close()
-            }
-            c.drawPath(path, paint)
-        }
+        paint.style = Paint.Style.FILL
     }
     private fun drawHint(canvas: Canvas, layout: BoardGeometry, face: BoardRect, now: Long) {
         val density = resources.displayMetrics.density
@@ -323,17 +320,39 @@ internal object BotanicalSymbols {
         Symbol.DOUBLE_LEAF -> R.string.symbol_double_leaf
         Symbol.YELLOW_DAISY -> R.string.symbol_yellow_daisy
     })
+    // Record vector commands once per stable identity. No bitmap, path, or trigonometric
+    // construction occurs when a cached symbol is replayed during an animation.
+    private val illustrations = mutableMapOf<Symbol, Picture>()
     fun draw(c: Canvas, p: Paint, symbol: Symbol) {
+        val picture = illustrations.getOrPut(symbol) {
+            Picture().also { picture ->
+                val recording = picture.beginRecording(320, 320)
+                recording.translate(160f, 160f); recording.scale(128f, 128f)
+                val ink = Paint(Paint.ANTI_ALIAS_FLAG)
+                ink.strokeJoin = Paint.Join.ROUND; ink.strokeCap = Paint.Cap.ROUND
+                drawIllustration(recording, ink, symbol)
+                details(recording, ink, symbol)
+                picture.endRecording()
+            }
+        }
+        c.save(); c.scale(1f / 128f, 1f / 128f); c.translate(-160f, -160f)
+        c.drawPicture(picture); c.restore()
+        p.style = Paint.Style.FILL
+    }
+    private fun drawIllustration(c: Canvas, p: Paint, symbol: Symbol) {
         p.color = green; p.style = Paint.Style.FILL
         when (symbol) {
             Symbol.DOUBLE_LEAF -> {
                 p.strokeWidth = .1f; c.drawLine(0f, 1f, 0f, -.8f, p)
-                c.save(); c.rotate(-35f); c.drawOval(-.75f, -.9f, -.05f, .5f, p); c.restore()
-                c.save(); c.rotate(35f); c.drawOval(.05f, -.9f, .75f, .5f, p); c.restore()
+                c.save(); c.translate(-.18f, -.08f); c.rotate(-38f); c.scale(.48f, .66f)
+                c.drawPath(leafPath, p); c.restore()
+                p.color = Color.rgb(70, 119, 75)
+                c.save(); c.translate(.26f, -.3f); c.rotate(32f); c.scale(.48f, .66f)
+                c.drawPath(leafPath, p); c.restore()
             }
             Symbol.VEINED_LEAF -> {
                 c.save(); c.rotate(-20f)
-                c.drawOval(-.65f, -1f, .65f, .85f, p)
+                c.save(); c.scale(.85f, 1f); c.drawPath(leafPath, p); c.restore()
                 p.color = Color.rgb(210, 220, 166); p.strokeWidth = .09f
                 c.drawLine(0f, .9f, 0f, -.85f, p)
                 for (y in listOf(-.45f, 0f, .45f)) {
@@ -356,7 +375,10 @@ internal object BotanicalSymbols {
                 p.color = Color.rgb(161, 92, 119)
                 for (angle in lotusAngles) {
                     c.save(); c.rotate(angle, 0f, .6f)
-                    c.drawOval(-.27f, -.95f, .27f, .65f, p); c.restore()
+                    c.drawOval(-.27f, -.95f, .27f, .65f, p)
+                    p.color = Color.rgb(188, 123, 145)
+                    c.drawOval(-.17f, -.83f, .12f, .43f, p)
+                    p.color = Color.rgb(161, 92, 119); c.restore()
                 }
                 p.color = green; c.drawOval(-.85f, .6f, .85f, .85f, p)
             }
@@ -370,7 +392,13 @@ internal object BotanicalSymbols {
             }
             Symbol.FLOWER -> {
                 p.color = Color.rgb(167, 101, 72)
-                repeat(5) { c.save(); c.rotate(it * 72f); c.drawOval(-.33f, -.95f, .33f, .15f, p); c.restore() }
+                repeat(5) {
+                    c.save(); c.rotate(it * 72f)
+                    c.drawOval(-.33f, -.95f, .33f, .15f, p)
+                    p.color = Color.rgb(189, 129, 97)
+                    c.drawOval(-.23f, -.85f, .15f, -.12f, p)
+                    p.color = Color.rgb(167, 101, 72); c.restore()
+                }
                 p.color = Color.rgb(238, 203, 104); c.drawCircle(0f, 0f, .28f, p)
             }
             Symbol.BERRIES -> {
@@ -387,8 +415,9 @@ internal object BotanicalSymbols {
                 repeat(5) { val a = it * 2 * PI / 5; c.drawCircle((cos(a) * .23).toFloat(), (sin(a) * .23).toFloat(), .055f, p) }
             }
             Symbol.MUSHROOM -> {
-                p.color = Color.rgb(156, 89, 65)
+                p.color = Color.rgb(202, 182, 146)
                 c.drawRoundRect(-.22f, -.15f, .22f, .95f, .12f, .12f, p)
+                p.color = Color.rgb(156, 89, 65)
                 c.drawArc(-.95f, -.9f, .95f, .65f, 180f, 180f, true, p)
                 p.color = Color.rgb(238, 214, 169)
                 c.drawCircle(-.4f, -.38f, .12f, p); c.drawCircle(.25f, -.55f, .14f, p)
@@ -516,4 +545,104 @@ internal object BotanicalSymbols {
 
         }
     }
+    private fun details(c: Canvas, p: Paint, symbol: Symbol) {
+        p.style = Paint.Style.STROKE; p.strokeWidth = .035f
+        p.color = 0xffb4c595.toInt()
+        when (symbol) {
+            Symbol.LEAF -> {
+                for (i in 0..2) {
+                    val x = -.38f + i * .28f; val y = .5f - i * .32f
+                    c.drawLine(x, y, x - .15f, y - .36f, p)
+                    c.drawLine(x, y, x + .36f, y + .04f, p)
+                }
+            }
+            Symbol.DOUBLE_LEAF -> {
+                c.drawLine(0f, .7f, -.58f, -.55f, p); c.drawLine(0f, .7f, .58f, -.55f, p)
+            }
+            Symbol.VEINED_LEAF -> {
+                p.color = 0xff71894e.toInt(); c.drawArc(-.5f, -.8f, .5f, .7f, 190f, 130f, false, p)
+            }
+            Symbol.FERN -> {
+                for (i in 0..4) {
+                    val y = -.65f + i * .32f; val w = .25f + i * .12f
+                    c.drawLine(0f, y, -w * .75f, y - .12f, p)
+                    c.drawLine(0f, y, w * .75f, y - .12f, p)
+                }
+            }
+            Symbol.FLOWER, Symbol.YELLOW_DAISY, Symbol.CHERRY_BLOSSOM -> {
+                val count = if (symbol == Symbol.YELLOW_DAISY) 6 else 5
+                p.color = if (symbol == Symbol.YELLOW_DAISY) 0xfff0d783.toInt() else 0xffe3b4a3.toInt()
+                repeat(count) { c.save(); c.rotate(it * 360f / count)
+                    c.drawArc(-.18f, -.78f, .18f, -.2f, 160f, 130f, false, p); c.restore() }
+                p.color = 0xff8b683c.toInt()
+                repeat(count) { val a = it * 2 * PI / count
+                    c.drawPoint((cos(a) * .13).toFloat(), (sin(a) * .13).toFloat(), p) }
+            }
+            Symbol.LOTUS, Symbol.IRIS, Symbol.LAVENDER -> {
+                p.color = 0xffd3b8d0.toInt()
+                if (symbol == Symbol.LAVENDER) repeat(4) {
+                    val y = -.78f + it * .3f
+                    c.drawLine(-.28f, y, -.14f, y + .04f, p)
+                    c.drawLine(.12f, y, .25f, y + .04f, p)
+                } else {
+                    c.drawArc(-.16f, -.8f, .16f, .14f, 175f, 130f, false, p)
+                    c.drawLine(-.44f, -.36f, -.2f, .25f, p)
+                    c.drawLine(.44f, -.36f, .2f, .25f, p)
+                }
+            }
+            Symbol.SUNFLOWER -> {
+                p.color = 0xffecc35f.toInt()
+                repeat(12) { c.save(); c.rotate(it * 30f)
+                    c.drawLine(0f, -.85f, 0f, -.56f, p); c.restore() }
+                p.color = 0xffb59a63.toInt(); p.strokeWidth = .045f
+                repeat(12) { val a = it * 2 * PI / 12
+                    c.drawPoint((cos(a) * .35).toFloat(), (sin(a) * .35).toFloat(), p) }
+            }
+            Symbol.MUSHROOM -> {
+                p.color = 0xffdcad8b.toInt(); p.strokeWidth = .065f
+                c.drawArc(-.7f, -.73f, .7f, .35f, 210f, 75f, false, p)
+                p.color = 0xffe2c9a5.toInt(); c.drawLine(-.08f, .17f, -.08f, .76f, p)
+            }
+            Symbol.BUTTERFLY -> {
+                repeat(2) { c.save(); if (it == 1) c.scale(-1f, 1f)
+                    p.color = 0xffcbb8d0.toInt()
+                    c.drawOval(.25f, -.68f, .75f, -.08f, p)
+                    c.drawOval(.24f, .16f, .5f, .58f, p)
+                    c.drawLine(.1f, -.1f, .64f, -.53f, p); c.restore() }
+            }
+            Symbol.BERRIES -> {
+                p.color = 0xffc394ae.toInt(); p.strokeWidth = .06f
+                berryCenters.forEach { (x,y) -> c.drawArc(x-.2f,y-.21f,x+.18f,y+.13f,195f,85f,false,p) }
+            }
+            Symbol.BAMBOO -> { c.drawLine(-.29f,-.88f,-.29f,.85f,p); c.drawLine(.36f,-.88f,.36f,.85f,p) }
+            Symbol.ACORN -> {
+                p.color = 0xffdbb780.toInt(); c.drawArc(-.4f,-.2f,.35f,.75f,110f,100f,false,p)
+                p.color = 0xffb39a6c.toInt()
+                for (i in -2..2) c.drawLine(i*.19f,-.48f,i*.19f+.12f,-.18f,p)
+            }
+            Symbol.MAPLE_LEAF -> {
+                p.color = 0xffd9ae75.toInt(); c.drawLine(0f,.75f,0f,-.72f,p)
+                c.drawLine(0f,.35f,-.57f,-.24f,p); c.drawLine(0f,.35f,.57f,-.24f,p)
+            }
+            Symbol.GINKGO_LEAF -> { p.color=0xffe1d99b.toInt(); c.drawLine(0f,.5f,0f,-.5f,p) }
+            Symbol.PINECONE -> { p.color=0xffdfbe89.toInt(); c.drawArc(-.4f,-.78f,.35f,.65f,170f,75f,false,p) }
+            Symbol.CACTUS -> {
+                c.drawLine(-.62f,-.37f,-.62f,.08f,p); c.drawLine(.62f,-.58f,.62f,-.18f,p)
+                p.color=0xffd3ad83.toInt(); c.drawLine(-.32f,.76f,.32f,.76f,p)
+            }
+            Symbol.LADYBUG -> {
+                p.color=0xffe49a80.toInt(); p.strokeWidth=.055f
+                c.drawArc(-.51f,-.48f,.51f,.73f,192f,70f,false,p)
+            }
+            Symbol.SNAIL -> { p.color=0xffe2bd83.toInt(); c.drawArc(-.74f,-.59f,.3f,.42f,190f,100f,false,p) }
+            Symbol.DRAGONFLY -> {
+                p.color=0xffc9d8c7.toInt()
+                for (angle in floatArrayOf(-65f,65f,-110f,110f)) {
+                    c.save(); c.rotate(angle,0f,-.25f); c.drawLine(0f,-.95f,0f,-.35f,p); c.restore()
+                }
+            }
+        }
+        p.style = Paint.Style.FILL
+    }
+
 }
