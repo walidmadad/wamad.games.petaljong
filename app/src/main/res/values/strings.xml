@@ -114,4 +114,12 @@
     <string name="hint_collect">Collect the highlighted tile.</string>
     <string name="audio_mute">Sound on. Mute sound effects</string>
     <string name="audio_unmute">Sound off. Unmute sound effects</string>
+    <string name="settings_label">Settings</string>
+    <string name="settings_title">SETTINGS</string>
+    <string name="sound_effects">SOUND EFFECTS</string>
+    <string name="sound_on">ON</string>
+    <string name="sound_off">OFF</string>
+    <string name="settings_privacy_heading">PRIVACY</string>
+    <string name="settings_privacy">Privacy Settings</string>
+    <string name="settings_close">CLOSE</string>
 </resources>

@@ -1,0 +1,9 @@
+./gradlew --no-daemon --console=plain :app:testDebugUnitTest
+./gradlew --no-daemon --console=plain :app:assembleDebug
+./gradlew --no-daemon --console=plain :app:lintDebug
+JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 GRADLE_USER_HOME=/tmp/tilebloom39-gradle /home/walid/.gradle/wrapper/dists/gradle-8.13-bin/5xuhj0ry160q40clulazy9h7d/gradle-8.13/bin/gradle --offline --no-daemon --console=plain :app:assembleDebug
+/home/walid/Android/Sdk/platform-tools/adb devices
+PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:$PATH python3 /tmp/tilebloom39-compile.py
+PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:$PATH python3 tools/verify_offline.py --jvm-only
+python3 /tmp/tilebloom39-tests.py
+/home/walid/Android/Sdk/build-tools/35.0.0/apksigner verify --print-certs app/build/outputs/apk/debug/app-debug.apk

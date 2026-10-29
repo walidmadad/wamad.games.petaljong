@@ -22,7 +22,8 @@ import com.tilebloom.game.storage.ProgressRepository
 
 class MainActivity : Activity() {
     private lateinit var audio: com.tilebloom.game.audio.GameAudioManager
-    private val muteButtons = mutableListOf<ImageButton>()
+    private lateinit var homeSettings: View
+    private var settingsDialog: AlertDialog? = null
     private lateinit var progress: ProgressController
     private val session get() = progress.session
     private val game get() = session.game
@@ -77,7 +78,7 @@ class MainActivity : Activity() {
             ready && navigation.state.screen == GardenScreen.GAME,
             ready && game.status == Status.PLAYING, online, GameStore.transitioning || !ready,
             AdExposure.busy || AdvertisingService.provider.state == RewardedAdManager.State.SHOWING,
-            RewardedAdManager.consentInProgress, rewardDialog?.isShowing == true).eligible
+            RewardedAdManager.consentInProgress, rewardDialog?.isShowing == true || settingsDialog?.isShowing == true).eligible
         AdExposure.policy.active(SystemClock.elapsedRealtime(), eligible)
         if (eligible != timingEligible) { timingEligible = eligible; AdExposure.save() }
     }
@@ -108,7 +109,6 @@ class MainActivity : Activity() {
     private lateinit var connectivity: NetworkObserver
     private lateinit var offlineHome: LinearLayout
     private lateinit var offlineScroll: ScrollView
-    private lateinit var onlinePrivacyParent: LinearLayout
     private var lastRetry = -1000L
     private lateinit var connection: LinearLayout
     private lateinit var connectionShade: FrameLayout
@@ -203,12 +203,11 @@ class MainActivity : Activity() {
         }
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
-            setPadding(dp(24), dp(24), dp(24), dp(28))
+            setPadding(dp(24), dp(72), dp(24), dp(28))
         }
         fun add(view: View, top: Int = 0, height: Int = -2) {
             content.addView(view, LinearLayout.LayoutParams(-1, height).apply { topMargin = dp(top) })
         }
-        add(audioControls())
         add(textLabel(42f).apply {
             setText(R.string.app_name); typeface = Typeface.create("serif", Typeface.NORMAL)
             letterSpacing = .03f; maxLines = 1
@@ -230,9 +229,6 @@ class MainActivity : Activity() {
         levelCard.addView(startLevel, LinearLayout.LayoutParams(-1, -2))
         startHint = textLabel(14f, GardenStyle.ivory).apply { setPadding(0, dp(8), 0, 0) }
         levelCard.addView(startHint, LinearLayout.LayoutParams(-1, -2))
-        levelCard.addView(textLabel(20f, GardenStyle.gold).apply {
-            text = "→"; alpha = .7f; setPadding(0, dp(6), 0, 0)
-        }, LinearLayout.LayoutParams(-1, -2))
         add(levelCard, 8)
         levelCard.apply {
             setOnClickListener {
@@ -260,13 +256,13 @@ class MainActivity : Activity() {
                 else Toast.makeText(this@MainActivity, R.string.privacy_not_required, Toast.LENGTH_SHORT).show()
             }
         }
-        onlinePrivacyParent = content
-        content.addView(privacy, LinearLayout.LayoutParams(-2, -2).apply { gravity = Gravity.CENTER_HORIZONTAL; topMargin = dp(12) })
         // Cap the welcoming composition on wider devices; scroll protects large-font navigation.
         val frame = FrameLayout(this)
         frame.addView(content, FrameLayout.LayoutParams(if (resources.configuration.screenWidthDp > 480) dp(420) else -1, -2, Gravity.CENTER))
         startScreen.addView(frame, FrameLayout.LayoutParams(-1, -2))
         root.addView(startScreen, FrameLayout.LayoutParams(-1, -1))
+        homeSettings = settingsControls()
+        root.addView(homeSettings, FrameLayout.LayoutParams(dp(48), dp(48), Gravity.TOP or Gravity.END).apply { topMargin = dp(12); marginEnd = dp(16) })
     }
 
     private fun createConnectionPanel() {
@@ -284,7 +280,7 @@ class MainActivity : Activity() {
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
         connection.background = null
-        connection.addView(audioControls(), LinearLayout.LayoutParams(-1, dp(48)))
+        connection.addView(settingsControls(), LinearLayout.LayoutParams(-1, dp(48)))
         connection.addView(ImageView(this).apply {
             id = R.id.offline_icon
             setImageResource(R.drawable.ic_network_off)
@@ -358,7 +354,7 @@ class MainActivity : Activity() {
             maxLines = 1
             setAutoSizeTextTypeUniformWithConfiguration(14, 29, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
         }, LinearLayout.LayoutParams(0, -2, 1f))
-        header.addView(audioControls(), LinearLayout.LayoutParams(-2, dp(48)))
+        header.addView(settingsControls(), LinearLayout.LayoutParams(-2, dp(48)))
         column.addView(header, LinearLayout.LayoutParams(-1, -2))
         val status = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -533,7 +529,7 @@ class MainActivity : Activity() {
     }
 
     fun refreshPrivacyOptions() {
-        privacy.visibility = if (AdvertisingService.provider.privacyRequired) View.VISIBLE else View.GONE
+        privacy.visibility = if (!online && AdvertisingService.provider.privacyRequired) View.VISIBLE else View.GONE
         privacy.isEnabled = AdvertisingService.provider.privacyRequired
     }
 
@@ -545,7 +541,7 @@ class MainActivity : Activity() {
             InterstitialService.provider.prepare(this)
         }
         levelCard.isEnabled = online && !pendingPlay && !GameStore.transitioning
-        privacy.visibility = if (AdvertisingService.provider.privacyRequired) View.VISIBLE else View.GONE
+        privacy.visibility = if (!online && AdvertisingService.provider.privacyRequired) View.VISIBLE else View.GONE
         privacy.isEnabled = AdvertisingService.provider.privacyRequired
         levelCard.visibility = if (showConnection) View.GONE else View.VISIBLE
         levelCard.contentDescription = getString(R.string.continue_level_description, if (::navigation.isInitialized) session.level.id else previewLevel)
@@ -555,6 +551,7 @@ class MainActivity : Activity() {
         val offlineAtHome = !online && !showingPuzzle
         offlineScroll.visibility = if (offlineAtHome) View.VISIBLE else View.GONE
         startScreen.visibility = if (online && !showingPuzzle) View.VISIBLE else View.GONE
+        homeSettings.visibility = startScreen.visibility
         connection.visibility = if (offlineAtHome || showConnection && showingPuzzle) View.VISIBLE else View.GONE
         val connectionParent = if (showingPuzzle) connectionShade else offlineHome
         if ((if (showingPuzzle) (connection.parent as? View)?.parent else connection.parent) !== connectionParent) {
@@ -573,19 +570,13 @@ class MainActivity : Activity() {
                 offlineHome.addView(connection, 2, LinearLayout.LayoutParams(-1, -2))
             }
         }
-        val privacyParent = if (offlineAtHome) offlineHome else onlinePrivacyParent
-        if (privacy.parent !== privacyParent) {
-            (privacy.parent as? android.view.ViewGroup)?.removeView(privacy)
-            privacyParent.addView(privacy, LinearLayout.LayoutParams(-2, -2).apply {
+        if (privacy.parent == null) {
+            offlineHome.addView(privacy, LinearLayout.LayoutParams(-2, -2).apply {
                 gravity = Gravity.CENTER_HORIZONTAL; topMargin = dp(12)
             })
         }
-        if (offlineAtHome) {
-            privacy.background = null
-            privacy.setTextColor(GardenStyle.gold)
-        } else {
-            GardenStyle.button(privacy); privacy.textSize = 13f; privacy.minimumHeight = dp(48); privacy.elevation = 0f
-        }
+        privacy.background = null
+        privacy.setTextColor(GardenStyle.gold)
         connectionShade.bringToFront()
 
         if (!::navigation.isInitialized) {
@@ -824,6 +815,8 @@ class MainActivity : Activity() {
         ProgressRepository.awaitWrites()
     }
     override fun onDestroy() {
+        settingsDialog?.setOnDismissListener(null)
+        settingsDialog?.dismiss()
         audio.close()
         loadingScreen?.stopAnimation(); root.removeCallbacks(loadingRefresh)
         if (AdExposure.changed === exposureChanged) AdExposure.changed = null
@@ -867,26 +860,78 @@ class MainActivity : Activity() {
         feedback.setTextColor(palette.textSecondary)
     }
 
-    private fun refreshAudioControls() {
-        muteButtons.forEach {
-            it.setImageResource(if (audio.policy.preferences.muted) R.drawable.ic_sound_off else R.drawable.ic_sound_on)
-            it.contentDescription = getString(if (audio.policy.preferences.muted) R.string.audio_unmute else R.string.audio_mute)
-            it.isSoundEffectsEnabled = false
+    private fun showSettings(anchor: View) {
+        if (isFinishing || settingsDialog?.isShowing == true || AdExposure.busy) return
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(24), dp(12), dp(24), dp(8))
         }
+        val sound = android.widget.Switch(this).apply {
+            id = R.id.settings_sound
+            setText(R.string.sound_effects)
+            setTextColor(GardenStyle.ivory)
+            textSize = 16f
+            minimumHeight = dp(56)
+            switchPadding = dp(24)
+            showText = true
+            textOn = getString(R.string.sound_on)
+            textOff = getString(R.string.sound_off)
+            isSoundEffectsEnabled = false
+            isChecked = !audio.policy.preferences.muted
+            setOnCheckedChangeListener { _, enabled ->
+                audio.preferences(audio.policy.preferences.copy(muted = !enabled))
+            }
+        }
+        content.addView(sound, LinearLayout.LayoutParams(-1, -2))
+        content.addView(textLabel(12f, GardenStyle.secondary).apply {
+            setText(R.string.settings_privacy_heading)
+            setPadding(0, dp(16), 0, dp(4))
+        })
+        val privacyAction = Button(this).apply {
+            id = R.id.settings_privacy
+            setText(R.string.settings_privacy)
+            GardenStyle.button(this, false)
+            minimumHeight = dp(48)
+            setOnClickListener {
+                if (AdvertisingService.provider.privacyRequired) {
+                    AdvertisingService.provider.privacyOptions(this@MainActivity)
+                } else Toast.makeText(this@MainActivity, R.string.privacy_not_required, Toast.LENGTH_SHORT).show()
+            }
+        }
+        content.addView(privacyAction, LinearLayout.LayoutParams(-1, -2))
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(R.string.settings_title)
+            .setView(ScrollView(this).apply { addView(content) })
+            .setPositiveButton(R.string.settings_close, null)
+            .create()
+        settingsDialog = dialog
+        dialog.setOnDismissListener {
+            settingsDialog = null
+            accountGameplay()
+            if (anchor.isShown) anchor.requestFocus()
+        }
+        dialog.setCanceledOnTouchOutside(false)
+        dialog.show()
+        dialog.window?.setBackgroundDrawable(GardenStyle.surface(this, GardenStyle.panel, 24, false))
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(GardenStyle.gold)
+        accountGameplay()
     }
-    private fun audioControls(): LinearLayout = LinearLayout(this).apply {
+
+    private fun settingsControls(): LinearLayout = LinearLayout(this).apply {
         gravity = Gravity.END or Gravity.CENTER_VERTICAL
-        fun icon(resource: Int, description: Int, action: () -> Unit): ImageButton = ImageButton(this@MainActivity).apply {
-            setImageResource(resource); contentDescription = getString(description)
+        val settings = ImageButton(this@MainActivity).apply {
+            id = R.id.settings
+            setImageResource(R.drawable.ic_settings)
+            contentDescription = getString(R.string.settings_label)
+            tooltipText = contentDescription
             imageTintList = android.content.res.ColorStateList.valueOf(GardenStyle.gold)
-            background = GardenStyle.surface(this@MainActivity, GardenStyle.panel, 24, false)
-            setPadding(dp(12), dp(12), dp(12), dp(12)); setOnClickListener { action() }
+            background = android.graphics.drawable.RippleDrawable(
+                android.content.res.ColorStateList.valueOf(0x33D9C58A),
+                GardenStyle.surface(this@MainActivity, GardenStyle.panel, 24, false), null)
+            setPadding(dp(12), dp(12), dp(12), dp(12))
+            setOnClickListener { showSettings(this) }
         }
-        val mute = icon(R.drawable.ic_sound_on, R.string.audio_mute) {
-            audio.preferences(audio.policy.preferences.copy(muted = !audio.policy.preferences.muted)); refreshAudioControls()
-        }
-        muteButtons.add(mute); addView(mute, LinearLayout.LayoutParams(dp(48), dp(48)))
-        refreshAudioControls()
+        addView(settings, LinearLayout.LayoutParams(dp(48), dp(48)))
     }
     private fun dp(value: Int) = GardenStyle.dp(this, value)
 }

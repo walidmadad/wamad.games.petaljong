@@ -72,6 +72,46 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         }
         instrumentation.waitForIdleSync()
     }
+    fun testSharedSettingsRetainsBoardAndClosesWithBack() {
+        val screen = activity
+        waitVisible(screen, R.id.continue_level)
+        fun dialog(): android.app.AlertDialog {
+            val field = MainActivity::class.java.getDeclaredField("settingsDialog")
+            field.isAccessible = true
+            return field.get(screen) as android.app.AlertDialog
+        }
+        ui {
+            val card = screen.findViewById<android.widget.LinearLayout>(R.id.continue_level)
+            assertEquals("Only level and subtitle remain", 2, card.childCount)
+            assertFalse(screen.findViewById<View>(R.id.privacy_options)?.isShown == true)
+            val gear = screen.findViewById<View>(R.id.settings)
+            assertEquals("Settings", gear.contentDescription)
+            gear.performClick()
+            assertTrue(dialog().isShowing)
+            assertNotNull(dialog().findViewById<View>(R.id.settings_privacy))
+            dialog().getButton(android.app.AlertDialog.BUTTON_POSITIVE).performClick()
+        }
+        enter(screen)
+        val before = state().session.game.snapshot()
+        ui {
+            val gameplay = screen.findViewById<android.view.ViewGroup>(R.id.gameplay)
+            gameplay.findViewById<View>(R.id.settings).performClick()
+            assertTrue(dialog().isShowing)
+            assertFalse(dialog().window!!.attributes.flags and
+                android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL != 0)
+            val toggle = dialog().findViewById<android.widget.Switch>(R.id.settings_sound)
+            val initial = toggle.isChecked
+            toggle.isChecked = !initial
+            toggle.isChecked = initial // Restore the player's sound preference.
+        }
+        instrumentation.sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
+        instrumentation.waitForIdleSync()
+        ui {
+            assertTrue(screen.findViewById<View>(R.id.board).isShown)
+            assertEquals(before, state().session.game.snapshot())
+        }
+    }
+
     fun testPortraitTrayFitsRepresentativeWidthsAndRendersTile() {
         val screen = activity
         ui {

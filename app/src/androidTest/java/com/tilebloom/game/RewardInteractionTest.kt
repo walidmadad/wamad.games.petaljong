@@ -187,7 +187,12 @@ class RewardInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(Mai
     fun testCancelUnavailableAndPrivacy() {
         val screen = activity; waitReady(screen)
         ui {
-            screen.findViewById<Button>(R.id.privacy_options).performClick(); assertEquals(1, fake.privacyCalls)
+            screen.findViewById<View>(R.id.settings).performClick()
+            val field = MainActivity::class.java.getDeclaredField("settingsDialog").apply { isAccessible = true }
+            val settings = field.get(screen) as android.app.AlertDialog
+            settings.findViewById<Button>(R.id.settings_privacy).performClick()
+            assertEquals(1, fake.privacyCalls)
+            settings.getButton(android.app.AlertDialog.BUTTON_POSITIVE).performClick()
             screen.findViewById<View>(R.id.continue_level).performClick()
             screen.findViewById<GardenIconButton>(R.id.undo).performClick()
             dialog(screen).findViewById<Button>(android.R.id.button2).performClick()

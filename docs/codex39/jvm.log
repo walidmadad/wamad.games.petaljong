@@ -1,0 +1,42 @@
+app/src/main/java/com/tilebloom/game/domain/Game.kt:155:73: warning: name shadowed: t
+                            candidate.current = candidate.current.map { t -> if (t.id == it.tileId) t.copy(revealed = true) else t }
+                                                                        ^
+app/src/test/java/com/tilebloom/game/BotanicalExpansionTest.kt:20:51: warning: name shadowed: id
+                level.winningSelections.forEach { id ->
+                                                  ^
+app/src/test/java/com/tilebloom/game/ProgressTest.kt:29:60: warning: unnecessary non-null assertion (!!) on a non-null receiver of type SessionSnapshot
+        for(bad in listOf(p.active!!.copy(id=999L),p.active!!.copy(seed=-55))) {
+                                                           ^
+JUnit version 4.13.2
+.E
+Time: 0.003
+There was 1 failure:
+1) initializationError(org.junit.runner.JUnitCommandLineParseResult)
+java.lang.IllegalArgumentException: Could not find class [com.tilebloom.game.WitnessReplayTest]
+	at org.junit.runner.JUnitCommandLineParseResult.parseParameters(JUnitCommandLineParseResult.java:100)
+	at org.junit.runner.JUnitCommandLineParseResult.parseArgs(JUnitCommandLineParseResult.java:50)
+	at org.junit.runner.JUnitCommandLineParseResult.parse(JUnitCommandLineParseResult.java:44)
+	at org.junit.runner.JUnitCore.runMain(JUnitCore.java:72)
+	at org.junit.runner.JUnitCore.main(JUnitCore.java:36)
+Caused by: java.lang.ClassNotFoundException: com.tilebloom.game.WitnessReplayTest
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	at java.base/java.lang.Class.forName0(Native Method)
+	at java.base/java.lang.Class.forName(Class.java:469)
+	at org.junit.internal.Classes.getClass(Classes.java:42)
+	at org.junit.internal.Classes.getClass(Classes.java:27)
+	at org.junit.runner.JUnitCommandLineParseResult.parseParameters(JUnitCommandLineParseResult.java:98)
+	... 4 more
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+Traceback (most recent call last):
+  File "/home/walid/Documents/projects/androidGames/TileBloom/tools/verify_offline.py", line 43, in <module>
+    run('java','-cp',':'.join([str(testclasses),stdlib,junit,hamcrest]),'org.junit.runner.JUnitCore',
+  File "/home/walid/Documents/projects/androidGames/TileBloom/tools/verify_offline.py", line 25, in run
+    subprocess.run([str(a) for a in args], check=True)
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['java', '-cp', '/home/walid/Documents/projects/androidGames/TileBloom/app/build/offline/test-classes:/home/walid/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.9.24/9928532f12c66ad816a625b3f9984f8368ca6d2b/kotlin-stdlib-1.9.24.jar:/home/walid/.gradle/caches/modules-2/files-2.1/junit/junit/4.13.2/8ac9e16d933b6fb43bc7f576336b8f4d7eb5ba12/junit-4.13.2.jar:/home/walid/.gradle/caches/modules-2/files-2.1/org.hamcrest/hamcrest-core/1.3/42a25dc3219429f0e5d060061f71acb49bf010a0/hamcrest-core-1.3.jar', 'org.junit.runner.JUnitCore', 'com.tilebloom.game.AdRewardTest', 'com.tilebloom.game.AdvancedMahjongTest', 'com.tilebloom.game.AudioPolicyTest', 'com.tilebloom.game.BoardGeometryTest', 'com.tilebloom.game.BotanicalExpansionTest', 'com.tilebloom.game.CompletionEntryTest', 'com.tilebloom.game.DifficultyTest', 'com.tilebloom.game.EndlessTest', 'com.tilebloom.game.FullScreenAdvertisingTest', 'com.tilebloom.game.GameReliabilityTest', 'com.tilebloom.game.GameTest', 'com.tilebloom.game.GardenDiversityTest', 'com.tilebloom.game.GardenRenderingTest', 'com.tilebloom.game.HintPresentationTest', 'com.tilebloom.game.HintTest', 'com.tilebloom.game.InterstitialFrequencyTest', 'com.tilebloom.game.LevelNavigationTest', 'com.tilebloom.game.LevelPreparationTest', 'com.tilebloom.game.LevelsTest', 'com.tilebloom.game.MatchEffectsTest', 'com.tilebloom.game.MysteryOptionCTest', 'com.tilebloom.game.MysterySaveCompatibilityTest', 'com.tilebloom.game.MysteryTilesTest', 'com.tilebloom.game.ProgressTest', 'com.tilebloom.game.PuzzleAnalyzerTest', 'com.tilebloom.game.RedesignTest', 'com.tilebloom.game.ScreenPresentationTest', 'com.tilebloom.game.StrategicDifficultyTest', 'com.tilebloom.game.TileTapGestureTest', 'com.tilebloom.game.TrayTest', 'com.tilebloom.game.UndoCreditTest', 'com.tilebloom.game.UndoTest', 'com.tilebloom.game.WitnessReplayTest']' returned non-zero exit status 1.
