@@ -47,6 +47,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         com.tilebloom.game.storage.ProgressRepository.useTestStorage("test-smoke-progress")
         java.io.File(instrumentation.targetContext.filesDir, "test-smoke-progress").delete()
         java.io.File(instrumentation.targetContext.filesDir, "test-smoke-progress.bak").delete()
+        seedReturningPlayer(instrumentation.targetContext, "test-smoke-progress")
     }
     override fun tearDown() {
         super.tearDown()
@@ -159,8 +160,8 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         val repo=com.tilebloom.game.storage.ProgressRepository
         val old=repo.acquire(); val newer=repo.acquire()
         val context=instrumentation.targetContext
-        repo.save(context,newer,com.tilebloom.game.domain.PlayerProgress(undoCredits=0))
-        repo.save(context,old,com.tilebloom.game.domain.PlayerProgress(undoCredits=3))
+        repo.save(context,newer,com.tilebloom.game.domain.PlayerProgress(tutorial = com.tilebloom.game.domain.TutorialStep.SKIPPED, undoCredits=0))
+        repo.save(context,old,com.tilebloom.game.domain.PlayerProgress(tutorial = com.tilebloom.game.domain.TutorialStep.SKIPPED, undoCredits=3))
         repo.awaitWrites()
         assertEquals(0,repo.load(context).undoCredits)
     }
@@ -525,7 +526,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         } finally { instrumentation.removeMonitor(monitor); replacement?.let { ui { it.finish() } } }
     }    fun testGeneratedLevelSaveRestoreAndCredits() {
         val repo=com.tilebloom.game.storage.ProgressRepository
-        val c=com.tilebloom.game.domain.ProgressController(com.tilebloom.game.domain.PlayerProgress(highestCompleted=5,undoCredits=1))
+        val c=com.tilebloom.game.domain.ProgressController(com.tilebloom.game.domain.PlayerProgress(tutorial = com.tilebloom.game.domain.TutorialStep.SKIPPED, highestCompleted=5,undoCredits=1))
         java.io.File(instrumentation.targetContext.filesDir,"test-smoke-progress").writeText(com.tilebloom.game.domain.ProgressCodec.encode(c.capture()))
         activity
         val l=Levels.get(6); val m=l.witness.first()
@@ -544,7 +545,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
     fun testTier20To21ThroughCoordinates() = milestoneThroughCoordinates(20)
     fun testTier40To41ThroughCoordinates() = milestoneThroughCoordinates(40)
     private fun milestoneThroughCoordinates(id: Long) {
-        val c = com.tilebloom.game.domain.ProgressController(com.tilebloom.game.domain.PlayerProgress(highestCompleted=id-1,undoCredits=1))
+        val c = com.tilebloom.game.domain.ProgressController(com.tilebloom.game.domain.PlayerProgress(tutorial = com.tilebloom.game.domain.TutorialStep.SKIPPED, highestCompleted=id-1,undoCredits=1))
         java.io.File(instrumentation.targetContext.filesDir,"test-smoke-progress")
             .writeText(com.tilebloom.game.domain.ProgressCodec.encode(c.capture()))
         activity
@@ -570,7 +571,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
 
     fun testMilestone21RecreationAndRelaunch() {
         val repo=com.tilebloom.game.storage.ProgressRepository
-        val c=com.tilebloom.game.domain.ProgressController(com.tilebloom.game.domain.PlayerProgress(highestCompleted=20,undoCredits=1))
+        val c=com.tilebloom.game.domain.ProgressController(com.tilebloom.game.domain.PlayerProgress(tutorial = com.tilebloom.game.domain.TutorialStep.SKIPPED, highestCompleted=20,undoCredits=1))
         java.io.File(instrumentation.targetContext.filesDir,"test-smoke-progress")
             .writeText(com.tilebloom.game.domain.ProgressCodec.encode(c.capture()))
         activity

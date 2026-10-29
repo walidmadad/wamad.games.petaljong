@@ -126,4 +126,25 @@
     <string name="language_automatic">Automatic (System Language)</string>
     <plurals name="pairs_remaining"><item quantity="one">Pair left: %1$d</item><item quantity="other">Pairs left: %1$d</item></plurals>
     <string name="language_current">%1$s\n%2$s</string>
+
+    <!-- Interactive tutorial; stable resource keys across all supported locales. -->
+    <string name="tutorial_welcome">Welcome to TileBloom!</string>
+    <string name="tutorial_intro">Learn the basics in a few quick steps.</string>
+    <string name="tutorial_start">Start</string>
+    <string name="tutorial_skip">Skip</string>
+    <string name="tutorial_select">Select a tile</string>
+    <string name="tutorial_select_detail">Tap the highlighted tile.</string>
+    <string name="tutorial_tray">Your tile is stored here.</string>
+    <string name="tutorial_tray_detail">The tray has four slots. Collect two identical tiles to make a pair.</string>
+    <string name="tutorial_undo">Made a mistake?</string>
+    <string name="tutorial_undo_detail">Tap Undo to restore your last tile.</string>
+    <string name="tutorial_hint">Need help?</string>
+    <string name="tutorial_hint_detail">Tap Hint to highlight a useful tile.</string>
+    <string name="tutorial_pair">Make a pair!</string>
+    <string name="tutorial_pair_detail">Collect two identical tiles.</string>
+    <string name="tutorial_complete">Great job!</string>
+    <string name="tutorial_ready">You’re ready to play.</string>
+    <string name="tutorial_continue">Continue</string>
+    <string name="tutorial_exit">Exit practice</string>
+    <string name="how_to_play">How to Play</string>
 </resources>

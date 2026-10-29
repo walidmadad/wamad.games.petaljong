@@ -22,6 +22,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         super.setUp(); ProgressRepository.awaitWrites(); ProgressRepository.useTestStorage(storage)
         File(instrumentation.targetContext.filesDir,storage).delete()
         File(instrumentation.targetContext.filesDir,"$storage.bak").delete()
+        seedReturningPlayer(instrumentation.targetContext, storage)
     }
     override fun tearDown() {
         super.tearDown(); ProgressRepository.awaitWrites(); ProgressRepository.useTestStorage(null)
@@ -172,7 +173,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         assertEquals(24,state().session.game.remaining.size)
     }
     fun testHomeResumeIconsAndBadgeKeepExactAttempt() {
-        seed(ProgressController(PlayerProgress(highestCompleted=20)))
+        seed(ProgressController(PlayerProgress(tutorial = com.tilebloom.game.domain.TutorialStep.SKIPPED, highestCompleted=20)))
         val screen=activity; waitVisible(screen,R.id.continue_level)
         ui { assertEquals(screen.getString(R.string.start_level,21L),screen.findViewById<TextView>(R.id.start_level).text.toString()) }
         enter(screen)
@@ -204,7 +205,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         assertEquals(identity,state().session.level); assertTrue(game.tray.isEmpty()); assertEquals(2,state().wallet.balance)
     }
     fun testCoordinateVictoryNextEntersGameplayAndDoubleTapCannotSkip() {
-        seed(ProgressController(PlayerProgress(highestCompleted=3,undoCredits=1)))
+        seed(ProgressController(PlayerProgress(tutorial = com.tilebloom.game.domain.TutorialStep.SKIPPED, highestCompleted=3,undoCredits=1)))
         val screen=activity; enter(screen)
         state().session.level.winningSelections.forEach { tapTile(screen,it) }
         waitVisible(screen,R.id.next_level)
@@ -257,7 +258,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         } finally { ui { fresh.finish() } }
     }
     fun testSavedDefeatIsRetainedUntilExplicitUndoOrRestart() {
-        val c=ProgressController(PlayerProgress(undoCredits=2))
+        val c=ProgressController(PlayerProgress(tutorial = com.tilebloom.game.domain.TutorialStep.SKIPPED, undoCredits=2))
         listOf(23,21,18,20).forEach { check(c.session.game.select(it)) }; seed(c)
         val screen=activity; waitVisible(screen,R.id.continue_level); assertEquals(Status.LOST,state().session.game.status)
         enter(screen); waitVisible(screen,R.id.outcome)
@@ -286,7 +287,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         assertEquals(3,state().session.game.tray.size)
     }
     fun testZeroCreditDefeatRestartPreservesIdentityAndWallet() {
-        val c = ProgressController(PlayerProgress(undoCredits=0))
+        val c = ProgressController(PlayerProgress(tutorial = com.tilebloom.game.domain.TutorialStep.SKIPPED, undoCredits=0))
         listOf(23,21,18,20).forEach { check(c.session.game.select(it)) }; seed(c)
         val screen = activity; enter(screen); waitVisible(screen,R.id.outcome)
         val identity = state().session.level
@@ -302,7 +303,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         assertEquals(0, state().wallet.balance)
     }
     fun testSavedPendingVictoryFinalizesBeforePlay() {
-        val c=ProgressController(PlayerProgress(highestCompleted=19,undoCredits=1))
+        val c=ProgressController(PlayerProgress(tutorial = com.tilebloom.game.domain.TutorialStep.SKIPPED, highestCompleted=19,undoCredits=1))
         c.session.level.winningSelections.forEach { check(c.session.game.select(it)) }; seed(c)
         val screen=activity; waitVisible(screen,R.id.continue_level)
         ui { assertEquals(screen.getString(R.string.start_level,21L),screen.findViewById<TextView>(R.id.start_level).text.toString()) }
@@ -314,7 +315,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         assertEquals(20L,ProgressRepository.load(instrumentation.targetContext).frontier)
     }
     fun testCoordinateLevelSixVictoryFreshRelaunchFinalizesOnlyOnce() {
-        seed(ProgressController(PlayerProgress(highestCompleted=5,undoCredits=1,hintCredits=0)))
+        seed(ProgressController(PlayerProgress(tutorial = com.tilebloom.game.domain.TutorialStep.SKIPPED, highestCompleted=5,undoCredits=1,hintCredits=0)))
         val screen=activity; enter(screen)
         state().session.level.winningSelections.forEach { tapTile(screen,it) }
         waitVisible(screen,R.id.next_level)
@@ -338,7 +339,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         }
     }
     fun testLargestLevelLabelAndPlayRemainReachable() {
-        seed(ProgressController(PlayerProgress(highestCompleted=Long.MAX_VALUE-1,undoCredits=0)))
+        seed(ProgressController(PlayerProgress(tutorial = com.tilebloom.game.domain.TutorialStep.SKIPPED, highestCompleted=Long.MAX_VALUE-1,undoCredits=0)))
         val screen=activity; waitVisible(screen,R.id.continue_level)
         ui {
             val level=screen.findViewById<TextView>(R.id.start_level)

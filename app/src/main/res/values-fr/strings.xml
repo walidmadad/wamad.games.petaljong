@@ -120,4 +120,25 @@
         <item quantity="other">Paires restantes : %1$d</item>
     </plurals>
     <string name="language_current">%1$s\n%2$s</string>
+
+    <!-- Interactive tutorial; stable resource keys across all supported locales. -->
+    <string name="tutorial_welcome">Bienvenue dans TileBloom !</string>
+    <string name="tutorial_intro">Découvrez les règles en quelques étapes.</string>
+    <string name="tutorial_start">Commencer</string>
+    <string name="tutorial_skip">Passer</string>
+    <string name="tutorial_select">Sélectionnez une tuile</string>
+    <string name="tutorial_select_detail">Touchez la tuile éclairée.</string>
+    <string name="tutorial_tray">Votre tuile est placée ici.</string>
+    <string name="tutorial_tray_detail">Le plateau a quatre cases. Associez deux tuiles identiques pour former une paire.</string>
+    <string name="tutorial_undo">Vous avez fait une erreur ?</string>
+    <string name="tutorial_undo_detail">Touchez Annuler pour récupérer votre dernière tuile.</string>
+    <string name="tutorial_hint">Besoin d’aide ?</string>
+    <string name="tutorial_hint_detail">Touchez Indice pour trouver une tuile à jouer.</string>
+    <string name="tutorial_pair">Formez une paire !</string>
+    <string name="tutorial_pair_detail">Sélectionnez deux tuiles identiques.</string>
+    <string name="tutorial_complete">Bravo !</string>
+    <string name="tutorial_ready">Vous êtes prêt à jouer.</string>
+    <string name="tutorial_continue">Continuer</string>
+    <string name="tutorial_exit">Quitter l’entraînement</string>
+    <string name="how_to_play">Comment jouer</string>
 </resources>

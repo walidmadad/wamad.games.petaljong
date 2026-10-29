@@ -79,6 +79,8 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
     private fun geometry() = cachedGeometry ?: BoardGeometry(width.toFloat(), height.toFloat(),
         BoardPadding(paddingLeft.toFloat(), paddingTop.toFloat(), paddingRight.toFloat(), paddingBottom.toFloat()), game.tiles).also { cachedGeometry = it }
     // Read-only presentation queries also allow instrumentation to assert real touch results.
+    var allowTile: (Int) -> Boolean = { true }
+    fun tutorialBounds(id: Int): RectF = game.remaining.firstOrNull { it.id == id }?.let { geometry().face(it).android() } ?: RectF()
     var audioCue: (com.tilebloom.game.domain.AudioCue) -> Unit = {}
     val selectedTileId get() = game.selected
     val remainingTileCount get() = game.remaining.size
@@ -296,7 +298,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
                 val tile = geometry().hitTest(game.tiles, event.x, event.y)
                 val id = gesture.up(event.getPointerId(0), tile?.id, event.x, event.y)
                 if (tile != null) { clearHint(); invalidate() }
-                if (id != null && reveals.accepts(id, tapStarted)) {
+                if (id != null && allowTile(id) && reveals.accepts(id, tapStarted)) {
                     if (game.status == Status.PLAYING && game.isAvailable(id)) {
                         removeCallbacks(clearBlocked); blockedTileId = null
                         clearHint()

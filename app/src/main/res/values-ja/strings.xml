@@ -120,4 +120,25 @@
         <item quantity="other">残りペア：%1$d</item>
     </plurals>
     <string name="language_current">%1$s\n%2$s</string>
+
+    <!-- Interactive tutorial; stable resource keys across all supported locales. -->
+    <string name="tutorial_welcome">TileBloomへようこそ！</string>
+    <string name="tutorial_intro">簡単な操作で遊び方を覚えましょう。</string>
+    <string name="tutorial_start">始める</string>
+    <string name="tutorial_skip">スキップ</string>
+    <string name="tutorial_select">牌を選ぼう</string>
+    <string name="tutorial_select_detail">光っている牌をタップ。</string>
+    <string name="tutorial_tray">選んだ牌はここに入ります。</string>
+    <string name="tutorial_tray_detail">トレイは4枠。同じ牌を2枚集めるとペアになります。</string>
+    <string name="tutorial_undo">間違えても大丈夫</string>
+    <string name="tutorial_undo_detail">「戻す」で最後の牌を元に戻しましょう。</string>
+    <string name="tutorial_hint">困ったときは</string>
+    <string name="tutorial_hint_detail">「ヒント」で役立つ牌を光らせましょう。</string>
+    <string name="tutorial_pair">ペアを作ろう！</string>
+    <string name="tutorial_pair_detail">同じ牌を2枚集めましょう。</string>
+    <string name="tutorial_complete">よくできました！</string>
+    <string name="tutorial_ready">さあ、遊びましょう。</string>
+    <string name="tutorial_continue">続ける</string>
+    <string name="tutorial_exit">練習を終了</string>
+    <string name="how_to_play">遊び方</string>
 </resources>

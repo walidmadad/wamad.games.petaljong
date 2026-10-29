@@ -44,6 +44,7 @@ class ConnectivityInteractionTest : ActivityInstrumentationTestCase2<MainActivit
             override fun privacyOptions(activity: android.app.Activity) { privacyOpened = true }
             override fun show(activity: android.app.Activity, purpose: RewardPurpose) = false
         }
+        seedReturningPlayer(instrumentation.targetContext, storage)
     }
     override fun tearDown() {
         super.tearDown()
@@ -173,7 +174,7 @@ class ConnectivityInteractionTest : ActivityInstrumentationTestCase2<MainActivit
     }
     fun testSavedLevelFourSurvivesOfflineHomeRecreationAndRetry() {
         val context = instrumentation.targetContext
-        ProgressRepository.save(context, ProgressRepository.acquire(), PlayerProgress(highestCompleted = 3, undoCredits = 2, hintCredits = 1))
+        ProgressRepository.save(context, ProgressRepository.acquire(), PlayerProgress(tutorial = com.tilebloom.game.domain.TutorialStep.SKIPPED, highestCompleted = 3, undoCredits = 2, hintCredits = 1))
         ProgressRepository.awaitWrites()
         val screen = activity; ready(screen)
         val before = GameStore.get(context).capture()

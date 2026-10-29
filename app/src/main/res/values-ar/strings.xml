@@ -124,4 +124,25 @@
         <item quantity="other">الأزواج المتبقية: %1$d</item>
     </plurals>
     <string name="language_current">%1$s\n%2$s</string>
+
+    <!-- Interactive tutorial; stable resource keys across all supported locales. -->
+    <string name="tutorial_welcome">مرحبًا بك في TileBloom!</string>
+    <string name="tutorial_intro">تعلّم الأساسيات في خطوات سريعة.</string>
+    <string name="tutorial_start">ابدأ</string>
+    <string name="tutorial_skip">تخطّ</string>
+    <string name="tutorial_select">اختر قطعة</string>
+    <string name="tutorial_select_detail">المس القطعة المضيئة.</string>
+    <string name="tutorial_tray">تُحفظ قطعتك هنا.</string>
+    <string name="tutorial_tray_detail">لديك أربع خانات. اجمع قطعتين متطابقتين لتكوين زوج.</string>
+    <string name="tutorial_undo">أخطأت في الاختيار؟</string>
+    <string name="tutorial_undo_detail">المس تراجع لإعادة آخر قطعة.</string>
+    <string name="tutorial_hint">تحتاج إلى مساعدة؟</string>
+    <string name="tutorial_hint_detail">المس تلميح لإضاءة قطعة مفيدة.</string>
+    <string name="tutorial_pair">كوّن زوجًا!</string>
+    <string name="tutorial_pair_detail">اجمع قطعتين متطابقتين.</string>
+    <string name="tutorial_complete">أحسنت!</string>
+    <string name="tutorial_ready">أنت جاهز للعب.</string>
+    <string name="tutorial_continue">متابعة</string>
+    <string name="tutorial_exit">إنهاء التدريب</string>
+    <string name="how_to_play">كيفية اللعب</string>
 </resources>

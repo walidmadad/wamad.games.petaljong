@@ -21,6 +21,12 @@ import com.tilebloom.game.storage.GameStore
 import com.tilebloom.game.storage.ProgressRepository
 
 class MainActivity : Activity() {
+    private val practice get() = intent.getBooleanExtra("tutorial_practice", false)
+    private var tutorialOverlay: TutorialOverlay? = null
+    private var completionVisible = false
+    private var practiceInFront = false
+    private fun persistGame() { if (!practice) GameStore.persist(this) }
+    private fun saveExposure(): Boolean = !practice && AdExposure.save()
     private lateinit var audio: com.tilebloom.game.audio.GameAudioManager
     private lateinit var homeSettings: View
     private var settingsDialog: AlertDialog? = null
@@ -72,6 +78,7 @@ class MainActivity : Activity() {
     private val exposureChanged: () -> Unit = { if (!isDestroyed) { audio.advertisement(AdExposure.busy); accountGameplay(); if (::navigation.isInitialized) update() } }
     private var timingEligible = false
     private fun accountGameplay() {
+        if (practice) return
         val ready = ::navigation.isInitialized
         val eligible = ActiveGameplayConditions(resumed, focused,
             ready && navigation.state.screen == GardenScreen.GAME,
@@ -79,15 +86,18 @@ class MainActivity : Activity() {
             AdExposure.busy || AdvertisingService.provider.state == RewardedAdManager.State.SHOWING,
             RewardedAdManager.consentInProgress, rewardDialog?.isShowing == true || settingsDialog?.isShowing == true).eligible
         AdExposure.policy.active(SystemClock.elapsedRealtime(), eligible)
-        if (eligible != timingEligible) { timingEligible = eligible; AdExposure.save() }
+        if (eligible != timingEligible) { timingEligible = eligible; saveExposure() }
     }
     private fun completedByPlayer() {
+        val previous = progress.tutorial.step
+        progress.tutorial.collected()
+        if (previous == TutorialStep.COMPLETE_PAIR && progress.tutorial.step == TutorialStep.FINISHED) completionVisible = true
         update() // Persists actual victory and stops active time before considering an ad.
-        if (game.status != Status.WON || !GameStore.persistVictory(applicationContext)) return
+        if (practice || game.status != Status.WON || !GameStore.persistVictory(applicationContext)) return
         GameStore.prepareVictory()
         val level = session.level.id
         val eligible = AdExposure.policy.victory(level, true, SystemClock.elapsedRealtime())
-        val saved = AdExposure.save() // Consume before asynchronous presentation.
+        val saved = saveExposure() // Consume before asynchronous presentation.
         if (!saved || !eligible || !resumed || !focused || !online || !InterstitialService.provider.ready) return
         pendingVictory = level
         next.isEnabled = false
@@ -132,27 +142,32 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         volumeControlStream = android.media.AudioManager.STREAM_MUSIC
         audio = com.tilebloom.game.audio.GameAudioManager(applicationContext)
-        AdExposure.initialize(applicationContext)
-        AdExposure.changed = exposureChanged
+        if (!practice) AdExposure.initialize(applicationContext)
+        if (!practice) AdExposure.changed = exposureChanged
         // Decode only the bounded save envelope; generation/restoration stays off the UI thread.
         pendingPlay = savedInstanceState?.getBoolean("pending_play") ?: false
-        val metadata = ProgressRepository.load(applicationContext)
+        practiceInFront = savedInstanceState?.getBoolean("practice_in_front") ?: false
+        val metadata = if (practice) PlayerProgress() else ProgressRepository.load(applicationContext)
         previewLevel = metadata.highestUnlocked
         createContent()
         connectivity = ConnectivityService.factory(this, ::connectivityChanged)
-        AdvertisingService.provider.attach(this)
+        if (!practice) AdvertisingService.provider.attach(this)
         Thread {
-            val loaded = runCatching { GameStore.enter(applicationContext, savedInstanceState == null, ConnectivityMonitor.validated(applicationContext)) }
+            val loaded = runCatching {
+                if (practice) ProgressController(savedInstanceState?.getString("practice_state")?.let { ProgressCodec.decode(it) } ?: PlayerProgress()) to false
+                else GameStore.enter(applicationContext, savedInstanceState == null, ConnectivityMonitor.validated(applicationContext))
+            }
             runOnUiThread {
                 if (!isDestroyed) loaded.onSuccess {
                     progress = it.first
+                    completionVisible = (savedInstanceState?.getBoolean("tutorial_completion") ?: false) || (practice && progress.tutorial.step == TutorialStep.FINISHED)
                     if (progress.recovered) android.util.Log.w("TileBloomSave", "Board snapshot rejected; completion retained")
                     val restored = savedInstanceState?.takeUnless { _ -> it.second }?.let { saved ->
                         val screen = runCatching { GardenScreen.valueOf(saved.getString("garden_screen").orEmpty()) }.getOrNull()
                         screen?.let { NavigationState(saved.getLong("garden_level"), it) }
                     }
                     navigation = LevelNavigation(session.level.id, restored)
-                    if (pendingPlay && online) navigation.play(session.level.id)
+                    if (practice || pendingPlay && online) navigation.play(session.level.id)
                     pendingPlay = false
                     update()
                 }.onFailure {
@@ -193,7 +208,7 @@ class MainActivity : Activity() {
         setContentView(root)
         root.requestApplyInsets()
         levelCard.isEnabled = online && !pendingPlay
-        GameStore.onChanged = refreshListener
+        if (!practice) GameStore.onChanged = refreshListener
         update()
     }
 
@@ -346,7 +361,7 @@ class MainActivity : Activity() {
         column.addView(header, LinearLayout.LayoutParams(-1, dp(48)).apply { bottomMargin = dp(8) })
         tray = TileTrayView(this) { game.tray }.apply { id = R.id.tray }
         column.addView(tray, LinearLayout.LayoutParams(-1, dp(if (compact) 76 else 84)))
-        board = MahjongBoardView(this, game) { completedByPlayer() }.apply { id = R.id.board; audioCue = { audio.play(it) } }
+        board = MahjongBoardView(this, game) { completedByPlayer() }.apply { id = R.id.board; audioCue = { audio.play(it) }; allowTile = { progress.tutorial.allowsTile(it) } }
         val area = FrameLayout(this)
         column.addView(area, LinearLayout.LayoutParams(-1, 0, 1f).apply { topMargin = dp(4) })
         area.addView(board, FrameLayout.LayoutParams(-1, -1))
@@ -365,6 +380,8 @@ class MainActivity : Activity() {
         home = GardenIconButton(this, R.drawable.ic_home).apply {
             id = R.id.home; contentDescription = getString(R.string.home_description); tooltipText = contentDescription
             setOnClickListener {
+                if (practice) { finish(); return@setOnClickListener }
+                if (progress.tutorial.step.active) return@setOnClickListener
                 if (online && game.status != Status.WON && !GameStore.transitioning) {
                     hintRequest++; hintPending = false; board.clearFeedback(); tray.clearFeedback()
                     hideMysteryWithSound(); audio.play(AudioCue.BUTTON); navigation.home(session.level.id); update()
@@ -375,11 +392,12 @@ class MainActivity : Activity() {
             id = R.id.hint
             setOnClickListener {
                 if (!online) return@setOnClickListener
-                if (progress.hintCredits == 0) { requestReward(RewardPurpose.HINT); return@setOnClickListener }
-                if (!hintPending && board.hintedTileId == null && !GameStore.transitioning && game.status == Status.PLAYING && progress.hintCredits > 0) {
+                if (progress.hintCredits == 0 && !progress.tutorial.step.active) { requestReward(RewardPurpose.HINT); return@setOnClickListener }
+                if (!hintPending && board.hintedTileId == null && !GameStore.transitioning && game.status == Status.PLAYING && (progress.hintCredits > 0 || progress.tutorial.step == TutorialStep.DEMONSTRATE_HINT)) {
                     hintPending = true
                     val request = ++hintRequest
                     val expected = game.snapshot()
+                    val guidedHint = progress.tutorial.step == TutorialStep.DEMONSTRATE_HINT
                     val identity = session.level.id
                     val tiles = session.level.tiles
                     this@MainActivity.hint.isEnabled = false
@@ -390,7 +408,7 @@ class MainActivity : Activity() {
                                 hintPending = false
                                 if (online && navigation.state.screen == GardenScreen.GAME && session.level.id == identity && game.snapshot() == expected) {
                                     val id = result?.id
-                                    if (id != null && progress.acceptHint(id, expected)) {
+                                    if (id != null && (!guidedHint || progress.tutorial.step == TutorialStep.DEMONSTRATE_HINT) && progress.acceptHint(id, expected)) {
                                         audio.play(AudioCue.HINT)
                                         board.showHint(id)
                                         update()
@@ -410,7 +428,7 @@ class MainActivity : Activity() {
             id = R.id.undo
             setOnClickListener {
                 if (!online) return@setOnClickListener
-                if (progress.wallet.balance == 0) { requestReward(RewardPurpose.UNDO); return@setOnClickListener }
+                if (progress.wallet.balance == 0 && !progress.tutorial.step.active) { requestReward(RewardPurpose.UNDO); return@setOnClickListener }
                 if (!GameStore.transitioning && audio.perform(AudioCue.UNDO) { progress.undo() }) {
                     hintRequest++; hintPending = false; board.clearFeedback(); tray.clearFeedback(); update()
                 }
@@ -419,7 +437,7 @@ class MainActivity : Activity() {
         restart = GardenIconButton(this, R.drawable.ic_restart).apply {
             id = R.id.restart; contentDescription = getString(R.string.restart_description); tooltipText = contentDescription
             setOnClickListener {
-                if (online && !GameStore.transitioning && audio.perform(AudioCue.RESTART) { session.restart() }) {
+                if (!progress.tutorial.step.active && online && !GameStore.transitioning && audio.perform(AudioCue.RESTART) { session.restart() }) {
                     hintRequest++; hintPending = false; board.clearFeedback(); tray.clearFeedback(); update()
                 }
             }
@@ -467,6 +485,7 @@ class MainActivity : Activity() {
     }
 
     private fun advance() {
+        if (practice) { finish(); return }
         if (!online || AdExposure.busy || pendingVictory != null || GameStore.transitioning || !session.canAdvance) return
         audio.play(AudioCue.BUTTON)
         GameStore.advance(applicationContext)
@@ -484,6 +503,7 @@ class MainActivity : Activity() {
         }
     }
     private fun updateLoading() {
+        if (practice) return
         if (!::navigation.isInitialized) return
         val target = session.level.id + if (session.canAdvance) 1 else 0
         val error = GameStore.transitionError != null
@@ -508,7 +528,7 @@ class MainActivity : Activity() {
     private fun update() {
         updateLoading()
         accountGameplay()
-        if (online && resumed) {
+        if (!practice && online && resumed) {
             if (AdvertisingService.provider === RewardedAdManager) RewardedAdManager.load()
             InterstitialService.provider.prepare(this)
         }
@@ -557,7 +577,7 @@ class MainActivity : Activity() {
             return
         }
         navigation.synchronize(session.level.id)
-        GameStore.persist(this)
+        persistGame()
         val showingGame = navigation.state.screen == GardenScreen.GAME
         updateBackCallback(showingGame)
         startLevel.text = getString(R.string.start_level, session.level.id)
@@ -568,6 +588,7 @@ class MainActivity : Activity() {
         gameplay?.visibility = if (showingGame) View.VISIBLE else View.GONE
         gameplay?.importantForAccessibility = if (showConnection) View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS else View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
         if (!showingGame) {
+            tutorialOverlay?.let { root.removeView(it) }; tutorialOverlay = null
             applyBackground(HomeTheme.palette)
             return
         }
@@ -625,10 +646,14 @@ class MainActivity : Activity() {
         undo.tooltipText = undo.contentDescription
         board.isEnabled = online && !GameStore.transitioning
         board.refresh(); tray.refresh()
+        progress.tutorial.begin(progress.capture().frontier)
+        persistGame()
+        presentTutorial()
         connectionShade.bringToFront()
     }
 
     private fun requestReward(purpose: RewardPurpose) {
+        if (practice || progress.tutorial.step.active) return
         if (!online || GameStore.transitioning || rewardDialog?.isShowing == true || AdvertisingService.provider.state == RewardedAdManager.State.SHOWING) return
         val panel = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
@@ -672,9 +697,9 @@ class MainActivity : Activity() {
         rewardDialog = AlertDialog.Builder(this)
             .setView(panel)
             .create().also { dialog ->
-                dialog.setOnDismissListener { accountGameplay(); AdExposure.save() }
+                dialog.setOnDismissListener { accountGameplay(); saveExposure() }
                 dialog.show()
-                accountGameplay(); AdExposure.save()
+                accountGameplay(); saveExposure()
                 dialog.window?.setBackgroundDrawable(GardenStyle.surface(this, GardenStyle.panel))
                 dialog.window?.setLayout(
                     minOf(resources.displayMetrics.widthPixels - dp(40), dp(360)), -2)
@@ -721,6 +746,11 @@ class MainActivity : Activity() {
     }
 
     private fun returnHomeFromBack() {
+        if (practice) { finish(); return }
+        if (::progress.isInitialized && progress.tutorial.step.active) {
+            hintRequest++; hintPending = false
+            progress.tutorial.skip(); completionVisible = false; update(); return
+        }
         hideMysteryWithSound()
         if (!online) return
         navigation.back(session.level.id, game.status == Status.WON, GameStore.transitioning)
@@ -750,6 +780,9 @@ class MainActivity : Activity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
+        outState.putBoolean("tutorial_completion", completionVisible)
+        outState.putBoolean("practice_in_front", practiceInFront)
+        if (practice && ::progress.isInitialized) outState.putString("practice_state", ProgressCodec.encode(progress.capture()))
         outState.putBoolean("pending_play", pendingPlay && !::navigation.isInitialized)
         if (::navigation.isInitialized) {
             outState.putString("garden_screen", navigation.state.screen.name)
@@ -757,12 +790,12 @@ class MainActivity : Activity() {
         }
     }
     override fun onResume() {
-        super.onResume(); resumed = true; audio.advertisement(AdExposure.busy); audio.foreground(focused); update(); loadingScreen?.let { it.visibility = View.GONE }; loadingRefresh.run()
+        super.onResume(); practiceInFront = false; resumed = true; audio.advertisement(AdExposure.busy); audio.foreground(focused); update(); loadingScreen?.let { it.visibility = View.GONE }; loadingRefresh.run()
     }
     override fun onPause() {
         resumed = false; audio.foreground(false); pendingVictory = null
         loadingScreen?.stopAnimation(); root.removeCallbacks(loadingRefresh)
-        accountGameplay(); AdExposure.save()
+        accountGameplay(); saveExposure()
         super.onPause()
     }
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -770,7 +803,7 @@ class MainActivity : Activity() {
         focused = hasFocus
         if (::audio.isInitialized) audio.foreground(resumed && hasFocus)
         if (!hasFocus) pendingVictory = null
-        accountGameplay(); AdExposure.save()
+        accountGameplay(); saveExposure()
     }
     override fun onStart() {
         super.onStart()
@@ -780,8 +813,8 @@ class MainActivity : Activity() {
         online = false
         if (::board.isInitialized) {
             board.isEnabled = false
-            if (!isChangingConfigurations) game.hideMystery()
-            GameStore.persist(this)
+            if (!isChangingConfigurations && !practiceInFront) game.hideMystery()
+            persistGame()
         }
         connectivity.stop()
         super.onStop()
@@ -796,7 +829,7 @@ class MainActivity : Activity() {
         connectivity.destroy()
         rewardDialog?.setOnDismissListener(null)
         rewardDialog?.dismiss()
-        AdvertisingService.provider.detach(this)
+        if (!practice) AdvertisingService.provider.detach(this)
         hintRequest++
         if (::board.isInitialized) board.clearFeedback()
         updateBackCallback(false)
@@ -837,12 +870,61 @@ class MainActivity : Activity() {
         window.navigationBarColor = palette.backgroundBottom
     }
 
+    private fun presentTutorial() {
+        tutorialOverlay?.let { root.removeView(it) }; tutorialOverlay = null
+        val step = progress.tutorial.step
+        if (!step.active && !completionVisible) return
+        val title: Int
+        val detail: Int
+        var action: Int? = null
+        var target: View? = null
+        var bounds: (() -> android.graphics.RectF)? = null
+        when {
+            completionVisible -> { title = R.string.tutorial_complete; detail = R.string.tutorial_ready; action = R.string.tutorial_continue }
+            step == TutorialStep.INTRODUCTION -> { title = R.string.tutorial_welcome; detail = R.string.tutorial_intro; action = R.string.tutorial_start }
+            step == TutorialStep.EXPLAIN_TRAY -> { title = R.string.tutorial_tray; detail = R.string.tutorial_tray_detail; target = tray; action = R.string.tutorial_continue }
+            step == TutorialStep.DEMONSTRATE_UNDO -> { title = R.string.tutorial_undo; detail = R.string.tutorial_undo_detail; target = undo }
+            step == TutorialStep.DEMONSTRATE_HINT -> { title = R.string.tutorial_hint; detail = R.string.tutorial_hint_detail; target = hint }
+            else -> {
+                title = if (step == TutorialStep.SELECT_TILE) R.string.tutorial_select else R.string.tutorial_pair
+                detail = if (step == TutorialStep.SELECT_TILE) R.string.tutorial_select_detail else R.string.tutorial_pair_detail
+                val id = progress.tutorial.target
+                if (id == null) { progress.tutorial.skip(); persistGame(); return }
+                target = board; bounds = { board.tutorialBounds(id) }
+            }
+        }
+        tutorialOverlay = TutorialOverlay(this, target, bounds, title, detail, action, if (practice) R.string.tutorial_exit else R.string.tutorial_skip, {
+            if (completionVisible) {
+                completionVisible = false
+                if (practice) { finish(); return@TutorialOverlay }
+            } else progress.tutorial.continueGuide()
+            update()
+        }, {
+            hintRequest++; hintPending = false
+            progress.tutorial.skip(); completionVisible = false
+            if (practice) finish() else update()
+        }).also { root.addView(it, FrameLayout.LayoutParams(-1, -1)) }
+    }
+
     private fun showSettings(anchor: View) {
+        if (::progress.isInitialized && progress.tutorial.step.active) return
         if (isFinishing || settingsDialog?.isShowing == true || AdExposure.busy) return
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(24), dp(12), dp(24), dp(8))
         }
+        content.addView(Button(this).apply {
+            id = R.id.how_to_play
+            setText(R.string.how_to_play)
+            setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_hint, 0, 0, 0)
+            GardenStyle.button(this, false)
+            minimumHeight = dp(56)
+            setOnClickListener {
+                settingsDialog?.dismiss()
+                practiceInFront = true
+                startActivity(android.content.Intent(this@MainActivity, MainActivity::class.java).putExtra("tutorial_practice", true))
+            }
+        }, LinearLayout.LayoutParams(-1, -2))
         val sound = android.widget.Switch(this).apply {
             id = R.id.settings_sound
             setText(R.string.sound_effects)
@@ -932,7 +1014,7 @@ class MainActivity : Activity() {
                 this.tag = "language:$tag"
                 setOnClickListener {
                     if (tag != current) {
-                        if (::navigation.isInitialized) GameStore.persist(this@MainActivity)
+                        if (::navigation.isInitialized) persistGame()
                         AppLanguage.select(this@MainActivity, tag)
                         if (Build.VERSION.SDK_INT < 33) recreate()
                     }

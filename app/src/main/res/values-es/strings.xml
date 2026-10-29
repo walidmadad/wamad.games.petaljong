@@ -120,4 +120,25 @@
         <item quantity="other">Parejas restantes: %1$d</item>
     </plurals>
     <string name="language_current">%1$s\n%2$s</string>
+
+    <!-- Interactive tutorial; stable resource keys across all supported locales. -->
+    <string name="tutorial_welcome">¡Bienvenido a TileBloom!</string>
+    <string name="tutorial_intro">Aprende lo básico en unos pasos.</string>
+    <string name="tutorial_start">Empezar</string>
+    <string name="tutorial_skip">Omitir</string>
+    <string name="tutorial_select">Selecciona una ficha</string>
+    <string name="tutorial_select_detail">Toca la ficha iluminada.</string>
+    <string name="tutorial_tray">Tu ficha se guarda aquí.</string>
+    <string name="tutorial_tray_detail">La bandeja tiene cuatro espacios. Junta dos fichas idénticas para formar una pareja.</string>
+    <string name="tutorial_undo">¿Te equivocaste?</string>
+    <string name="tutorial_undo_detail">Toca Deshacer para devolver la última ficha.</string>
+    <string name="tutorial_hint">¿Necesitas ayuda?</string>
+    <string name="tutorial_hint_detail">Toca Pista para iluminar una ficha útil.</string>
+    <string name="tutorial_pair">¡Forma una pareja!</string>
+    <string name="tutorial_pair_detail">Recoge dos fichas idénticas.</string>
+    <string name="tutorial_complete">¡Muy bien!</string>
+    <string name="tutorial_ready">Ya puedes jugar.</string>
+    <string name="tutorial_continue">Continuar</string>
+    <string name="tutorial_exit">Salir de la práctica</string>
+    <string name="how_to_play">Cómo jugar</string>
 </resources>

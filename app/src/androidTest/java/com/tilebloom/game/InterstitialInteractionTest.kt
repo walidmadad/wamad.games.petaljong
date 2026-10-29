@@ -33,7 +33,7 @@ class InterstitialInteractionTest : ActivityInstrumentationTestCase2<MainActivit
         ProgressRepository.awaitWrites(); ProgressRepository.useTestStorage(storage)
         val context = instrumentation.targetContext
         File(context.filesDir, storage).delete(); File(context.filesDir, "$storage.bak").delete()
-        val controller = ProgressController(PlayerProgress(undoCredits=0,hintCredits=0))
+        val controller = ProgressController(PlayerProgress(tutorial = com.tilebloom.game.domain.TutorialStep.SKIPPED, undoCredits=0,hintCredits=0))
         val witness = controller.session.level.witness
         witness.dropLast(1).forEach { controller.session.game.select(it.first); controller.session.game.select(it.second) }
         controller.session.game.select(witness.last().first)
@@ -76,6 +76,7 @@ class InterstitialInteractionTest : ActivityInstrumentationTestCase2<MainActivit
                 }
             }
         }
+        seedReturningPlayer(instrumentation.targetContext, storage)
     }
     override fun tearDown() {
         ui { dismiss?.invoke(); dismiss = null }

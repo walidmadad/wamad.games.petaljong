@@ -19,6 +19,7 @@ class HintInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(MainA
         super.setUp(); ProgressRepository.awaitWrites(); ProgressRepository.useTestStorage(storage)
         File(instrumentation.targetContext.filesDir, storage).delete()
         File(instrumentation.targetContext.filesDir, "$storage.bak").delete()
+        seedReturningPlayer(instrumentation.targetContext, storage)
     }
     override fun tearDown() {
         super.tearDown(); ProgressRepository.awaitWrites(); ProgressRepository.useTestStorage(null)
@@ -123,7 +124,7 @@ class HintInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(MainA
         }
     }
     fun testZeroOffersRewardAfterRestore() {
-        File(instrumentation.targetContext.filesDir, storage).writeText(ProgressCodec.encode(PlayerProgress(hintCredits = 0)))
+        File(instrumentation.targetContext.filesDir, storage).writeText(ProgressCodec.encode(PlayerProgress(tutorial = com.tilebloom.game.domain.TutorialStep.SKIPPED, hintCredits = 0)))
         val screen = activity; enter(screen)
         ui {
             val button = screen.findViewById<GardenIconButton>(R.id.hint)

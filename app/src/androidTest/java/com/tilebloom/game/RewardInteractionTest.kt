@@ -41,8 +41,9 @@ class RewardInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(Mai
     override fun setUp() {
         super.setUp()
         ProgressRepository.awaitWrites(); ProgressRepository.useTestStorage(storage)
-        File(instrumentation.targetContext.filesDir, storage).writeText(ProgressCodec.encode(PlayerProgress(undoCredits = 0, hintCredits = 0)))
+        File(instrumentation.targetContext.filesDir, storage).writeText(ProgressCodec.encode(PlayerProgress(tutorial = com.tilebloom.game.domain.TutorialStep.SKIPPED, undoCredits = 0, hintCredits = 0)))
         fake = FakeAds(); AdvertisingService.provider = fake
+        seedReturningPlayer(instrumentation.targetContext, storage)
     }
     override fun tearDown() {
         super.tearDown()

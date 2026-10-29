@@ -29,7 +29,7 @@ class LanguageSwitchInteractionTest : ActivityInstrumentationTestCase2<MainActiv
         original = AppLanguage.selected(instrumentation.targetContext)
         ProgressRepository.awaitWrites(); ProgressRepository.useTestStorage(storage)
         val context = instrumentation.targetContext
-        File(context.filesDir, storage).writeText(ProgressCodec.encode(PlayerProgress(undoCredits = 2, hintCredits = 1)))
+        File(context.filesDir, storage).writeText(ProgressCodec.encode(PlayerProgress(tutorial = com.tilebloom.game.domain.TutorialStep.SKIPPED, undoCredits = 2, hintCredits = 1)))
         File(context.filesDir, "$storage.bak").delete()
         ConnectivityService.factory = { _, changed -> object : NetworkObserver {
             override fun start() { changed(true, false) }
@@ -45,6 +45,7 @@ class LanguageSwitchInteractionTest : ActivityInstrumentationTestCase2<MainActiv
             override fun privacyOptions(activity: android.app.Activity) { privacyOpened++ }
             override fun show(activity: android.app.Activity, purpose: RewardPurpose): Boolean { shown++; return false }
         }
+        seedReturningPlayer(instrumentation.targetContext, storage)
     }
     override fun tearDown() {
         ui { latest?.finish(); AppLanguage.select(instrumentation.targetContext, original) }

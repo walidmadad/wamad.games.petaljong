@@ -39,6 +39,7 @@ class SettingsPresentationTest : ActivityInstrumentationTestCase2<MainActivity>(
         assertTrue("Puzzle must finish loading", ready)
         instrumentation.runOnMainSync {
             screen.findViewById<View>(R.id.continue_level).performClick()
+            screen.findViewById<View>(R.id.tutorial_skip)?.performClick()
             val controller = com.tilebloom.game.storage.GameStore.get(screen)
             val before = com.tilebloom.game.domain.ProgressCodec.encode(controller.capture())
             assertBareGear(screen)

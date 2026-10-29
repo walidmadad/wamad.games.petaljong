@@ -1,0 +1,4 @@
+Production controller replay PASS
+Hint-selected pair: 18, 17; legal at each selection
+Complete winning sequence: [18, 17, 23, 15, 21, 16, 11, 19, 14, 0, 7, 1, 3, 10, 20, 4, 6, 5, 22, 2, 13, 9, 12, 8]
+Restored controller status: WON; level remains 1; Undo=3; Hint=3

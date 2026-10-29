@@ -14,6 +14,7 @@ class TrayInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(MainA
     override fun setUp() {
         super.setUp(); ProgressRepository.awaitWrites(); ProgressRepository.useTestStorage("test-tray")
         java.io.File(instrumentation.targetContext.filesDir,"test-tray").delete()
+        seedReturningPlayer(instrumentation.targetContext, "test-tray")
     }
     override fun tearDown() {
         super.tearDown(); ProgressRepository.awaitWrites(); ProgressRepository.useTestStorage(null)

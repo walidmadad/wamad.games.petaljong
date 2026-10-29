@@ -120,4 +120,25 @@
         <item quantity="other">Pares restantes: %1$d</item>
     </plurals>
     <string name="language_current">%1$s\n%2$s</string>
+
+    <!-- Interactive tutorial; stable resource keys across all supported locales. -->
+    <string name="tutorial_welcome">Boas-vindas ao TileBloom!</string>
+    <string name="tutorial_intro">Aprenda o básico em poucos passos.</string>
+    <string name="tutorial_start">Começar</string>
+    <string name="tutorial_skip">Pular</string>
+    <string name="tutorial_select">Selecione uma peça</string>
+    <string name="tutorial_select_detail">Toque na peça iluminada.</string>
+    <string name="tutorial_tray">Sua peça fica aqui.</string>
+    <string name="tutorial_tray_detail">A bandeja tem quatro espaços. Junte duas peças iguais para formar um par.</string>
+    <string name="tutorial_undo">Errou a jogada?</string>
+    <string name="tutorial_undo_detail">Toque em Desfazer para devolver a última peça.</string>
+    <string name="tutorial_hint">Precisa de ajuda?</string>
+    <string name="tutorial_hint_detail">Toque em Dica para iluminar uma peça útil.</string>
+    <string name="tutorial_pair">Forme um par!</string>
+    <string name="tutorial_pair_detail">Colete duas peças iguais.</string>
+    <string name="tutorial_complete">Muito bem!</string>
+    <string name="tutorial_ready">Você já pode jogar.</string>
+    <string name="tutorial_continue">Continuar</string>
+    <string name="tutorial_exit">Sair do treino</string>
+    <string name="how_to_play">Como jogar</string>
 </resources>

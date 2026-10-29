@@ -120,4 +120,25 @@
         <item quantity="other">बाकी जोड़ियाँ: %1$d</item>
     </plurals>
     <string name="language_current">%1$s\n%2$s</string>
+
+    <!-- Interactive tutorial; stable resource keys across all supported locales. -->
+    <string name="tutorial_welcome">TileBloom में आपका स्वागत है!</string>
+    <string name="tutorial_intro">कुछ आसान चरणों में खेलना सीखें।</string>
+    <string name="tutorial_start">शुरू करें</string>
+    <string name="tutorial_skip">छोड़ें</string>
+    <string name="tutorial_select">एक टाइल चुनें</string>
+    <string name="tutorial_select_detail">चमकती टाइल पर टैप करें।</string>
+    <string name="tutorial_tray">आपकी टाइल यहाँ रहती है।</string>
+    <string name="tutorial_tray_detail">ट्रे में चार जगह हैं। जोड़ी बनाने के लिए दो एक जैसी टाइलें चुनें।</string>
+    <string name="tutorial_undo">गलती हो गई?</string>
+    <string name="tutorial_undo_detail">आखिरी टाइल वापस रखने के लिए वापस पर टैप करें।</string>
+    <string name="tutorial_hint">मदद चाहिए?</string>
+    <string name="tutorial_hint_detail">काम की टाइल देखने के लिए संकेत पर टैप करें।</string>
+    <string name="tutorial_pair">जोड़ी बनाएँ!</string>
+    <string name="tutorial_pair_detail">दो एक जैसी टाइलें चुनें।</string>
+    <string name="tutorial_complete">बहुत बढ़िया!</string>
+    <string name="tutorial_ready">अब आप खेलने के लिए तैयार हैं।</string>
+    <string name="tutorial_continue">आगे बढ़ें</string>
+    <string name="tutorial_exit">अभ्यास से बाहर निकलें</string>
+    <string name="how_to_play">कैसे खेलें</string>
 </resources>

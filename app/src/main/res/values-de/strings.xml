@@ -120,4 +120,25 @@
         <item quantity="other">Verbleibende Paare: %1$d</item>
     </plurals>
     <string name="language_current">%1$s\n%2$s</string>
+
+    <!-- Interactive tutorial; stable resource keys across all supported locales. -->
+    <string name="tutorial_welcome">Willkommen bei TileBloom!</string>
+    <string name="tutorial_intro">Lerne die Grundlagen in wenigen Schritten.</string>
+    <string name="tutorial_start">Starten</string>
+    <string name="tutorial_skip">Überspringen</string>
+    <string name="tutorial_select">Wähle einen Stein</string>
+    <string name="tutorial_select_detail">Tippe auf den leuchtenden Stein.</string>
+    <string name="tutorial_tray">Hier liegt dein Stein.</string>
+    <string name="tutorial_tray_detail">Die Ablage hat vier Plätze. Sammle zwei gleiche Steine für ein Paar.</string>
+    <string name="tutorial_undo">Ein Fehler passiert?</string>
+    <string name="tutorial_undo_detail">Tippe auf Zurück, um den letzten Stein zurückzulegen.</string>
+    <string name="tutorial_hint">Brauchst du Hilfe?</string>
+    <string name="tutorial_hint_detail">Tippe auf Tipp, um einen hilfreichen Stein zu sehen.</string>
+    <string name="tutorial_pair">Bilde ein Paar!</string>
+    <string name="tutorial_pair_detail">Sammle zwei gleiche Steine.</string>
+    <string name="tutorial_complete">Gut gemacht!</string>
+    <string name="tutorial_ready">Du bist bereit zum Spielen.</string>
+    <string name="tutorial_continue">Weiter</string>
+    <string name="tutorial_exit">Übung verlassen</string>
+    <string name="how_to_play">Spielanleitung</string>
 </resources>
