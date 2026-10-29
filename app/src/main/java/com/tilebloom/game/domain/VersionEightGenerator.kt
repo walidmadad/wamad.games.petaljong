@@ -25,7 +25,7 @@ object VersionEightGenerator {
     }
     fun generate(id: Long, forceFallback: Boolean = false): LevelDefinition {
         require(id >= 6)
-        val profile = PreparationMetrics.phase("configuration") { DifficultyPolicy.profile(id) }
+        val profile = PreparationMetrics.phase("configuration") { VersionNineDifficultyPolicy.profile(id) }
         val seed = seed(id)
         check(layout(id).id.substringBefore('-') in AdvancedLayouts.families)
         check(layout(id).slots.all { it.layer in profile.allowedLayers })
@@ -49,7 +49,7 @@ object VersionEightGenerator {
             val built = PreparationMetrics.phase("witnessConstruction") { if (forceFallback || index == profile.candidateBudget - 1) fallback(id, seed, layout) else runCatching {
                 LevelGenerator.generate(id, seed + index * 7919L, layout, version = 1)
             }.getOrElse { fallback(id, seed, layout) } }
-            val catalog = DifficultyPolicy.symbols(id)
+            val catalog = VersionNineDifficultyPolicy.symbols(id)
             val offset = ((id - 1) % catalog.size).toInt()
             val required = catalog.filter { it.introducedAt == id } + catalog.filter { it.stableId >= 16 }
             val active = (required + List(catalog.size) { catalog[(it + offset) % catalog.size] })

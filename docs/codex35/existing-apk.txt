@@ -1,0 +1,5 @@
+OLD ARTIFACT — not CODEX 35
+Path: app/build/outputs/apk/debug/app-debug.apk
+Timestamp: 2026-10-29T09:57:41.968693+01:00
+Size: 7565391
+SHA-256: a0f98d4d93a66d01f03001ac4cc0c767522d0a680a054b00903549fd38f8145e

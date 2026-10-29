@@ -20,8 +20,8 @@ object VersionSevenDifficultyPolicy {
             listOf(12,22,30,34)[stage], listOf(2,4,6,8)[stage],
             6, 6, 2000 + stage * 500, ((level - 1) % 8).toInt(), .5, stage)
     }
-    fun symbols(level: Long) = Symbol.entries.filter { it.introducedAt <= level }
-    fun introduced(level: Long) = Symbol.entries.filter { it.introducedAt == level && level > 1 }
+    fun symbols(level: Long) = Symbol.entries.filter { it.stableId < 20 && it.introducedAt <= level }
+    fun introduced(level: Long) = Symbol.entries.filter { it.stableId < 20 && it.introducedAt == level && level > 1 }
     fun transitionMessage(level: Long): String? = when(level) {
         8L -> "Hard Garden Challenge"
         16L -> "Very Hard Garden Challenge"

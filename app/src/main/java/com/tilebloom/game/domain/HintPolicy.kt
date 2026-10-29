@@ -2,18 +2,24 @@ package com.tilebloom.game.domain
 
 /** Individual tray actions, a shared node budget, and explicit uncertainty. No witness assumptions. */
 object HintPolicy {
-    data class Suggestion(val id: Int?, val outcome: Solvability, val nodes: Int)
+    data class Suggestion(val id: Int?, val outcome: Solvability, val nodes: Int, val kind: ActionKind = ActionKind.COLLECT)
     fun suggest(tiles: List<Tile>, snapshot: GameSnapshot, budget: Int = 300): Suggestion {
         require(budget >= 0)
         val start = Game(tiles)
         require(start.restore(snapshot))
         if (start.status != Status.PLAYING) return Suggestion(null, Solvability.UNSOLVABLE, 0)
+        start.remaining.firstOrNull { it.concealed && start.isAvailable(it.id) }?.let {
+            return Suggestion(it.id, Solvability.UNKNOWN_BUDGET_EXCEEDED, 0, ActionKind.REVEAL)
+        }
         var nodes = 0
         val memo = mutableMapOf<Pair<Set<Int>, List<Int>>, Solvability>()
         fun after(g: Game, id: Int) = Game(tiles).also { check(it.restore(g.snapshot())); check(it.select(id)) }
-        fun ordered(g: Game) = g.remaining.filter { g.isAvailable(it.id) }
+        fun ordered(g: Game): List<Tile> {
+            g.remaining.filter { it.concealed && g.isAvailable(it.id) }.forEach { check(g.reveal(it.id)) }
+            return g.remaining.filter { g.isAvailable(it.id) }
             .sortedWith(compareByDescending<Tile> { t -> g.tray.any { it.symbol == t.symbol } }
                 .thenByDescending { it.layer }.thenBy { it.id })
+        }
         fun visit(g: Game): Solvability {
             if (g.status == Status.WON) return Solvability.SOLVABLE
             if (g.status == Status.LOST) return Solvability.UNSOLVABLE

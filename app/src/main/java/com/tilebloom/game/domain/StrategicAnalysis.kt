@@ -15,7 +15,7 @@ object SimulatedPlayer {
         var nodes = 0; var peak = 0; var pressure = 0
         fun next(g: Game, id: Int): Game = g.fork().also { check(it.select(id)) }
         fun ordered(g: Game, known: Set<Int>? = null): List<Tile> {
-            val free = g.remaining.filter { (known == null || it.id in known) && g.isAvailable(it.id) }
+            val free = g.remaining.filter { !it.concealed && (known == null || it.id in known) && g.isAvailable(it.id) }
             val counts = free.groupingBy { it.symbol }.eachCount()
             val held = g.tray.map { it.symbol }.toSet()
             return free.sortedWith(compareByDescending<Tile> { it.symbol in held }
@@ -31,11 +31,12 @@ object SimulatedPlayer {
         }
         val geometry = BoardGeometry(360f, 520f, tiles = level.tiles)
         while (game.status == Status.PLAYING) {
+            game.remaining.filter { it.concealed && game.isAvailable(it.id) }.forEach { check(game.reveal(it.id)) }
             // Freeze observed identities for this decision. Search may uncover unknown artwork,
             // but cannot select it or inspect its identity until the next real observation.
             val observed = if (strategy != Strategy.LOOKAHEAD) emptySet() else game.remaining.filter { t ->
                 val c = geometry.face(t).center
-                TileVisibility.faceVisibleAt(t, game.tiles, geometry, c.x, c.y)
+                !t.concealed && TileVisibility.faceVisibleAt(t, game.tiles, geometry, c.x, c.y)
             }.map { it.id }.toSet() + game.remaining.filter { game.isAvailable(it.id) }.map { it.id }
             val choices = ordered(game)
             val selected = when (strategy) {
@@ -96,6 +97,8 @@ object StrategicAnalyzer {
     fun analyze(level: LevelDefinition, budget: Int = 1800, adaptive: Boolean = false): StrategicAnalysis {
         val game = Game(level.tiles)
         val initialLegal = game.remaining.count { game.isAvailable(it.id) }
+        // Safe, free information must not earn a difficulty score by hiding immediate matches.
+        game.remaining.filter { it.concealed && game.isAvailable(it.id) }.forEach { check(game.reveal(it.id)) }
         val pairs = game.matchingPairs().size
         var pressure = 0; var peak = 0; var delayed = 0; var longest = 0
         val opened = mutableMapOf<Symbol, Int>()
@@ -107,6 +110,7 @@ object StrategicAnalyzer {
                 if (gap > 1) delayed++
                 longest = maxOf(longest, gap)
             } ?: run { opened[symbol] = index }
+            if (game.remaining.first { it.id == id }.concealed) check(game.reveal(id))
             check(game.select(id))
             check(game.status != Status.LOST)
             peak = maxOf(peak, game.tray.size)

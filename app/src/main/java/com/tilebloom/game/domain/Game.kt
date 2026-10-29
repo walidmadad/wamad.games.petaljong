@@ -8,12 +8,17 @@ enum class Symbol(val stableId: Int, val introducedAt: Long) {
     MUSHROOM(6, 21), BUTTERFLY(7, 21), BAMBOO(8, 41), ACORN(9, 41),
     MAPLE_LEAF(10, 61), PINECONE(11, 61), IRIS(12, 81), GINKGO_LEAF(13, 81),
     CHERRY_BLOSSOM(14, 101), DRAGONFLY(15, 101),
-    CACTUS(16, 6), LAVENDER(17, 11), LADYBUG(18, 21), SNAIL(19, 41)
+    CACTUS(16, 6), LAVENDER(17, 11), LADYBUG(18, 21), SNAIL(19, 41),
+    VEINED_LEAF(20, 8), DOUBLE_LEAF(21, 8), YELLOW_DAISY(22, 16)
 }
 enum class Status { PLAYING, WON, LOST, NO_MOVES }
-data class Tile(val id: Int, val symbol: Symbol, val x: Double, val y: Double, val layer: Int, val removed: Boolean = false)
+data class Tile(val id: Int, val symbol: Symbol, val x: Double, val y: Double, val layer: Int, val removed: Boolean = false, val mystery: Boolean = false, val revealed: Boolean = false) {
+    val concealed: Boolean get() = mystery && !revealed
+}
 data class PairMove(val first: Int, val second: Int)
-data class GameSnapshot(val moves: List<PairMove>, val selectedId: Int?, val selections: List<Int>? = null, val rulesVersion: Int = 2)
+enum class ActionKind { REVEAL, COLLECT }
+data class GameAction(val kind: ActionKind, val tileId: Int)
+data class GameSnapshot(val moves: List<PairMove>, val selectedId: Int?, val selections: List<Int>? = null, val rulesVersion: Int = 2, val actionLog: List<GameAction>? = null)
 
 object Rules {
     // Board-space tolerance: contacts within one millionth of a tile are edges.
@@ -45,6 +50,7 @@ class Game(definition: List<Tile>) {
     private var current = initial.toList()
     private var history = emptyList<PairMove>()
     private var actions = emptyList<Int>()
+    private var log = emptyList<GameAction>()
     private var held = emptyList<Tile>()
     val tray: List<Tile> get() = held.toList()
     val clearedTiles: List<Tile> get() {
@@ -59,8 +65,8 @@ class Game(definition: List<Tile>) {
     val remainingPairs: Int get() = (remaining.size + held.size) / 2
     fun isAvailable(id: Int) = current.find { it.id == id }?.let { Rules.available(it, current) } ?: false
     fun matchingPairs(): List<PairMove> {
-        val free = current.filter { Rules.available(it, current) }
-        return free.flatMapIndexed { i, a -> free.drop(i + 1).filter { it.symbol == a.symbol }.map { PairMove(a.id, it.id) } }
+        val free = current.filter { !it.concealed && Rules.available(it, current) }
+        return free.flatMapIndexed { i, a -> free.drop(i + 1).filter { !it.concealed && it.symbol == a.symbol }.map { PairMove(a.id, it.id) } }
     }
     val status: Status get() = when {
         held.size == 4 -> Status.LOST
@@ -71,14 +77,24 @@ class Game(definition: List<Tile>) {
     fun match(a: Int, b: Int): Boolean {
         val first = current.find { it.id == a } ?: return false
         val second = current.find { it.id == b } ?: return false
-        if (a == b || first.symbol != second.symbol || !isAvailable(a) || !isAvailable(b)) return false
+        if (first.concealed || second.concealed || a == b || first.symbol != second.symbol || !isAvailable(a) || !isAvailable(b)) return false
         if (held.isNotEmpty() || status != Status.PLAYING) return false
         return select(a) && select(b)
     }
+    fun reveal(id: Int): Boolean {
+        if (status != Status.PLAYING || !isAvailable(id)) return false
+        val tile = current.first { it.id == id }
+        if (!tile.concealed) return false
+        current = current.map { if (it.id == id) it.copy(revealed = true) else it }
+        log = log + GameAction(ActionKind.REVEAL, id)
+        return true
+    }
+    fun interact(id: Int): Boolean = if (current.any { it.id == id && it.concealed }) reveal(id) else select(id)
     /** One atomic selection. Matching resolves before terminal-state evaluation. */
     fun select(id: Int): Boolean {
         if (status != Status.PLAYING || !isAvailable(id)) return false
         val tile = current.first { it.id == id }
+        if (tile.concealed) return false
         current = current.map { if (it.id == id) it.copy(removed = true) else it }
         val partner = held.firstOrNull { it.symbol == tile.symbol }
         if (partner == null) held = held + tile else {
@@ -86,36 +102,42 @@ class Game(definition: List<Tile>) {
             history = history + PairMove(partner.id, id)
         }
         actions = actions + id
+        log = log + GameAction(ActionKind.COLLECT, id)
         selected = null
         return true
     }
     /** Immutable lists make a search branch cheap; selections still use the same controller. */
     internal fun fork(): Game = Game(initial).also {
         it.current = current; it.history = history; it.actions = actions; it.held = held
-        it.selected = selected
+        it.selected = selected; it.log = log
     }
-    fun snapshot() = GameSnapshot(history.toList(), null, actions.toList())
+    fun snapshot() = GameSnapshot(history.toList(), null, actions.toList(), if (initial.any { it.mystery }) 3 else 2, if (initial.any { it.mystery }) log.toList() else null)
     // Replay exact accepted moves; arbitrary re-pairing of removed IDs can deadlock.
     // Validate on a candidate first so corrupt state never partially changes this game.
     fun restore(snapshot: GameSnapshot): Boolean {
         val candidate = Game(initial)
-        if (snapshot.rulesVersion != 2) return false
+        if (snapshot.rulesVersion !in 2..3) return false
         val replay = snapshot.selections ?: snapshot.moves.flatMap { listOf(it.first, it.second) }
-        if (!replay.all { candidate.select(it) }) return false
+        if (snapshot.actionLog != null) {
+            if (!snapshot.actionLog.all { if (it.kind == ActionKind.REVEAL) candidate.reveal(it.tileId) else candidate.select(it.tileId) }) return false
+            if (snapshot.selections != null && candidate.actions != snapshot.selections) return false
+        } else if (!replay.all { candidate.select(it) }) return false
         current = candidate.current.toList()
         history = candidate.history.toList()
         selected = null
         actions = candidate.actions.toList()
         held = candidate.held.toList()
+        log = candidate.log.toList()
         return true
     }
     /** Accepted individual selections only; replay validates the entire shorter history before commit. */
     val canUndo: Boolean get() = actions.isNotEmpty() && status != Status.WON
     fun undo(): Boolean {
         if (!canUndo) return false
-        return restore(GameSnapshot(emptyList(), null, actions.dropLast(1)))
+        val cut = log.indexOfLast { it.kind == ActionKind.COLLECT }
+        return restore(GameSnapshot(emptyList(), null, actions.dropLast(1), 3, log.take(cut)))
     }
-    fun restart() { current = initial.toList(); history = emptyList(); actions = emptyList(); held = emptyList(); selected = null }
+    fun restart() { current = initial.toList(); history = emptyList(); actions = emptyList(); log = emptyList(); held = emptyList(); selected = null }
 }
 
 object LevelOne {

@@ -7,11 +7,11 @@ data class PlayerProgress(val completed: Set<Int> = emptySet(), val active: Sess
     val highestUnlocked: Long get() = if (frontier == Long.MAX_VALUE) frontier else frontier + 1
 }
 object ProgressCodec {
-    const val SCHEMA = 5
+    const val SCHEMA = 6
     fun encode(p: PlayerProgress): String {
         val s = p.active
-        return listOf("$SCHEMA", p.frontier.toString(), s?.let { "${it.id},${it.seed},${it.version},2" } ?: "",
-            s?.game?.let { g -> (g.selections ?: g.moves.flatMap { listOf(it.first, it.second) }).joinToString(";") } ?: "", p.undoCredits.toString(), p.hintCredits.toString()).joinToString("\n")
+        return listOf("$SCHEMA", p.frontier.toString(), s?.let { "${it.id},${it.seed},${it.version},${it.game.rulesVersion}" } ?: "",
+            s?.game?.let { g -> (g.selections ?: g.moves.flatMap { listOf(it.first, it.second) }).joinToString(";") } ?: "", p.undoCredits.toString(), p.hintCredits.toString(), s?.game?.actionLog?.joinToString(";") { "${if (it.kind == ActionKind.REVEAL) "R" else "C"}:${it.tileId}" } ?: "").joinToString("\n")
     }
     fun decode(raw: String): PlayerProgress {
         require(raw.length <= 8192)
@@ -27,7 +27,10 @@ object ProgressCodec {
             require(identity.size == if (schema >= 4) 4 else 3)
             val actions = lines.getOrNull(3).orEmpty().takeIf { it.isNotEmpty() }?.split(';').orEmpty()
             val snapshot = if (schema >= 4) {
-                GameSnapshot(emptyList(), null, actions.map { it.toInt() }, identity[3].toInt())
+                GameSnapshot(emptyList(), null, actions.map { it.toInt() }, identity[3].toInt(), if (schema >= 6) lines.getOrNull(6).orEmpty().takeIf { it.isNotEmpty() }?.split(';')?.map {
+                    val parts = it.split(':'); require(parts.size == 2 && parts[0] in listOf("R", "C"))
+                    GameAction(if (parts[0] == "R") ActionKind.REVEAL else ActionKind.COLLECT, parts[1].toInt())
+                } else null)
             } else {
                 val pairs = actions.map {
                     val pair = it.split(','); require(pair.size == 2)
@@ -64,7 +67,7 @@ class ProgressController(saved: PlayerProgress = PlayerProgress()) {
     fun acceptHint(id: Int, expected: GameSnapshot): Boolean {
         if (hintCredits <= 0 || session.game.snapshot() != expected || session.game.status != Status.PLAYING || !session.game.isAvailable(id)) return false
         val candidate = Game(session.level.tiles)
-        if (!candidate.restore(expected) || !candidate.select(id) || candidate.status == Status.LOST) return false
+        if (!candidate.restore(expected) || !candidate.interact(id) || candidate.status == Status.LOST) return false
         hintCredits--
         return true
     }
@@ -82,7 +85,11 @@ class ProgressController(saved: PlayerProgress = PlayerProgress()) {
             val compatible = active?.takeIf { it.id == id }
             if (compatible == null || !session.restore(compatible)) {
                 recovered = active != null
-                check(session.restore(SessionSnapshot(id, level.seed, level.version, GameSnapshot(emptyList(), null, if (completed == Long.MAX_VALUE) level.winningSelections else emptyList()))))
+                val replacement = Game(level.tiles)
+                if (completed == Long.MAX_VALUE) level.winningActions.forEach {
+                    check(if (it.kind == ActionKind.REVEAL) replacement.reveal(it.tileId) else replacement.select(it.tileId))
+                }
+                check(session.restore(SessionSnapshot(id, level.seed, level.version, replacement.snapshot())))
             }
         }
         capture()

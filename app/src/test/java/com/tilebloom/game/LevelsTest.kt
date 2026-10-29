@@ -6,7 +6,7 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class LevelsTest {
-    private fun finish(s: GardenSession) { s.level.winningSelections.forEach { assertTrue(s.game.select(it)) } }
+    private fun finish(s: GardenSession) { s.level.winningSelections.forEach { assertTrue(s.game.collectRevealed(it)) } }
     private fun rejected(level: LevelDefinition) {
         try { LevelValidator.validate(level); fail("Accepted corrupt level") } catch (_: IllegalArgumentException) { }
     }
@@ -53,7 +53,7 @@ class LevelsTest {
     @Test fun fifthIsNotTerminal() { val s=GardenSession(); repeat(5) { finish(s); if(it<4) assertTrue(s.advance()) }; assertEquals(5L,s.level.id); assertTrue(s.canAdvance); assertFalse(s.restart()); assertTrue(s.advance()); assertEquals(6L,s.level.id) }
     @Test fun restoresEveryLevel() { val s=GardenSession(); repeat(5) {
         val p=s.level.witness.first(); s.game.match(p.first,p.second)
-        val free=s.game.tiles.first { s.game.isAvailable(it.id) }; s.game.select(free.id)
+        val free=s.game.tiles.first { s.game.isAvailable(it.id) }; s.game.collectRevealed(free.id)
         val restored=GardenSession(); assertTrue(restored.restore(s.snapshot())); assertEquals(s.snapshot(),restored.snapshot())
         s.restart(); finish(s); s.advance()
     } }

@@ -12,7 +12,7 @@ class EndlessTest {
             assertEquals(l,Levels.get(id)); assertEquals(id,l.id); assertTrue(l.tiles.size in if (id >= 6) DifficultyPolicy.profile(id).targetTiles else 24..48)
             assertTrue(l.attempts<=64); if(id>=6) assertTrue(l.candidatesEvaluated<=EndlessGenerator.CANDIDATES)
             assertTrue(l.candidateQuality.all { it.searchNodes <= (if (id >= 6) DifficultyPolicy.profile(id).analysisBudget else 5000) })
-            val g=Game(l.tiles); l.winningSelections.forEach { assertTrue(g.select(it)) }; assertEquals(Status.WON,g.status)
+            val g=Game(l.tiles); l.winningSelections.forEach { assertTrue(g.collectRevealed(it)) }; assertEquals(Status.WON,g.status)
         }
     }
     @Test fun recentGeometryAndBoardsVary() {
@@ -35,7 +35,7 @@ class EndlessTest {
             for((w,h) in listOf(284f to 300f,360f to 520f,600f to 260f)) {
                 val geo=BoardGeometry(w,h,tiles=l.tiles); val game=Game(l.tiles)
                 l.tiles.forEach { val r=geo.shadow(it); assertTrue(r.left>=0 && r.top>=0 && r.right<=w && r.bottom<=h) }
-                l.winningSelections.forEach { tid -> val t=game.remaining.first { it.id==tid }; val p=geo.face(t).center; assertEquals(tid,geo.hitTest(game.tiles,p.x,p.y)?.id); assertTrue(game.select(tid)) }
+                l.winningSelections.forEach { tid -> val t=game.remaining.first { it.id==tid }; val p=geo.face(t).center; assertEquals(tid,geo.hitTest(game.tiles,p.x,p.y)?.id); assertTrue(game.collectRevealed(tid)) }
             }
         }
     }

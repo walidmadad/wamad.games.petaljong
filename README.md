@@ -140,3 +140,11 @@ Next Level now shares a background preparation task begun after durable victory.
 Generator v9 constructs verified individual tray selections with delayed partners. Frozen v8 regeneration preserves existing in-progress saves. Candidate evaluation uses production-rule greedy, simple and visibility-restricted lookahead players; all eight layout families and the four-slot rules remain.
 
 [Measured before/after results](docs/codex34/benchmark-summary.md), [full report](CODEX_34_REPORT.md), and [human playtest protocol](docs/codex34/playtest.md). Expert holdout simple wins fall from 36/36 to 18/36 while lookahead remains 36/36; some profiles still miss their target. Gradle/APK verification is blocked by this environment, and the existing APK does not contain these changes. Reproduce JVM checks with Java 17 using `python3 tools/test34.py`; run `python3 tools/benchmark34.py` for the fixed-seed matrix.
+
+## CODEX 35 mystery tiles and Expert windows
+
+New endless boards use generator v10. Tap an available jade back to reveal its fixed symbol; the tile stays on the board and costs no credits. A later deliberate tap collects it. A short flip respects disabled system animations, and rapid double taps cannot reveal and collect together. Reveals persist; Restart restores the backs; paid Undo still applies only to collections.
+
+Hard boards deliberately mix Classic/Veined/Twin Leaves; Very Hard adds Sunflower/Yellow Daisy, and Expert adds a related purple-flower family. Only identical stable symbol IDs match. Expert targets evolve across 31–50, 51–75, 76–100 and subsequent bounded windows without growing the board indefinitely. Schema 6 stores ordered reveal/collection actions; historical v4–v9 saves keep their puzzle definitions.
+
+See the [full report](CODEX_35_REPORT.md), [measured benchmark](docs/codex35/benchmark-summary.md) and [Android visual protocol](docs/codex35/visual-verification.md). Current JVM checks use `PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:$PATH python3 tools/test35.py`; the current benchmark is `tools/benchmark35.py`. These supersede earlier current-generator scripts. Gradle/ADB are blocked here, so there is no fresh verified CODEX 35 APK or executed Android screenshot approval.

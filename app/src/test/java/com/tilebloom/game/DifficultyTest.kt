@@ -18,7 +18,7 @@ class DifficultyTest {
         }
     }
     @Test fun stableCatalogAndMilestones() {
-        assertEquals((0..19).toList(),Symbol.entries.map { it.stableId })
+        assertEquals((0..22).toList(),Symbol.entries.map { it.stableId })
         assertEquals(listOf(Symbol.LEAF,Symbol.LOTUS,Symbol.FERN,Symbol.FLOWER,Symbol.BERRIES,Symbol.SUNFLOWER),Symbol.entries.take(6))
         (1L..5).forEach { assertEquals(Symbol.entries.take(6),DifficultyPolicy.symbols(it)) }
         listOf(21L,41,61,81,101).forEachIndexed { i,id ->
@@ -47,7 +47,7 @@ class DifficultyTest {
                 level.winningSelections.forEach { id2 ->
                     val tile=game.remaining.first { it.id==id2 }; val point=geo.face(tile).center
                     assertEquals(id2,geo.hitTest(game.tiles,point.x,point.y)?.id)
-                    assertTrue(game.select(id2)); assertNotEquals(Status.LOST, game.status)
+                    assertTrue(game.collectRevealed(id2)); assertNotEquals(Status.LOST, game.status)
                 }
                 assertEquals(Status.WON, game.status)
             }
@@ -66,7 +66,7 @@ class DifficultyTest {
     @Test fun transitionsAreExactlyOneAndPersistCredits() {
         for(id in listOf(7L,15,30,31,40,100)) {
             val c=ProgressController(PlayerProgress(highestCompleted=id-1,undoCredits=1))
-            c.session.level.winningSelections.forEach { assertTrue(c.session.game.select(it)) }
+            c.session.level.winningSelections.forEach { assertTrue(c.session.game.collectRevealed(it)) }
             val next=c.prepareNext()!!; assertTrue(c.commitNext(next)); assertFalse(c.commitNext(next))
             assertEquals(id+1,c.session.level.id); assertEquals(1,c.wallet.balance); assertFalse(c.select(id.toInt()))
             assertTrue(c.session.restart()); assertEquals(id+1,c.session.level.id)

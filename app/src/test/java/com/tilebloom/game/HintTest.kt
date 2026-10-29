@@ -53,7 +53,7 @@ class HintTest {
             assertEquals(0, hint.nodes)
             assertNotEquals(Solvability.SOLVABLE, hint.outcome)
             assertTrue(g.isAvailable(hint.id!!))
-            assertTrue(g.select(hint.id))
+            assertTrue(if (hint.kind == ActionKind.REVEAL) g.reveal(hint.id) else g.select(hint.id))
             assertNotEquals(Status.LOST, g.status)
         }
     }

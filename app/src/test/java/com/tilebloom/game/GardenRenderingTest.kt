@@ -25,7 +25,7 @@ class GardenRenderingTest {
             val level = Levels.get(id)
             val game = Game(level.tiles)
             val theme = GardenTheme.forLevel(id)
-            assertTrue(game.select(level.winningSelections.first()))
+            assertTrue(game.collectRevealed(level.winningSelections.first()))
             val snapshot = game.snapshot()
             val restored = Game(level.tiles)
             assertTrue(restored.restore(snapshot))
@@ -49,7 +49,7 @@ class GardenRenderingTest {
         val c = geometry.face(tiles[1]).center
         assertTrue(TileVisibility.faceVisibleAt(tiles[1],tiles,geometry,c.x,c.y))
         assertFalse(game.isAvailable(1))
-        assertFalse(game.select(1))
+        assertFalse(game.collectRevealed(1))
         HintPolicy.suggest(tiles,game.snapshot()).id?.let { assertTrue(game.isAvailable(it)) }
     }
     @Test fun physicalCoverageRemovalAndUndoAreDeterministicAcrossWidths() {
@@ -66,8 +66,8 @@ class GardenRenderingTest {
             assertFalse(TileVisibility.faceVisibleAt(lower,tiles,geometry,coveredX,y))
             assertEquals(upper, geometry.hitTest(tiles,coveredX,y))
             val game = Game(tiles)
-            assertFalse(game.select(lower.id))
-            assertTrue(game.select(upper.id))
+            assertFalse(game.collectRevealed(lower.id))
+            assertTrue(game.collectRevealed(upper.id))
             assertTrue(TileVisibility.faceVisibleAt(lower,game.tiles,geometry,coveredX,y))
             assertTrue(game.undo())
             assertEquals(tiles,game.tiles)

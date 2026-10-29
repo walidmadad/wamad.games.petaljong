@@ -10,7 +10,7 @@ class CompletionEntryTest {
     private fun won(id: Long): ProgressController {
         val c = ProgressController(PlayerProgress(highestCompleted=id-1, undoCredits=1, hintCredits=0))
         c.session.level.winningSelections.forEach {
-            assertTrue(c.session.game.select(it))
+            assertTrue(c.session.game.collectRevealed(it))
         }
         assertEquals(id, c.capture().frontier)
         return c
@@ -60,7 +60,7 @@ class CompletionEntryTest {
         for (lost in listOf(false,true)) {
             val c=ProgressController(PlayerProgress(undoCredits=0,hintCredits=1))
             val ids=if(lost) listOf(23,21,18,20) else listOf(c.session.level.winningSelections.first())
-            ids.forEach { assertTrue(c.session.game.select(it)) }
+            ids.forEach { assertTrue(c.session.game.collectRevealed(it)) }
             val before=decode(c.capture()); val restored=ProgressController(before)
             assertTrue(restored.finalizeCompletedEntry { fail("No victory"); false })
             assertEquals(before,restored.capture())

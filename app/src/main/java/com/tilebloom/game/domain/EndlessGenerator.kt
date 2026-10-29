@@ -2,10 +2,11 @@ package com.tilebloom.game.domain
 
 import java.util.Random
 
-/** v9 constructs individual legal selections, then a bounded three-unmatched symbol schedule.
+/** v10 adds deterministic mystery presentation, family co-occurrence and evolving Expert targets.
+ * Construction uses individual legal selections and a bounded three-unmatched symbol schedule.
  * A witness certifies solvability; it is never supplied to simulated players. */
 object EndlessGenerator {
-    const val VERSION = 9
+    const val VERSION = 10
     const val RECENT_WINDOW = 10
     const val CANDIDATES = 24
     fun seed(id: Long) = LegacyEndlessGenerator.seed(id) xor 4L xor VERSION.toLong()
@@ -14,7 +15,7 @@ object EndlessGenerator {
     fun generate(id: Long, forceFallback: Boolean = false): LevelDefinition {
         require(id >= 6)
         if (DifficultyPolicy.difficulty(id) == Difficulty.NORMAL || forceFallback) {
-            return VersionEightGenerator.generate(id, forceFallback).copy(seed = seed(id), version = VERSION)
+            return MysteryPlacement.apply(VersionEightGenerator.generate(id, forceFallback).copy(seed = seed(id), version = VERSION))
         }
         val tier = DifficultyPolicy.difficulty(id)
         var best: LevelDefinition? = null
@@ -39,7 +40,7 @@ object EndlessGenerator {
                 remaining = remaining.filter { it.id != tile.id }
             }
             val catalog = DifficultyPolicy.symbols(id)
-            val active = (catalog.filter { it.introducedAt == id } + catalog.filter { it.stableId >= 16 } +
+            val active = (SymbolFamilies.required(id) + catalog.filter { it.introducedAt == id } + catalog.filter { it.stableId >= 16 } +
                 catalog.drop((id % catalog.size).toInt()) + catalog).distinct()
                 .take(DifficultyPolicy.profile(id).activeSymbols)
             val held = mutableListOf<Symbol>()
@@ -57,15 +58,15 @@ object EndlessGenerator {
                 assignments[tile] = symbol
             }
             check(held.isEmpty())
-            val candidate = LevelDefinition(id, seed(id), VERSION, layout,
+            val candidate = MysteryPlacement.apply(LevelDefinition(id, seed(id), VERSION, layout,
                 layout.slots.map { Tile(it.id, assignments.getValue(it.id), it.x, it.y, it.layer) },
-                emptyList(), attempt + 1, selectionWitness = order)
+                emptyList(), attempt + 1, selectionWitness = order))
             LevelValidator.validate(candidate)
             val analysis = PreparationMetrics.phase("strategicAnalysis") { StrategicAnalyzer.analyze(candidate, adaptive = true) }
-            val met = analysis.meets(tier)
+            val met = analysis.meets(tier) && ExpertProgression.targets(id).accepts(analysis)
             qualities.add(CandidateQuality(attempt, 0, 0, analysis.lookahead.nodes,
                 0, met, analysis.coverRelationships, analysis.witnessThreeHeld, analysis.probes - analysis.greedyProbeWins, analysis))
-            val score = analysis.score(tier)
+            val score = analysis.score(tier) + ExpertProgression.targets(id).score(analysis)
             if (score > bestScore) { best = candidate; bestScore = score }
             if (attempt >= 1 && met) break
         }

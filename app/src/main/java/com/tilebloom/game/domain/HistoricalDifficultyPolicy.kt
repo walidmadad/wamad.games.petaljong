@@ -15,8 +15,8 @@ object HistoricalDifficultyPolicy {
             2 + stage / 2, 4, 1500 + stage * 250, ((level - 1) % 20).toInt(),
             if (tier >= 2 && tier % 3 != 0L) .5 else 0.0, (tier % 3).toInt())
     }
-    fun symbols(level: Long) = Symbol.entries.filter { it.introducedAt <= level }
-    fun introduced(level: Long) = Symbol.entries.filter { it.introducedAt == level && level > 1 }
+    fun symbols(level: Long) = Symbol.entries.filter { it.stableId < 20 && it.introducedAt <= level }
+    fun introduced(level: Long) = Symbol.entries.filter { it.stableId < 20 && it.introducedAt == level && level > 1 }
     fun transitionMessage(level: Long): String? = if (level > 1 && (level - 1) % 20 == 0L)
         "New Garden Challenge!" + if (introduced(level).isNotEmpty()) " New tiles discovered." else "" else null
 }

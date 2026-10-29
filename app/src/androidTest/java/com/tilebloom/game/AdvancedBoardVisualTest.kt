@@ -43,6 +43,7 @@ class AdvancedBoardVisualTest : InstrumentationTestCase() {
                     }
                     capture("initial")
                     val id = game.remaining.filter { game.isAvailable(it.id) }.maxBy { it.layer }.id
+                    if (game.remaining.first { it.id == id }.concealed) assertTrue(game.reveal(id))
                     val center = view.tileCenter(id)!!
                     val now = SystemClock.uptimeMillis()
                     for(action in listOf(MotionEvent.ACTION_DOWN,MotionEvent.ACTION_UP)) {
@@ -53,7 +54,10 @@ class AdvancedBoardVisualTest : InstrumentationTestCase() {
                     assertEquals(id,game.tray.single().id)
                     view.clearFeedback(); capture("upper-removed")
                     assertTrue(game.undo()); assertEquals(level.tiles,game.tiles)
-                    level.winningSelections.take(6).forEach { assertTrue(game.select(it)) }
+                    level.winningSelections.take(6).forEach { id ->
+                        if (game.remaining.first { it.id == id }.concealed) assertTrue(game.reveal(id))
+                        assertTrue(game.select(id))
+                    }
                     view.load(game); capture("opened")
                     assertEquals(4,game.traySlots.size)
                 }

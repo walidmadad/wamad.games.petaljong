@@ -90,12 +90,13 @@ object PuzzleAnalyzer {
                 dead += a.losingContinuations; unknown += a.unknownContinuations
                 if (a.safeContinuations > 0 && a.losingContinuations > 0) risky++
                 val signatures = legal.map { tile ->
-                    val next = game.fork(); check(next.select(tile.id))
+                    val next = game.fork(); if (tile.concealed) check(next.reveal(tile.id)); check(next.select(tile.id))
                     next.remaining.filter { next.isAvailable(it.id) && legal.none { before -> before.id == it.id } }
                         .map { it.id }.toSet() to next.tray.map { it.symbol }.toSet()
                 }.distinct()
                 if (signatures.size > 1) consequences++
             }
+            if (game.remaining.first { it.id == id }.concealed) check(game.reveal(id))
             check(game.select(id))
             if (game.remaining.any { game.isAvailable(it.id) && legal.none { old -> old.id == it.id } }) unlocks++
         }
@@ -114,7 +115,7 @@ object PuzzleAnalyzer {
             return PuzzleAnalysis(0,0,0,0,0,0,emptyList(),0,0,0,0,0,0,0,0,0,level.layout.id,level.seed)
         }
         LevelValidator.validate(level)
-        if (level.selectionWitness != null) return analyzeSelections(level, budget)
+        if (level.selectionWitness != null || level.tiles.any { it.mystery }) return analyzeSelections(level, budget)
         val game = Game(level.tiles)
         val initialFree = game.remaining.count { game.isAvailable(it.id) }
         val initialPairs = game.matchingPairs()
@@ -150,7 +151,11 @@ object PuzzleAnalyzer {
     }
 }
 
-/** Bounded individual-action analysis. UNKNOWN never terminates a live attempt. */
+/** Bounded collection-continuation analysis. Free legal revelations precede each hypothetical
+ * collection through Game.reveal. The memo collapses information-only differences intentionally;
+ * this is omniscient solvability analysis, not a hidden-information player or hint instruction.
+ * immediateLosses counts reveal-then-collect losses, never losses from revelation alone.
+ * UNKNOWN never terminates a live attempt. */
 object TrayAnalyzer {
     data class Analysis(val result: SearchResult, val available: Int, val unmatched: Int,
         val immediateLosses: Int, val matchingReveals: Int,
@@ -170,7 +175,7 @@ object TrayAnalyzer {
             nodes++
             var unknown = false
             for (tile in g.remaining.filter { g.isAvailable(it.id) }) {
-                val next = g.fork(); check(next.select(tile.id))
+                val next = g.fork(); if (tile.concealed) check(next.reveal(tile.id)); check(next.select(tile.id))
                 when (visit(next)) {
                     Solvability.SOLVABLE -> { memo[key] = Solvability.SOLVABLE; return Solvability.SOLVABLE }
                     Solvability.UNKNOWN_BUDGET_EXCEEDED -> unknown = true
@@ -187,12 +192,12 @@ object TrayAnalyzer {
         val free = start.remaining.filter { start.isAvailable(it.id) }
         val losses = free.count { tile -> start.tray.size == 3 && start.tray.none { it.symbol == tile.symbol } }
         val reveals = free.count { tile ->
-            val next = Game(tiles); check(next.restore(snapshot)); next.select(tile.id)
+            val next = Game(tiles); check(next.restore(snapshot)); if (tile.concealed) check(next.reveal(tile.id)); check(next.select(tile.id))
             next.remaining.any { next.isAvailable(it.id) && !start.isAvailable(it.id) && next.tray.any { held -> held.symbol == it.symbol } }
         }
         var safe = 0; var losing = 0; var unknown = 0
         for (tile in free) {
-            val next = Game(tiles); check(next.restore(snapshot)); check(next.select(tile.id))
+            val next = Game(tiles); check(next.restore(snapshot)); if (tile.concealed) check(next.reveal(tile.id)); check(next.select(tile.id))
             when (visit(next)) {
                 Solvability.SOLVABLE -> safe++
                 Solvability.UNSOLVABLE -> losing++

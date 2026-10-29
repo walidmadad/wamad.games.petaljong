@@ -13,6 +13,7 @@ data class TrayPressure(val probes: Int, val losses: Int, val wins: Int, val thr
                 val game = Game(level.tiles)
                 repeat(level.tiles.size) {
                     if (game.status == Status.PLAYING) {
+                        game.remaining.filter { it.concealed && game.isAvailable(it.id) }.forEach { check(game.reveal(it.id)) }
                         val free = game.remaining.filter { game.isAvailable(it.id) }
                         val matches = free.filter { t -> game.tray.any { it.symbol == t.symbol } }
                         val pool = if (matches.isNotEmpty() && random.nextBoolean()) matches else free

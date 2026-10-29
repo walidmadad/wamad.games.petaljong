@@ -1,0 +1,8 @@
+CODEX 35 verification context
+2026-10-29T10:20:35.105083+01:00
+Baseline commit: 9437efd39ce9d9a6d67e0ee5942cc1c9e04f7d37
+Java: /usr/lib/jvm/java-17-openjdk-amd64
+Historical compiled classpath: /tmp/tilebloom34-tests-11sdqwfv
+Updated compiled classpath for v9 fingerprint check: /tmp/tilebloom35-tests-_aosv1vs
+Fingerprint recipe: VersionNineFingerprint.java; output is level, seed, SHA-256 of IDs/symbol stable IDs/geometry/winning selections. Both outputs compare byte-for-byte.
+No app installation, uninstall, data clearing, publishing or push.

@@ -110,4 +110,10 @@
     <string name="loading_level">Preparing Level %1$d</string>
     <string name="loading_error">Garden not ready.</string>
     <string name="loading_retry">Retry</string>
+    <string name="symbol_veined_leaf">Veined leaf</string>
+    <string name="symbol_double_leaf">Twin leaves</string>
+    <string name="symbol_yellow_daisy">Yellow daisy</string>
+    <string name="mystery_revealed">%1$s revealed. Tap again to collect.</string>
+    <string name="hint_reveal">Reveal the highlighted jade tile.</string>
+    <string name="hint_collect">Collect the highlighted tile.</string>
 </resources>

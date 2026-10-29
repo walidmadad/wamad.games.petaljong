@@ -1,0 +1,14 @@
+Picked up JAVA_TOOL_OPTIONS: -XX:-UsePerfData
+app/src/test/java/com/tilebloom/game/BotanicalExpansionTest.kt:20:51: warning: name shadowed: id
+                level.winningSelections.forEach { id ->
+                                                  ^
+app/src/test/java/com/tilebloom/game/ProgressTest.kt:29:60: warning: unnecessary non-null assertion (!!) on a non-null receiver of type SessionSnapshot
+        for(bad in listOf(p.active!!.copy(id=999L),p.active!!.copy(seed=-55))) {
+                                                           ^
+Isolated classes: /tmp/tilebloom35-tests-_aosv1vs
+Picked up JAVA_TOOL_OPTIONS: -XX:-UsePerfData
+JUnit version 4.13.2
+.....................
+Time: 32.913
+
+OK (21 tests)

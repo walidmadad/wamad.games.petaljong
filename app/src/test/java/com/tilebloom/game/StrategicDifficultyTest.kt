@@ -18,7 +18,7 @@ class StrategicDifficultyTest {
         val g = Game(expert.tiles)
         var peak = 0
         expert.winningSelections.forEach { id ->
-            assertTrue(g.isAvailable(id)); assertTrue(g.select(id)); assertNotEquals(Status.LOST,g.status)
+            assertTrue(g.isAvailable(id)); assertTrue(g.collectRevealed(id)); assertNotEquals(Status.LOST,g.status)
             peak = maxOf(peak,g.tray.size)
         }
         assertEquals(Status.WON,g.status); assertEquals(3,peak)
@@ -47,9 +47,9 @@ class StrategicDifficultyTest {
         val trivial=PuzzleAnalyzer.strategic(old)
         assertEquals(0,trivial.delayedMatches); assertFalse(trivial.meets(Difficulty.EXPERT))
         val a=expert.strategicAnalysis!!
-        assertEquals(expert.qualityTargetMet,a.meets(Difficulty.EXPERT))
+        assertEquals(expert.qualityTargetMet,a.meets(Difficulty.EXPERT) && ExpertProgression.targets(expert.id).accepts(a))
         assertTrue(a.score(Difficulty.EXPERT)>trivial.score(Difficulty.EXPERT))
-        assertEquals(expert.candidateQuality.maxOf { it.strategic!!.score(Difficulty.EXPERT) },a.score(Difficulty.EXPERT))
+        assertEquals(expert.candidateQuality.maxOf { it.strategic!!.let { a -> a.score(Difficulty.EXPERT) + ExpertProgression.targets(expert.id).score(a) } },a.score(Difficulty.EXPERT) + ExpertProgression.targets(expert.id).score(a))
         assertTrue(expert.candidatesEvaluated in 2..EndlessGenerator.CANDIDATES)
         assertTrue(expert.candidateQuality.all { it.searchNodes<=1800 })
     }
@@ -61,11 +61,12 @@ class StrategicDifficultyTest {
     @Test fun forkAndUndoRestoreExactTrayAndHistory() {
         val g=Game(expert.tiles)
         expert.winningSelections.dropLast(1).forEach { id ->
+            if (g.remaining.any { it.id == id && it.concealed }) assertTrue(g.reveal(id))
             val before=g.snapshot(); val tiles=g.tiles; val tray=g.tray
-            val branch=g.fork(); assertTrue(branch.select(id)); assertEquals(before,g.snapshot())
-            assertTrue(g.select(id)); assertEquals(branch.snapshot(),g.snapshot())
+            val branch=g.fork(); assertTrue(branch.collectRevealed(id)); assertEquals(before,g.snapshot())
+            assertTrue(g.collectRevealed(id)); assertEquals(branch.snapshot(),g.snapshot())
             assertTrue(g.undo()); assertEquals(before,g.snapshot()); assertEquals(tiles,g.tiles); assertEquals(tray,g.tray)
-            assertTrue(g.select(id))
+            assertTrue(g.collectRevealed(id))
         }
     }
     @Test fun hintsStaySelectableOnDelayedWitnessStates() {
@@ -73,12 +74,12 @@ class StrategicDifficultyTest {
         expert.winningSelections.take(12).forEach { id ->
             val hint=HintPolicy.suggest(expert.tiles,g.snapshot(),40)
             hint.id?.let { assertTrue(g.isAvailable(it)) }
-            assertTrue(g.select(id))
+            assertTrue(g.collectRevealed(id))
         }
     }
     @Test fun v8SavePreservesBoardTrayBalancesAndAdState() {
         val old=VersionEightGenerator.generate(75)
-        val g=Game(old.tiles); assertTrue(g.select(old.winningSelections.first()))
+        val g=Game(old.tiles); assertTrue(g.collectRevealed(old.winningSelections.first()))
         val saved=PlayerProgress(active=SessionSnapshot(75,old.seed,8,g.snapshot()),highestCompleted=74,undoCredits=2,hintCredits=1)
         val restored=ProgressController(ProgressCodec.decode(ProgressCodec.encode(saved)))
         assertFalse(restored.recovered); assertEquals(old,restored.session.level)
@@ -87,11 +88,11 @@ class StrategicDifficultyTest {
         assertEquals(saved.frontier,restored.capture().frontier)
     }
     @Test fun newSavesReplayExactIndividualHistoryAndAdvanceOne() {
-        val g=Game(expert.tiles); expert.winningSelections.take(7).forEach { assertTrue(g.select(it)) }
-        val saved=PlayerProgress(active=SessionSnapshot(75,expert.seed,9,g.snapshot()),highestCompleted=74,undoCredits=2,hintCredits=1)
+        val g=Game(expert.tiles); expert.winningSelections.take(7).forEach { assertTrue(g.collectRevealed(it)) }
+        val saved=PlayerProgress(active=SessionSnapshot(75,expert.seed,expert.version,g.snapshot()),highestCompleted=74,undoCredits=2,hintCredits=1)
         val restored=ProgressController(ProgressCodec.decode(ProgressCodec.encode(saved)))
         assertFalse(restored.recovered); assertEquals(g.snapshot(),restored.session.game.snapshot())
-        expert.winningSelections.drop(7).forEach { assertTrue(restored.session.game.select(it)) }
+        expert.winningSelections.drop(7).forEach { assertTrue(restored.session.game.collectRevealed(it)) }
         val next=restored.prepareNext()!!; assertEquals(76L,next.id); assertTrue(restored.commitNext(next))
         assertEquals(76L,restored.session.level.id); assertEquals(2,restored.wallet.balance)
     }

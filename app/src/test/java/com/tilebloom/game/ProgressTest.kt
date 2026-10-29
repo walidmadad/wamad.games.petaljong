@@ -3,7 +3,7 @@ import com.tilebloom.game.domain.*
 import org.junit.Assert.*
 import org.junit.Test
 class ProgressTest {
-    private fun win(c: ProgressController) { c.session.level.winningSelections.forEach { assertTrue(c.session.game.select(it)) }; c.capture() }
+    private fun win(c: ProgressController) { c.session.level.winningSelections.forEach { assertTrue(c.session.game.collectRevealed(it)) }; c.capture() }
     private fun reload(c: ProgressController) = ProgressController(ProgressCodec.decode(ProgressCodec.encode(c.capture())))
     @Test fun freshStartsAtOne() { assertEquals(1L,ProgressController().session.level.id) }
     @Test fun exactNextAndDoubleTap() { val c=ProgressController(); assertFalse(c.advance()); win(c); assertTrue(c.advance()); assertFalse(c.advance()); assertEquals(2L,c.session.level.id) }
@@ -18,7 +18,7 @@ class ProgressTest {
     @Test fun completedLegacySelectionMovesToFirstUnfinished() { val l=Levels.get(1); val c=ProgressController(ProgressCodec.decode("2\n1,2\n1,${l.seed},${l.version}\n\n2")); assertEquals(3L,c.session.level.id) }
     @Test fun generatedTransitionsAndUndoIsolation() { for(id in listOf(5L,99L,999L,9999L)) { val l=Levels.get(id); val c=ProgressController(PlayerProgress(active=SessionSnapshot(id,l.seed,l.version,GameSnapshot(emptyList(),null)),highestCompleted=id-1,undoCredits=1)); win(c); val next=c.prepareNext()!!; assertTrue(c.commitNext(next)); assertFalse(c.commitNext(next)); assertEquals(id+1,c.session.level.id); assertEquals(id,c.capture().frontier); assertEquals(1,c.wallet.balance); assertFalse(c.undo()); assertEquals(c.capture(),reload(c).capture()) } }
     @Test fun deadlockNeverAdvances() { val c=ProgressController(); deadlockPath(c.session.game).forEach { c.session.game.match(it.first,it.second) }; assertEquals(Status.PLAYING,c.session.game.status); assertFalse(c.advance()); assertEquals(0L,reload(c).capture().frontier) }
-    @Test fun restartSameIdentityAndBalance() { val c=ProgressController(PlayerProgress(highestCompleted=99,undoCredits=0)); val l=c.session.level; val move=l.winningSelections.first(); c.session.game.select(move); assertTrue(c.session.restart()); assertEquals(l.tiles,c.session.game.tiles); assertEquals(100L,c.session.level.id); assertEquals(0,c.wallet.balance) }
+    @Test fun restartSameIdentityAndBalance() { val c=ProgressController(PlayerProgress(highestCompleted=99,undoCredits=0)); val l=c.session.level; val move=l.winningSelections.first(); c.session.game.collectRevealed(move); assertTrue(c.session.restart()); assertEquals(l.tiles,c.session.game.tiles); assertEquals(100L,c.session.level.id); assertEquals(0,c.wallet.balance) }
     @Test fun corruptPendingHistoryNeverReplaysCompleted() { val c=ProgressController(); win(c); val p=c.capture(); val r=ProgressController(p.copy(active=p.active!!.copy(game=GameSnapshot(emptyList(),null)))); assertEquals(2L,r.session.level.id); assertEquals(1L,r.capture().frontier) }
     @Test fun invalidCompletionsCannotUnlock() { assertEquals(1L,ProgressController(PlayerProgress(setOf(2,5,999))).highestUnlocked) }
     @Test fun unsupportedSchemaRejected() { assertThrows(IllegalArgumentException::class.java) { ProgressCodec.decode("99\n1\n") } }
@@ -38,7 +38,7 @@ class ProgressTest {
     @Test fun repeatedRestoresKeepIdentityCounterAndCredits() {
         var c=ProgressController(PlayerProgress(highestCompleted=499,undoCredits=2))
         for (id in c.session.level.winningSelections) {
-            assertTrue(c.session.game.select(id))
+            assertTrue(c.session.game.collectRevealed(id))
             if (c.session.game.snapshot().moves.size == 5) break
         }
         assertEquals(5,c.session.game.snapshot().moves.size)

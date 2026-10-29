@@ -411,6 +411,7 @@ class MainActivity : Activity() {
                                     if (id != null && progress.acceptHint(id, expected)) {
                                         board.showHint(id)
                                         update()
+                                        Toast.makeText(this@MainActivity, if (result.kind == ActionKind.REVEAL) R.string.hint_reveal else R.string.hint_collect, Toast.LENGTH_SHORT).show()
                                     } else {
                                         update()
                                         Toast.makeText(this@MainActivity, R.string.no_safe_hint, Toast.LENGTH_SHORT).show()

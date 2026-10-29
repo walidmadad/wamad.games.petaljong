@@ -17,6 +17,8 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         set(value) { field = value; invalidate() }
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val effects = MatchEffects()
+    private val reveals = MysteryRevealFeedback()
+    private var tapStarted = 0L
     private val hintEffect = HintPresentation()
     val hintedTileId get() = hintEffect.targetId
     private val hintBounds = RectF()
@@ -59,6 +61,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         blockedTileId = null
         gesture.cancel()
         effects.clear()
+        reveals.clear()
         invalidate()
     }
     private fun BoardRect.android() = RectF(left, top, right, bottom)
@@ -86,6 +89,9 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
                 val shrink = 1f - .1f * progress
                 canvas.scale(shrink, shrink, r.centerX(), r.centerY())
             }
+            val flip = reveals.progress(tile.id, now, ValueAnimator.areAnimatorsEnabled())
+            val back = tile.concealed || (flip != null && flip < .5f)
+            if (flip != null) canvas.scale(maxOf(.06f, abs(cos(flip * PI).toFloat())), 1f, r.centerX(), r.centerY())
             val selected = available && game.selected == tile.id
             paint.style = Paint.Style.FILL
             // Two offset shadow bands: soft penumbra and a stronger contact shadow.
@@ -125,11 +131,12 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             paint.style = Paint.Style.FILL
             // Draw the whole lower face first. Opaque upper bodies/faces in the same
             // depth order physically occlude it, including partially covered artwork.
+            if (back) drawMystery(canvas, face.android(), layout.radius, scale, available)
             if (!tile.removed) {
                 canvas.save()
                 canvas.translate(r.centerX(), r.centerY())
                 canvas.scale(scale * .34f, scale * .34f)
-                BotanicalSymbols.draw(canvas, paint, tile.symbol)
+                if (!back) BotanicalSymbols.draw(canvas, paint, tile.symbol)
                 canvas.restore()
                 if (!available) {
                     paint.color = (theme.palette.tileShadow and 0x00ffffff) or (48 shl 24)
@@ -147,7 +154,38 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         hintEffect.validate(game, now)
         // Foreground decoration shares the authoritative face transform, never hit geometry.
         hintEffect.face(game, layout)?.let { face -> drawHint(canvas, layout, face, now) }
-        if (effects.active.isNotEmpty() || (hintedTileId != null && ValueAnimator.areAnimatorsEnabled())) postInvalidateOnAnimation()
+        if (reveals.active(now, ValueAnimator.areAnimatorsEnabled()) || effects.active.isNotEmpty() || (hintedTileId != null && ValueAnimator.areAnimatorsEnabled())) postInvalidateOnAnimation()
+    }
+    private fun drawMystery(c: Canvas, face: RectF, radius: Float, scale: Float, available: Boolean) {
+        paint.style = Paint.Style.FILL
+        paint.shader = LinearGradient(face.left, face.top, face.right, face.bottom,
+            Color.rgb(64, 160, 117), Color.rgb(15, 86, 65), Shader.TileMode.CLAMP)
+        c.drawRoundRect(face, radius, radius, paint); paint.shader = null
+        paint.style = Paint.Style.STROKE; paint.strokeWidth = scale * .025f
+        paint.color = Color.rgb(178, 209, 160)
+        val inset = RectF(face).apply { inset(scale * .065f, scale * .065f) }
+        c.drawRoundRect(inset, radius * .7f, radius * .7f, paint)
+        c.save(); c.translate(face.centerX(), face.centerY()); c.scale(scale * .25f, scale * .25f)
+        paint.color = Color.rgb(214, 197, 126); paint.strokeWidth = .08f
+        c.drawCircle(0f, 0f, 1f, paint)
+        c.drawLine(0f, .7f, 0f, -.6f, paint)
+        paint.style = Paint.Style.FILL
+        for (side in listOf(-1f, 1f)) {
+            c.save(); c.scale(side, 1f); c.rotate(-25f)
+            c.drawOval(.03f, -.6f, .65f, -.13f, paint)
+            c.drawOval(.03f, -.05f, .55f, .32f, paint); c.restore()
+        }
+        c.restore()
+        if (available) {
+            // Two bright corner facets suggest a turnable face without exposing its identity.
+            paint.color = Color.rgb(224, 235, 188)
+            val path = Path().apply {
+                moveTo(face.right - scale * .22f, face.bottom - scale * .09f)
+                lineTo(face.right - scale * .09f, face.bottom - scale * .22f)
+                lineTo(face.right - scale * .09f, face.bottom - scale * .09f); close()
+            }
+            c.drawPath(path, paint)
+        }
     }
     private fun drawHint(canvas: Canvas, layout: BoardGeometry, face: BoardRect, now: Long) {
         val density = resources.displayMetrics.density
@@ -198,6 +236,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         }
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
+                tapStarted = event.eventTime
                 val tile = geometry().hitTest(game.tiles, event.x, event.y)
                 gesture.down(event.getPointerId(0), tile?.id, event.x, event.y)
             }
@@ -209,12 +248,17 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
                 val tile = geometry().hitTest(game.tiles, event.x, event.y)
                 val id = gesture.up(event.getPointerId(0), tile?.id, event.x, event.y)
                 if (tile != null) { clearHint(); invalidate() }
-                if (id != null) {
+                if (id != null && reveals.accepts(id, tapStarted)) {
                     if (game.status == Status.PLAYING && game.isAvailable(id)) {
                         removeCallbacks(clearBlocked); blockedTileId = null
                         clearHint()
                         val before = game.tiles
-                        game.select(id)
+                        val concealed = before.first { it.id == id }.concealed
+                        if (!game.interact(id)) return true
+                        if (concealed) {
+                            reveals.revealed(id, SystemClock.uptimeMillis())
+                            announceForAccessibility(context.getString(R.string.mystery_revealed, BotanicalSymbols.label(context, before.first { it.id == id }.symbol)))
+                        }
                         effects.record(before, game.tiles, SystemClock.uptimeMillis(), ValueAnimator.areAnimatorsEnabled())
                         changed()
                     } else {
@@ -271,10 +315,34 @@ internal object BotanicalSymbols {
         Symbol.LAVENDER -> R.string.symbol_lavender
         Symbol.LADYBUG -> R.string.symbol_ladybug
         Symbol.SNAIL -> R.string.symbol_snail
+        Symbol.VEINED_LEAF -> R.string.symbol_veined_leaf
+        Symbol.DOUBLE_LEAF -> R.string.symbol_double_leaf
+        Symbol.YELLOW_DAISY -> R.string.symbol_yellow_daisy
     })
     fun draw(c: Canvas, p: Paint, symbol: Symbol) {
         p.color = green; p.style = Paint.Style.FILL
         when (symbol) {
+            Symbol.DOUBLE_LEAF -> {
+                p.strokeWidth = .1f; c.drawLine(0f, 1f, 0f, -.8f, p)
+                c.save(); c.rotate(-35f); c.drawOval(-.75f, -.9f, -.05f, .5f, p); c.restore()
+                c.save(); c.rotate(35f); c.drawOval(.05f, -.9f, .75f, .5f, p); c.restore()
+            }
+            Symbol.VEINED_LEAF -> {
+                c.save(); c.rotate(-20f)
+                c.drawOval(-.65f, -1f, .65f, .85f, p)
+                p.color = Color.rgb(210, 220, 166); p.strokeWidth = .09f
+                c.drawLine(0f, .9f, 0f, -.85f, p)
+                for (y in listOf(-.45f, 0f, .45f)) {
+                    c.drawLine(0f, y + .2f, -.45f, y - .15f, p)
+                    c.drawLine(0f, y + .2f, .45f, y - .15f, p)
+                }
+                c.restore()
+            }
+            Symbol.YELLOW_DAISY -> {
+                p.color = Color.rgb(207, 166, 51)
+                repeat(6) { c.save(); c.rotate(it * 60f); c.drawOval(-.3f, -1f, .3f, -.05f, p); c.restore() }
+                p.color = Color.rgb(245, 223, 151); c.drawCircle(0f, 0f, .27f, p)
+            }
             Symbol.LEAF -> {
                 c.drawPath(leafPath, p)
                 p.color = Color.rgb(210, 220, 166); p.strokeWidth = .07f
