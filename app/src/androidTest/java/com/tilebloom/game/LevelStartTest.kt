@@ -37,7 +37,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         val until=SystemClock.uptimeMillis()+30000
         while(SystemClock.uptimeMillis()<until) {
             var ready=false
-            ui { ready=(id != R.id.play || screen.isPuzzleReady) && screen.findViewById<View>(id)?.let { it.isShown && it.width>0 }==true }
+            ui { ready=(id != R.id.continue_level || screen.isPuzzleReady) && screen.findViewById<View>(id)?.let { it.isShown && it.width>0 }==true }
             if(ready) { instrumentation.waitForIdleSync(); return }
             SystemClock.sleep(20)
         }
@@ -55,7 +55,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         fail("Next level did not enter gameplay")
     }
     private fun enter(screen: MainActivity) {
-        waitVisible(screen,R.id.play); ui { screen.findViewById<Button>(R.id.play).performClick() }
+        waitVisible(screen,R.id.continue_level); ui { screen.findViewById<View>(R.id.continue_level).performClick() }
         waitVisible(screen,R.id.board)
     }
     private fun tapTile(screen: MainActivity, id: Int) {
@@ -101,27 +101,39 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
             }
         }
     }
-    fun testFreshEntryRequiresPlayAndInitializesOnlyOnce() {
-        val screen=activity; waitVisible(screen,R.id.play)
+    fun testLevelCardCornerTouchEntersSavedPuzzleOnlyOnce() {
+        val screen=activity; waitVisible(screen,R.id.continue_level)
         ui {
             assertEquals(screen.getString(R.string.start_level,1L),screen.findViewById<TextView>(R.id.start_level).text.toString())
             assertNull(screen.findViewById<MahjongBoardView>(R.id.board))
-            val play=screen.findViewById<Button>(R.id.play)
-            assertTrue(play.text is android.text.Spanned); assertTrue(play.isEnabled)
-            val textCenter = (play.layout.getLineLeft(0) + play.layout.getLineRight(0)) / 2 + play.totalPaddingLeft
-            assertEquals(play.width / 2f, textCenter, 2f)
+            val play=screen.findViewById<View>(R.id.continue_level)
+            assertTrue(play.isClickable); assertTrue(play.isFocusable); assertTrue(play.isEnabled)
+            assertEquals(android.widget.Button::class.java.name, play.accessibilityClassName)
             val level = screen.findViewById<View>(R.id.start_level)
             val p = IntArray(2); val l = IntArray(2)
             play.getLocationOnScreen(p); level.getLocationOnScreen(l)
             assertEquals(l[0]+level.width/2f,p[0]+play.width/2f,2f)
-            play.performClick(); val board=screen.findViewById<MahjongBoardView>(R.id.board)
-            play.performClick(); assertSame(board,screen.findViewById<MahjongBoardView>(R.id.board))
+            val node = play.createAccessibilityNodeInfo()
+            assertTrue(node.isClickable)
+            assertEquals(screen.getString(R.string.continue_level_description, 1L), node.contentDescription.toString())
+            val down = SystemClock.uptimeMillis()
+            for (action in listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP)) {
+                val event = MotionEvent.obtain(down, down + 20, action, 2f, 2f, 0)
+                try { assertTrue(play.dispatchTouchEvent(event)) } finally { event.recycle() }
+            }
         }
-        waitVisible(screen,R.id.board); assertEquals(24,state().session.game.remaining.size)
+        waitVisible(screen,R.id.board)
+        ui {
+            val board=screen.findViewById<MahjongBoardView>(R.id.board)
+            val card=screen.findViewById<View>(R.id.continue_level)
+            card.performClick(); card.performClick()
+            assertSame(board,screen.findViewById<MahjongBoardView>(R.id.board))
+        }
+        assertEquals(24,state().session.game.remaining.size)
     }
     fun testHomeResumeIconsAndBadgeKeepExactAttempt() {
         seed(ProgressController(PlayerProgress(highestCompleted=20)))
-        val screen=activity; waitVisible(screen,R.id.play)
+        val screen=activity; waitVisible(screen,R.id.continue_level)
         ui { assertEquals(screen.getString(R.string.start_level,21L),screen.findViewById<TextView>(R.id.start_level).text.toString()) }
         enter(screen)
         val move=state().session.level.witness.first(); val game=state().session.game
@@ -140,7 +152,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
             }
             screen.findViewById<Button>(R.id.home).performClick()
         }
-        waitVisible(screen,R.id.play); assertEquals(snapshot,state().capture())
+        waitVisible(screen,R.id.continue_level); assertEquals(snapshot,state().capture())
         ui { assertFalse(board!!.isShown) }
         enter(screen); assertSame(game,state().session.game)
         ui { assertSame(board,screen.findViewById(R.id.board)) }
@@ -176,10 +188,10 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         tapTile(screen,state().session.level.winningSelections.first())
         val before=state().capture()
         ui { screen.findViewById<View>(R.id.home).performClick() }
-        waitVisible(screen,R.id.play); enter(screen)
+        waitVisible(screen,R.id.continue_level); enter(screen)
         assertEquals(before,state().capture())
         instrumentation.sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
-        waitVisible(screen,R.id.play); assertEquals(before,state().capture())
+        waitVisible(screen,R.id.continue_level); assertEquals(before,state().capture())
     }
     fun testRecreationKeepsGameButFreshRelaunchRequiresPlayAndRestoresTray() {
         val screen=activity; enter(screen)
@@ -193,21 +205,21 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
             rotated=monitor.waitForActivityWithTimeout(10000) as? MainActivity
             assertNotNull(rotated); waitVisible(rotated!!,R.id.board)
             val replacement=rotated!!
-            ui { assertFalse(replacement.findViewById<View>(R.id.play).isShown) }
+            ui { assertFalse(replacement.findViewById<View>(R.id.continue_level).isShown) }
             assertEquals(before,state().capture()); ui { replacement.finish() }
         } finally { instrumentation.removeMonitor(monitor); rotated?.let { ui { it.finish() } } }
         instrumentation.waitForIdleSync(); ProgressRepository.awaitWrites(); ProgressRepository.useTestStorage(storage)
         val fresh=instrumentation.startActivitySync(Intent(instrumentation.targetContext,MainActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) as MainActivity
         try {
-            waitVisible(fresh,R.id.play); assertEquals(before,state().capture())
+            waitVisible(fresh,R.id.continue_level); assertEquals(before,state().capture())
             enter(fresh); assertEquals(listOf(id),state().session.game.tray.map{it.id})
         } finally { ui { fresh.finish() } }
     }
     fun testSavedDefeatIsRetainedUntilExplicitUndoOrRestart() {
         val c=ProgressController(PlayerProgress(undoCredits=2))
         listOf(23,21,18,20).forEach { check(c.session.game.select(it)) }; seed(c)
-        val screen=activity; waitVisible(screen,R.id.play); assertEquals(Status.LOST,state().session.game.status)
+        val screen=activity; waitVisible(screen,R.id.continue_level); assertEquals(Status.LOST,state().session.game.status)
         enter(screen); waitVisible(screen,R.id.outcome)
         ui {
             assertTrue(screen.findViewById<View>(R.id.tray).isShown)
@@ -252,7 +264,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
     fun testSavedPendingVictoryFinalizesBeforePlay() {
         val c=ProgressController(PlayerProgress(highestCompleted=19,undoCredits=1))
         c.session.level.winningSelections.forEach { check(c.session.game.select(it)) }; seed(c)
-        val screen=activity; waitVisible(screen,R.id.play)
+        val screen=activity; waitVisible(screen,R.id.continue_level)
         ui { assertEquals(screen.getString(R.string.start_level,21L),screen.findViewById<TextView>(R.id.start_level).text.toString()) }
         assertEquals(21L,state().session.level.id)
         enter(screen)
@@ -275,7 +287,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
             val reopened=instrumentation.startActivitySync(Intent(instrumentation.targetContext,
                 MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) as MainActivity
             try {
-                waitVisible(reopened,R.id.play)
+                waitVisible(reopened,R.id.continue_level)
                 assertEquals(7L,state().session.level.id)
                 ui { assertEquals(reopened.getString(R.string.start_level,7L),
                     reopened.findViewById<TextView>(R.id.start_level).text.toString()) }
@@ -287,7 +299,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
     }
     fun testLargestLevelLabelAndPlayRemainReachable() {
         seed(ProgressController(PlayerProgress(highestCompleted=Long.MAX_VALUE-1,undoCredits=0)))
-        val screen=activity; waitVisible(screen,R.id.play)
+        val screen=activity; waitVisible(screen,R.id.continue_level)
         ui {
             val level=screen.findViewById<TextView>(R.id.start_level)
             assertEquals(screen.getString(R.string.start_level,Long.MAX_VALUE),level.text.toString())
@@ -296,7 +308,7 @@ class LevelStartTest : ActivityInstrumentationTestCase2<MainActivity>(MainActivi
         }
         instrumentation.waitForIdleSync()
         ui {
-            val play=screen.findViewById<Button>(R.id.play)
+            val play=screen.findViewById<View>(R.id.continue_level)
             val rect=Rect(); assertTrue(play.getGlobalVisibleRect(rect)); assertTrue(rect.height()>0)
             assertTrue(play.height>=48*screen.resources.displayMetrics.density)
         }

@@ -1,5 +1,6 @@
 package com.tilebloom.game
 
+import android.view.View
 import android.test.ActivityInstrumentationTestCase2
 import android.os.SystemClock
 import android.view.MotionEvent
@@ -22,7 +23,7 @@ class TrayInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(MainA
         val limit=SystemClock.uptimeMillis()+30000
         while(SystemClock.uptimeMillis()<limit) {
             var ok=false
-            instrumentation.runOnMainSync { screen.findViewById<Button>(R.id.play)?.takeIf { it.isShown }?.performClick()
+            instrumentation.runOnMainSync { screen.findViewById<View>(R.id.continue_level)?.takeIf { it.isShown }?.performClick()
                 ok=screen.findViewById<MahjongBoardView>(R.id.board)?.let{it.isShown && it.width>0}==true }
             if(ok)return
             SystemClock.sleep(20)

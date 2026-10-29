@@ -31,8 +31,7 @@ class MainActivity : Activity() {
     private lateinit var startScreen: ScrollView
     private lateinit var startLevel: TextView
     private lateinit var startHint: TextView
-    private lateinit var homeActions: FrameLayout
-    private lateinit var play: Button
+    private lateinit var levelCard: ContinueLevelCard
     private var gameplay: LinearLayout? = null
     private lateinit var levelLabel: TextView
     private lateinit var counter: TextView
@@ -151,12 +150,18 @@ class MainActivity : Activity() {
                     }
                     navigation = LevelNavigation(session.level.id, restored)
                     if (pendingPlay && online) navigation.play(session.level.id)
+                    pendingPlay = false
                     update()
                 }.onFailure {
                     pendingPlay = false
-                    play.isEnabled = online
+                    levelCard.isEnabled = online
                     startHint.setText(R.string.load_retry)
-                    play.setOnClickListener { recreate() }
+                    levelCard.setOnClickListener {
+                        if (online && levelCard.isEnabled) {
+                            levelCard.isEnabled = false
+                            recreate()
+                        }
+                    }
                 }
             }
         }.start()
@@ -183,7 +188,7 @@ class MainActivity : Activity() {
         createConnectionPanel()
         setContentView(root)
         root.requestApplyInsets()
-        play.isEnabled = online && !pendingPlay
+        levelCard.isEnabled = online && !pendingPlay
         GameStore.onChanged = refreshListener
         update()
     }
@@ -211,31 +216,31 @@ class MainActivity : Activity() {
         })
         add(textLabel(14f, GardenStyle.secondary).apply { setText(R.string.subtitle); letterSpacing = .05f }, 6)
         add(GardenWelcomeArt(this).apply { id = R.id.home_art }, 10, dp(if (compact) 176 else 220))
-        val levelCard = LinearLayout(this).apply {
+        levelCard = ContinueLevelCard(this).apply {
+            id = R.id.continue_level
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
-            background = GardenStyle.surface(this@MainActivity, GardenStyle.panel)
-            setPadding(dp(14), dp(16), dp(14), dp(16))
+            setPadding(dp(18), dp(20), dp(18), dp(20))
         }
         startLevel = textLabel(26f, GardenStyle.gold).apply {
             id = R.id.start_level; typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-            maxLines = 2
+            maxLines = 1
             setAutoSizeTextTypeUniformWithConfiguration(12, 26, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
         levelCard.addView(startLevel, LinearLayout.LayoutParams(-1, -2))
-        startHint = textLabel(14f, GardenStyle.secondary).apply { setPadding(0, dp(8), 0, 0) }
+        startHint = textLabel(14f, GardenStyle.ivory).apply { setPadding(0, dp(8), 0, 0) }
         levelCard.addView(startHint, LinearLayout.LayoutParams(-1, -2))
+        levelCard.addView(textLabel(20f, GardenStyle.gold).apply {
+            text = "→"; alpha = .7f; setPadding(0, dp(6), 0, 0)
+        }, LinearLayout.LayoutParams(-1, -2))
         add(levelCard, 8)
-        play = CenteredPlayButton(this).apply {
-            id = R.id.play; GardenStyle.button(this, true)
-            contentDescription = getString(R.string.play_description, previewLevel)
-            minimumHeight = dp(64); letterSpacing = .08f
+        levelCard.apply {
             setOnClickListener {
-                if (!online) return@setOnClickListener
+                if (!online || pendingPlay || GameStore.transitioning) return@setOnClickListener
                 audio.play(AudioCue.BUTTON)
                 if (!::navigation.isInitialized) {
                     pendingPlay = true
-                    play.isEnabled = false
+                    levelCard.isEnabled = false
                     startHint.setText(R.string.preparing_garden)
                 } else if (!GameStore.transitioning && navigation.state.screen == GardenScreen.START) {
                     navigation.play(session.level.id)
@@ -243,9 +248,6 @@ class MainActivity : Activity() {
                 }
             }
         }
-        homeActions = FrameLayout(this).apply { id = R.id.home_actions }
-        homeActions.addView(play, FrameLayout.LayoutParams(-1, dp(64), Gravity.CENTER))
-        add(homeActions, 16)
         privacy = Button(this).apply {
             id = R.id.privacy_options
             setText(R.string.privacy_short); GardenStyle.button(this, false)
@@ -542,14 +544,14 @@ class MainActivity : Activity() {
             if (AdvertisingService.provider === RewardedAdManager) RewardedAdManager.load()
             InterstitialService.provider.prepare(this)
         }
-        play.isEnabled = online && !GameStore.transitioning
+        levelCard.isEnabled = online && !pendingPlay && !GameStore.transitioning
         privacy.visibility = if (AdvertisingService.provider.privacyRequired) View.VISIBLE else View.GONE
         privacy.isEnabled = AdvertisingService.provider.privacyRequired
-        play.visibility = if (showConnection) View.GONE else View.VISIBLE
-        play.contentDescription = getString(R.string.play_description, if (::navigation.isInitialized) session.level.id else previewLevel)
+        levelCard.visibility = if (showConnection) View.GONE else View.VISIBLE
+        levelCard.contentDescription = getString(R.string.continue_level_description, if (::navigation.isInitialized) session.level.id else previewLevel)
         val showingPuzzle = ::navigation.isInitialized && navigation.state.screen == GardenScreen.GAME
         connectionShade.visibility = if (showConnection && showingPuzzle) View.VISIBLE else View.GONE
-        // A home route never exposes level/art/Play until validated connectivity arrives.
+        // A home route never exposes level/art/card until validated connectivity arrives.
         val offlineAtHome = !online && !showingPuzzle
         offlineScroll.visibility = if (offlineAtHome) View.VISIBLE else View.GONE
         startScreen.visibility = if (online && !showingPuzzle) View.VISIBLE else View.GONE
@@ -588,7 +590,7 @@ class MainActivity : Activity() {
 
         if (!::navigation.isInitialized) {
             startLevel.text = getString(R.string.start_level, previewLevel)
-            startHint.setText(if (pendingPlay) R.string.preparing_garden else R.string.ready_garden)
+            startHint.setText(if (pendingPlay) R.string.preparing_garden else R.string.continue_garden)
             return
         }
         navigation.synchronize(session.level.id)
@@ -596,13 +598,8 @@ class MainActivity : Activity() {
         val showingGame = navigation.state.screen == GardenScreen.GAME
         updateBackCallback(showingGame)
         startLevel.text = getString(R.string.start_level, session.level.id)
-        startHint.setText(when {
-            game.status == Status.WON -> R.string.pending_victory
-            game.status == Status.LOST -> R.string.pending_defeat
-            game.snapshot().selections.orEmpty().isNotEmpty() -> R.string.resume_garden
-            else -> R.string.ready_garden
-        })
-        play.isEnabled = online && !GameStore.transitioning
+        startHint.setText(R.string.continue_garden)
+        levelCard.isEnabled = online && !pendingPlay && !GameStore.transitioning
         startScreen.visibility = if (showingGame || !online) View.GONE else View.VISIBLE
         if (showingGame) createGameplay()
         gameplay?.visibility = if (showingGame) View.VISIBLE else View.GONE

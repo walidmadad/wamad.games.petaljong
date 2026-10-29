@@ -1,5 +1,6 @@
 package com.tilebloom.game
 
+import android.view.View
 import android.app.Activity
 import android.app.AlertDialog
 import android.test.ActivityInstrumentationTestCase2
@@ -67,7 +68,7 @@ class RewardInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(Mai
     fun testSelectedRewardsPersistAndDoNotExecuteActions() {
         val screen = activity; waitReady(screen)
         ui {
-            screen.findViewById<Button>(R.id.play).performClick()
+            screen.findViewById<View>(R.id.continue_level).performClick()
             val state = GameStore.get(screen)
             val board = state.session.game.snapshot()
             for ((id, purpose) in listOf(R.id.undo to RewardPurpose.UNDO, R.id.hint to RewardPurpose.HINT)) {
@@ -113,7 +114,7 @@ class RewardInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(Mai
     }
     fun testDockDimensionsAndDialogLayout() {
         val screen = activity; waitReady(screen)
-        ui { screen.findViewById<Button>(R.id.play).performClick() }
+        ui { screen.findViewById<View>(R.id.continue_level).performClick() }
         instrumentation.waitForIdleSync()
         ui {
             val buttons = listOf(R.id.home, R.id.hint, R.id.undo, R.id.restart).map {
@@ -146,7 +147,7 @@ class RewardInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(Mai
     fun testPositiveCreditsHideAdvertisingIndicators() {
         val screen = activity; waitReady(screen)
         ui {
-            screen.findViewById<Button>(R.id.play).performClick()
+            screen.findViewById<View>(R.id.continue_level).performClick()
             for (id in listOf(R.id.hint, R.id.undo)) {
                 val button = screen.findViewById<GardenIconButton>(id)
                 assertTrue(button.showsAdIndicator)
@@ -161,7 +162,7 @@ class RewardInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(Mai
     fun testLoadingNeverQueuesAnAdvertisement() {
         val screen = activity; waitReady(screen)
         ui {
-            screen.findViewById<Button>(R.id.play).performClick()
+            screen.findViewById<View>(R.id.continue_level).performClick()
             fake.state = RewardedAdManager.State.LOADING
             screen.findViewById<GardenIconButton>(R.id.hint).performClick()
         }
@@ -187,7 +188,7 @@ class RewardInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(Mai
         val screen = activity; waitReady(screen)
         ui {
             screen.findViewById<Button>(R.id.privacy_options).performClick(); assertEquals(1, fake.privacyCalls)
-            screen.findViewById<Button>(R.id.play).performClick()
+            screen.findViewById<View>(R.id.continue_level).performClick()
             screen.findViewById<GardenIconButton>(R.id.undo).performClick()
             dialog(screen).findViewById<Button>(android.R.id.button2).performClick()
             assertNull(fake.ticket)

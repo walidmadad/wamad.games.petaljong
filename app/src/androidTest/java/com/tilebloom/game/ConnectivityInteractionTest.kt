@@ -66,20 +66,20 @@ class ConnectivityInteractionTest : ActivityInstrumentationTestCase2<MainActivit
     fun testOfflineHomeAndLossPreserveExactStateAndCredits() {
         val screen = activity; ready(screen)
         ui {
-            assertFalse(screen.findViewById<View>(R.id.play).isEnabled)
+            assertFalse(screen.findViewById<View>(R.id.continue_level).isEnabled)
             assertTrue(screen.findViewById<View>(R.id.connection_panel).isShown)
             assertFalse(screen.findViewById<View>(R.id.start_level).isShown)
             assertFalse(screen.findViewById<View>(R.id.home_art).isShown)
-            assertFalse(screen.findViewById<View>(R.id.play).isShown)
+            assertFalse(screen.findViewById<View>(R.id.continue_level).isShown)
             assertTrue(screen.findViewById<View>(R.id.offline_icon).isShown)
             assertTrue(screen.findViewById<View>(R.id.connection_retry).isShown)
             assertTrue(screen.findViewById<View>(R.id.network_settings).isShown)
             assertTrue(screen.findViewById<View>(R.id.privacy_options).isShown)
-            screen.findViewById<View>(R.id.play).performClick()
+            screen.findViewById<View>(R.id.continue_level).performClick()
             assertNull(screen.findViewById<View>(R.id.board))
         }
         network(true)
-        ui { screen.findViewById<View>(R.id.play).performClick() }
+        ui { screen.findViewById<View>(R.id.continue_level).performClick() }
         instrumentation.waitForIdleSync()
         val controller = GameStore.get(instrumentation.targetContext)
         ui {
@@ -124,8 +124,7 @@ class ConnectivityInteractionTest : ActivityInstrumentationTestCase2<MainActivit
         network(true)
         instrumentation.waitForIdleSync()
         ui {
-            val play = screen.findViewById<CenteredPlayButton>(R.id.play)
-            assertEquals("", play.text.toString())
+            val play = screen.findViewById<com.tilebloom.game.presentation.ContinueLevelCard>(R.id.continue_level)
             assertTrue(play.contentDescription.toString().contains("Level"))
             assertTrue(play.isShown)
             assertFalse(screen.findViewById<View>(R.id.offline_home).isShown)
@@ -134,8 +133,6 @@ class ConnectivityInteractionTest : ActivityInstrumentationTestCase2<MainActivit
                 screen.findViewById<android.widget.TextView>(R.id.start_level).text.toString())
             val bitmap = android.graphics.Bitmap.createBitmap(play.width, play.height, android.graphics.Bitmap.Config.ARGB_8888)
             play.draw(android.graphics.Canvas(bitmap))
-            assertEquals(play.width / 2f, play.iconBounds.exactCenterX(), 1f)
-            assertEquals(play.height / 2f, play.iconBounds.exactCenterY(), 1f)
             bitmap.recycle()
             val privacy = screen.findViewById<View>(R.id.privacy_options)
             val p = IntArray(2); val q = IntArray(2)
@@ -205,7 +202,7 @@ class ConnectivityInteractionTest : ActivityInstrumentationTestCase2<MainActivit
                 assertEquals(replacement.getString(R.string.start_level, 4L),
                     replacement.findViewById<android.widget.TextView>(R.id.start_level).text.toString())
                 assertEquals(before, GameStore.get(context).capture())
-                replacement.findViewById<View>(R.id.play).performClick()
+                replacement.findViewById<View>(R.id.continue_level).performClick()
                 assertTrue(replacement.findViewById<View>(R.id.board).isShown)
             }
         } finally { ui { replacement.finish() } }
@@ -214,7 +211,7 @@ class ConnectivityInteractionTest : ActivityInstrumentationTestCase2<MainActivit
     fun testOfflineVictoryCannotAdvance() {
         connected = true
         val screen = activity; ready(screen)
-        ui { screen.findViewById<View>(R.id.play).performClick() }
+        ui { screen.findViewById<View>(R.id.continue_level).performClick() }
         val controller = GameStore.get(instrumentation.targetContext)
         ui { controller.session.level.witness.forEach { pair ->
             assertTrue(controller.session.game.select(pair.first)); assertTrue(controller.session.game.select(pair.second))
@@ -228,7 +225,7 @@ class ConnectivityInteractionTest : ActivityInstrumentationTestCase2<MainActivit
     fun testActivityRecreationKeepsOfflinePresentationAndPuzzle() {
         connected = true
         val screen = activity; ready(screen)
-        ui { screen.findViewById<View>(R.id.play).performClick() }
+        ui { screen.findViewById<View>(R.id.continue_level).performClick() }
         val controller = GameStore.get(instrumentation.targetContext)
         ui { assertTrue(controller.session.game.select(controller.session.level.winningSelections.first())) }
         network(false)

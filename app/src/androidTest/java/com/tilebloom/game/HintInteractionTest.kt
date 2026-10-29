@@ -1,5 +1,6 @@
 package com.tilebloom.game
 
+import android.view.View
 import android.content.Intent
 import android.os.SystemClock
 import android.test.ActivityInstrumentationTestCase2
@@ -35,7 +36,7 @@ class HintInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(MainA
     }
     private fun enter(screen: MainActivity) {
         waitFor { screen.isPuzzleReady }
-        ui { screen.findViewById<Button>(R.id.play).performClick() }
+        ui { screen.findViewById<View>(R.id.continue_level).performClick() }
         waitFor { screen.findViewById<MahjongBoardView>(R.id.board)?.width?.let { it > 0 } == true }
     }
     fun testHintChargesOnceAndTileRemainsSelectable() {

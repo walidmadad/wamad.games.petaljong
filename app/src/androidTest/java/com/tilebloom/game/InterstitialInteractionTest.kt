@@ -100,8 +100,8 @@ class InterstitialInteractionTest : ActivityInstrumentationTestCase2<MainActivit
     }
     private fun enter(): MainActivity {
         val screen = activity
-        waitFor { screen.isPuzzleReady && screen.findViewById<View>(R.id.play).isEnabled && screen.hasWindowFocus() }
-        ui { screen.findViewById<Button>(R.id.play).performClick() }
+        waitFor { screen.isPuzzleReady && screen.findViewById<View>(R.id.continue_level).isEnabled && screen.hasWindowFocus() }
+        ui { screen.findViewById<View>(R.id.continue_level).performClick() }
         waitFor { screen.findViewById<View>(R.id.board)?.isShown == true }
         return screen
     }

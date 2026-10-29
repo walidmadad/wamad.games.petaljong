@@ -1,5 +1,6 @@
 package com.tilebloom.game
 
+import android.view.View
 import android.app.Instrumentation
 import android.os.SystemClock
 import android.test.ActivityInstrumentationTestCase2
@@ -21,7 +22,7 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         while (SystemClock.uptimeMillis() < deadline) {
             var loaded = false
             instrumentation.runOnMainSync {
-                screen.findViewById<Button>(R.id.play)?.takeIf { it.isShown }?.performClick()
+                screen.findViewById<View>(R.id.continue_level)?.takeIf { it.isShown }?.performClick()
                 loaded = screen.findViewById<MahjongBoardView>(R.id.board)?.let { it.isShown && it.width > 0 } == true
             }
             if (loaded) return

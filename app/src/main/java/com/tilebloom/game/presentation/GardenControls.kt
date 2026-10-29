@@ -131,19 +131,30 @@ private class CenteredIconSpan(drawable: android.graphics.drawable.Drawable) : a
     }
 }
 
-/** A wide ripple button with no text run or compound drawable offsets. */
-class CenteredPlayButton(context: Context) : Button(context) {
-    private val icon = context.getDrawable(com.tilebloom.game.R.drawable.ic_play)!!.mutate()
-    val iconBounds = Rect()
-    init { text = "" }
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
-        val size = GardenStyle.dp(context, 28)
-        iconBounds.set((width - size) / 2, (height - size) / 2,
-            (width - size) / 2 + size, (height - size) / 2 + size)
-        icon.bounds = iconBounds
-        icon.setTint(GardenStyle.forest)
-        icon.alpha = if (isEnabled) 255 else 110
-        icon.draw(canvas)
+/** One focusable target for the entire saved-level card, including its decoration. */
+class ContinueLevelCard(context: Context) : android.widget.LinearLayout(context) {
+    init {
+        isClickable = true
+        isFocusable = true
+        isSoundEffectsEnabled = false
+        minimumHeight = GardenStyle.dp(context, 112)
+        importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
+        descendantFocusability = FOCUS_BLOCK_DESCENDANTS
+        background = RippleDrawable(ColorStateList.valueOf(0x22E8CF91),
+            GardenStyle.surface(context, GardenStyle.panel),
+            GardenStyle.surface(context, Color.WHITE, border = false))
+    }
+
+    override fun onViewAdded(child: android.view.View) {
+        super.onViewAdded(child)
+        child.importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+    }
+
+    override fun getAccessibilityClassName(): CharSequence = Button::class.java.name
+
+    override fun setPressed(pressed: Boolean) {
+        super.setPressed(pressed)
+        animate().scaleX(if (pressed) .985f else 1f)
+            .scaleY(if (pressed) .985f else 1f).setDuration(100).start()
     }
 }
