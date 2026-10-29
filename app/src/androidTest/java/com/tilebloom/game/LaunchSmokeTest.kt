@@ -309,9 +309,37 @@ class LaunchSmokeTest : ActivityInstrumentationTestCase2<MainActivity>(MainActiv
         ready(screen)
         ui {
             assertEquals(expected,board(screen).remainingTileCount)
-            assertEquals(screen.getString(R.string.pairs,(expected + com.tilebloom.game.storage.GameStore.get(instrumentation.targetContext).session.game.tray.size)/2),screen.findViewById<TextView>(R.id.counter).text.toString())
+            val game = com.tilebloom.game.storage.GameStore.get(instrumentation.targetContext).session.game
+            assertEquals((expected + game.tray.size) / 2, game.remainingPairs)
+            assertNull(screen.findViewById<View>(R.id.counter))
         }
     }
+    fun testMinimalGameplayHeaderAndHomeTitle() {
+        val screen = activity
+        fun labels(view: View): List<TextView> = if (view is android.view.ViewGroup)
+            (0 until view.childCount).flatMap { labels(view.getChildAt(it)) }
+            else listOfNotNull(view as? TextView)
+        ui {
+            val gameplay = screen.findViewById<View>(R.id.gameplay)
+            val visible = labels(gameplay).filter { it.isShown }.map { it.text.toString() }
+            assertFalse(visible.contains(screen.getString(R.string.app_name)))
+            val game = com.tilebloom.game.storage.GameStore.get(screen).session
+            assertTrue(visible.contains(screen.getString(R.string.level_number, game.level.id)))
+            assertNull(screen.findViewById<View>(R.id.counter))
+            val settings = gameplay.findViewById<View>(R.id.settings)
+            assertTrue(settings.isShown && settings.isClickable)
+            assertTrue(settings.width >= (48 * screen.resources.displayMetrics.density).toInt())
+            assertTrue(screen.findViewById<View>(R.id.tray).isShown)
+            val boardLocation = IntArray(2); val controlLocation = IntArray(2)
+            board().getLocationOnScreen(boardLocation)
+            screen.findViewById<View>(R.id.home).getLocationOnScreen(controlLocation)
+            assertTrue(boardLocation[1] + board().height <= controlLocation[1])
+            screen.findViewById<View>(R.id.home).performClick()
+            val homeLabels = labels(screen.window.decorView).filter { it.isShown }.map { it.text.toString() }
+            assertTrue(homeLabels.contains(screen.getString(R.string.app_name)))
+        }
+    }
+
     fun testLaunchAndRestart() {
         val screen = activity; instrumentation.waitForIdleSync()
         ui {

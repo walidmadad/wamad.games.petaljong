@@ -1,0 +1,2 @@
+PASS: 23 CODEX 47 botanical hashes; 50 gameplay/storage/audio/ad/tray/geometry files unchanged.
+PASS: botanical mapping/rendering and mystery emblem unchanged; gameplay title/counter removed; Home title and localized level retained.

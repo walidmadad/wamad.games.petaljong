@@ -35,7 +35,6 @@ class MainActivity : Activity() {
     private lateinit var levelCard: ContinueLevelCard
     private var gameplay: LinearLayout? = null
     private lateinit var levelLabel: TextView
-    private lateinit var counter: TextView
     private lateinit var board: MahjongBoardView
     private lateinit var tray: TileTrayView
     private lateinit var outcome: LinearLayout
@@ -352,29 +351,9 @@ class MainActivity : Activity() {
             setPadding(dp(16), dp(8), dp(16), dp(10))
         }
         gameplay = column
-        val header = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
-        header.addView(textLabel(if (compact) 25f else 29f).apply {
-            setText(R.string.app_name); typeface = Typeface.create("serif", Typeface.NORMAL)
-            maxLines = 1
-            setAutoSizeTextTypeUniformWithConfiguration(14, 29, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
-        }, LinearLayout.LayoutParams(0, -2, 1f))
-        header.addView(settingsControls(), LinearLayout.LayoutParams(-2, dp(48)))
-        column.addView(header, LinearLayout.LayoutParams(-1, -2))
-        val status = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            background = GardenStyle.surface(this@MainActivity, GardenStyle.panel, 16, false)
-            setPadding(dp(12), dp(7), dp(12), dp(7))
-        }
-        levelLabel = textLabel(14f, GardenStyle.gold).apply {
-            maxLines = 2
-            setAutoSizeTextTypeUniformWithConfiguration(10, 14, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
-        }
-        counter = textLabel(12f, GardenStyle.secondary).apply {
-            id = R.id.counter; accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
-        }
-        status.addView(levelLabel, LinearLayout.LayoutParams(-1, -2))
-        status.addView(counter, LinearLayout.LayoutParams(-1, -2))
-        column.addView(status, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(8); bottomMargin = dp(10) })
+        val header = GameplayHeader(this, settingsControls())
+        levelLabel = header.levelLabel
+        column.addView(header, LinearLayout.LayoutParams(-1, dp(48)).apply { bottomMargin = dp(8) })
         tray = TileTrayView(this) { game.tray }.apply { id = R.id.tray }
         column.addView(tray, LinearLayout.LayoutParams(-1, dp(if (compact) 76 else 84)))
         board = MahjongBoardView(this, game) { completedByPlayer() }.apply { id = R.id.board; audioCue = { audio.play(it) } }
@@ -604,7 +583,6 @@ class MainActivity : Activity() {
         board.theme = GardenTheme.forLevel(session.level.id)
         tray.theme = board.theme
         levelLabel.text = getString(R.string.level_number, session.level.id)
-        counter.text = resources.getQuantityString(R.plurals.pairs_remaining, game.remainingPairs, game.remainingPairs)
         val presentation = ScreenPresentation.forStatus(game.status, session.canAdvance)
         val terminal = presentation.victory || game.status == Status.LOST
         board.importantForAccessibility = if (terminal) View.IMPORTANT_FOR_ACCESSIBILITY_NO else View.IMPORTANT_FOR_ACCESSIBILITY_YES
@@ -860,7 +838,6 @@ class MainActivity : Activity() {
         }
         gameplay?.let { tint(it) }
         levelLabel.setTextColor(palette.primaryAccent)
-        counter.setTextColor(palette.textSecondary)
         feedback.setTextColor(palette.textSecondary)
     }
 

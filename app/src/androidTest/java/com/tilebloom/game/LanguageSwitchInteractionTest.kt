@@ -93,7 +93,9 @@ class LanguageSwitchInteractionTest : ActivityInstrumentationTestCase2<MainActiv
             assertEquals(audio, instrumentation.targetContext.getSharedPreferences("garden_audio", 0).all)
             ui {
                 assertTrue(second.findViewById<View>(R.id.board).isShown)
-                assertEquals(second.resources.getQuantityString(R.plurals.pairs_remaining, controller.session.game.remainingPairs, controller.session.game.remainingPairs), second.findViewById<TextView>(R.id.counter).text.toString())
+                assertNull(second.findViewById<View>(R.id.counter))
+                val level = MainActivity::class.java.getDeclaredField("levelLabel").apply { isAccessible = true }.get(second) as TextView
+                assertEquals(second.getString(R.string.level_number, controller.session.level.id), level.text.toString())
                 second.findViewById<View>(R.id.settings).performClick()
             }
             val dialogField = MainActivity::class.java.getDeclaredField("settingsDialog").apply { isAccessible = true }

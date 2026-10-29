@@ -19,20 +19,23 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     // Unit-space shaders are shared across every tile; only their local matrix changes.
     private val ceramicLight = LinearGradient(0f, 0f, 0f, 1f,
-        intArrayOf(0xfffffdf5.toInt(), 0xfffaf5e9.toInt(), 0xfff1e9d8.toInt(), 0xffe5d7bc.toInt()),
+        intArrayOf(0xfffffef9.toInt(), 0xfffaf8f0.toInt(), 0xfff2ede2.toInt(), 0xffe9dfcc.toInt()),
         floatArrayOf(0f, .24f, .84f, 1f), Shader.TileMode.CLAMP)
     private val ceramicMuted = LinearGradient(0f, 0f, 0f, 1f,
-        0xffdeded1.toInt(), 0xffc9cbbd.toInt(), Shader.TileMode.CLAMP)
+        0xffe8e2d4.toInt(), 0xffd6cbb7.toInt(), Shader.TileMode.CLAMP)
     private val jade = LinearGradient(0f, 0f, 1f, 1f,
         intArrayOf(0xff50967b.toInt(), 0xff185c48.toInt(), 0xff103d32.toInt()),
         floatArrayOf(0f, .4f, 1f), Shader.TileMode.CLAMP)
     private val glaze = RadialGradient(.2f, .08f, .85f,
         0x66ffffff, 0x00ffffff, Shader.TileMode.CLAMP)
     private val goldTrim = LinearGradient(0f, 0f, 1f, 1f,
+        intArrayOf(0xffd8c596.toInt(), 0xffb79b66.toInt(), 0xffdecca0.toInt(), 0xffa18a5e.toInt()),
+        floatArrayOf(0f, .4f, .65f, 1f), Shader.TileMode.CLAMP)
+    private val mysteryGoldTrim = LinearGradient(0f, 0f, 1f, 1f,
         intArrayOf(0xffdfc78b.toInt(), 0xffae8543.toInt(), 0xffead7a2.toInt(), 0xff99783f.toInt()),
         floatArrayOf(0f, .4f, .65f, 1f), Shader.TileMode.CLAMP)
     private val wall = LinearGradient(0f, 0f, 1f, 1f,
-        intArrayOf(0xffe6dbc4.toInt(), 0xffb7a586.toInt(), 0xff938268.toInt()),
+        intArrayOf(0xffeee6d7.toInt(), 0xffc8baa0.toInt(), 0xffac9979.toInt()),
         floatArrayOf(0f, .65f, 1f), Shader.TileMode.CLAMP)
     private val surfaceMatrix = Matrix()
     // Concealed backs use an identity-independent engraved laurel, never the assigned art.
@@ -133,15 +136,15 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             val selected = available && game.selected == tile.id
             paint.style = Paint.Style.FILL
             // Two offset shadow bands: soft penumbra and a stronger contact shadow.
-            paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (tile.layer > 0) 44 else 30) shl 24)
+            paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (tile.layer > 0) 34 else 24) shl 24)
             canvas.drawRoundRect(layout.shadow(tile).offset(scale * .045f).android().apply { offset(scale * .035f, 0f) }, layout.radius * 1.2f, layout.radius * 1.2f, paint)
-            paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (tile.layer > 0) 104 else 76) shl 24)
+            paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (tile.layer > 0) 80 else 60) shl 24)
             canvas.drawRoundRect(layout.shadow(tile).android().apply { offset(scale * .015f, 0f) }, layout.radius, layout.radius, paint)
             paint.color = if (back) 0xff123e32.toInt() else 0xffa39478.toInt()
             if (!back) surface(wall, face)
             canvas.drawRoundRect(layout.body(tile).android(), layout.radius, layout.radius, paint)
             paint.shader = null
-            paint.color = if (back) 0xff3a7259.toInt() else 0xffd9ccb2.toInt()
+            paint.color = if (back) 0xff3a7259.toInt() else 0xffe2d7c2.toInt()
             canvas.drawRoundRect(layout.edge(tile).android(), layout.radius, layout.radius, paint)
             surface(if (available) ceramicLight else ceramicMuted, face)
             canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
@@ -152,15 +155,12 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             paint.shader = null
             // One fine warm rim; the highlight follows only the upper edge.
             paint.style = Paint.Style.STROKE
-            paint.strokeWidth = scale * .016f
-            paint.color = if (available) 0xffbd9750.toInt() else 0xffa99670.toInt()
+            paint.strokeWidth = scale * .011f
+            paint.color = if (available) 0xffbda373.toInt() else 0xffb6a78b.toInt()
             if (available) surface(goldTrim, face)
             canvas.drawRoundRect(face.inset(paint.strokeWidth / 2).android(), layout.radius, layout.radius, paint)
             paint.shader = null
-            // Fine inner bevel catches the same upper-left light as the ceramic wall.
-            paint.strokeWidth = scale * .009f
-            paint.color = if (available) 0x90fffdf2.toInt() else 0x35fffdf2
-            canvas.drawRoundRect(face.inset(scale * .027f).android(), layout.radius * .85f, layout.radius * .85f, paint)
+            // A single upper-edge glint suggests a raised face without concentric outlines.
             paint.strokeWidth = scale * .014f
             paint.color = if (available) 0xcffffef7.toInt() else 0x55fffef7
             canvas.drawLine(face.left + layout.radius, face.top + scale * .022f,
@@ -181,7 +181,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
                 if (!back) BotanicalSymbols.drawTile(canvas, paint, tile.symbol, context)
                 canvas.restore()
                 if (!available) {
-                    paint.color = (theme.palette.tileShadow and 0x00ffffff) or (22 shl 24)
+                    paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (back) 22 else 12) shl 24)
                     canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
                 }
             }
@@ -199,7 +199,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         surface(glaze, BoardRect(face.left, face.top, face.right, face.bottom))
         c.drawRoundRect(face, radius, radius, paint); paint.shader = null
         paint.style = Paint.Style.STROKE; paint.strokeWidth = scale * .016f
-        surface(goldTrim, BoardRect(face.left, face.top, face.right, face.bottom))
+        surface(mysteryGoldTrim, BoardRect(face.left, face.top, face.right, face.bottom))
         c.drawRoundRect(face.left + scale * .008f, face.top + scale * .008f,
             face.right - scale * .008f, face.bottom - scale * .008f, radius, radius, paint)
         paint.shader = null
