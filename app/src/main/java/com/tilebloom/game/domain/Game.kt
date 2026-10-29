@@ -16,7 +16,7 @@ data class Tile(val id: Int, val symbol: Symbol, val x: Double, val y: Double, v
     val concealed: Boolean get() = mystery && !revealed
 }
 data class PairMove(val first: Int, val second: Int)
-enum class ActionKind { REVEAL, COLLECT }
+enum class ActionKind { REVEAL, COLLECT, LEGACY_COLLECT }
 data class GameAction(val kind: ActionKind, val tileId: Int)
 data class GameSnapshot(val moves: List<PairMove>, val selectedId: Int?, val selections: List<Int>? = null, val rulesVersion: Int = 2, val actionLog: List<GameAction>? = null)
 
@@ -41,8 +41,8 @@ object Rules {
     }
 }
 
-class Game(definition: List<Tile>) {
-    private val initial = definition.map { it.copy(removed = false) }
+class Game(definition: List<Tile>, private val legacyMysteries: Boolean = false) {
+    private val initial = definition.map { it.copy(removed = false, revealed = false) }
     init {
         require(initial.map { it.id }.distinct().size == initial.size)
         require(initial.all { it.x.isFinite() && it.y.isFinite() && it.layer >= 0 })
@@ -81,20 +81,35 @@ class Game(definition: List<Tile>) {
         if (held.isNotEmpty() || status != Status.PLAYING) return false
         return select(a) && select(b)
     }
+    @Synchronized
     fun reveal(id: Int): Boolean {
         if (status != Status.PLAYING || !isAvailable(id)) return false
         val tile = current.first { it.id == id }
         if (!tile.concealed) return false
-        current = current.map { if (it.id == id) it.copy(revealed = true) else it }
+        current = current.map { if (legacyMysteries) { if (it.id == id) it.copy(revealed = true) else it } else it.copy(revealed = it.id == id) }
+        if (!legacyMysteries) log = log.dropLastWhile { it.kind == ActionKind.REVEAL }
         log = log + GameAction(ActionKind.REVEAL, id)
         return true
     }
+    @Synchronized
     fun interact(id: Int): Boolean = if (current.any { it.id == id && it.concealed }) reveal(id) else select(id)
     /** One atomic selection. Matching resolves before terminal-state evaluation. */
-    fun select(id: Int): Boolean {
+    @Synchronized
+    fun select(id: Int): Boolean = collect(id, legacyMysteries)
+    private fun collect(id: Int, legacy: Boolean): Boolean {
         if (status != Status.PLAYING || !isAvailable(id)) return false
         val tile = current.first { it.id == id }
         if (tile.concealed) return false
+        val active = current.firstOrNull { it.mystery && it.revealed && !it.removed && it.id != id }
+        if (!legacy && !tile.mystery && active?.symbol == tile.symbol && isAvailable(active.id)) {
+            current = current.map { if (it.id == id || it.id == active.id) it.copy(removed = true, revealed = false) else it.copy(revealed = false) }
+            history = history + PairMove(active.id, id)
+            actions = actions + id
+            log = log + GameAction(ActionKind.COLLECT, id)
+            selected = null
+            return true
+        }
+        if (!legacy) clearMystery()
         current = current.map { if (it.id == id) it.copy(removed = true) else it }
         val partner = held.firstOrNull { it.symbol == tile.symbol }
         if (partner == null) held = held + tile else {
@@ -102,26 +117,63 @@ class Game(definition: List<Tile>) {
             history = history + PairMove(partner.id, id)
         }
         actions = actions + id
-        log = log + GameAction(ActionKind.COLLECT, id)
+        log = log + GameAction(if (legacy) ActionKind.LEGACY_COLLECT else ActionKind.COLLECT, id)
         selected = null
         return true
     }
     /** Immutable lists make a search branch cheap; selections still use the same controller. */
-    internal fun fork(): Game = Game(initial).also {
+    internal fun fork(): Game = Game(initial, legacyMysteries).also {
         it.current = current; it.history = history; it.actions = actions; it.held = held
         it.selected = selected; it.log = log
     }
-    fun snapshot() = GameSnapshot(history.toList(), null, actions.toList(), if (initial.any { it.mystery }) 3 else 2, if (initial.any { it.mystery }) log.toList() else null)
+    /** Temporary information stays in the controller. Only revelations needed to replay a
+     * permanent collection are retained; switching cannot grow the durable log without bound. */
+    val activeMysteryId: Int? get() = current.firstOrNull { it.mystery && it.revealed && !it.removed }?.id
+    @Synchronized
+    fun hideMystery() {
+        if (activeMysteryId != null) {
+            clearMystery()
+            log = log.dropLastWhile { it.kind == ActionKind.REVEAL }
+        }
+    }
+    private fun clearMystery() { current = current.map { if (it.mystery) it.copy(revealed = false) else it } }
+    fun snapshot() = GameSnapshot(history.toList(), null, actions.toList(), if (initial.any { it.mystery }) { if (legacyMysteries) 3 else 4 } else 2, if (initial.any { it.mystery }) log.toList() else null)
     // Replay exact accepted moves; arbitrary re-pairing of removed IDs can deadlock.
     // Validate on a candidate first so corrupt state never partially changes this game.
-    fun restore(snapshot: GameSnapshot): Boolean {
+    @Synchronized
+    fun restore(snapshot: GameSnapshot, preserveTemporary: Boolean = false): Boolean {
         val candidate = Game(initial)
-        if (snapshot.rulesVersion !in 2..3) return false
+        if (snapshot.rulesVersion !in 2..4) return false
         val replay = snapshot.selections ?: snapshot.moves.flatMap { listOf(it.first, it.second) }
         if (snapshot.actionLog != null) {
-            if (!snapshot.actionLog.all { if (it.kind == ActionKind.REVEAL) candidate.reveal(it.tileId) else candidate.select(it.tileId) }) return false
+            if (!snapshot.actionLog.all {
+                if (snapshot.rulesVersion == 3) {
+                    // Old saves permitted multiple reveals and always collected through the tray.
+                    if (it.kind == ActionKind.REVEAL) {
+                        val t = candidate.current.firstOrNull { t -> t.id == it.tileId }
+                        if (t == null || !t.concealed || !candidate.isAvailable(t.id)) false else {
+                            candidate.current = candidate.current.map { t -> if (t.id == it.tileId) t.copy(revealed = true) else t }
+                            candidate.log = candidate.log + it
+                            true
+                        }
+                    } else {
+                        val t = candidate.current.firstOrNull { t -> t.id == it.tileId }
+                        if (t?.mystery == true && t.concealed) candidate.reveal(t.id)
+                        candidate.collect(it.tileId, true)
+                    }
+                } else when (it.kind) {
+                    ActionKind.REVEAL -> candidate.reveal(it.tileId)
+                    ActionKind.COLLECT -> candidate.select(it.tileId)
+                    ActionKind.LEGACY_COLLECT -> {
+                        candidate.current = candidate.current.map { t -> if (t.id == it.tileId && t.mystery) t.copy(revealed = true) else t }
+                        candidate.collect(it.tileId, true)
+                    }
+                }
+            }) return false
             if (snapshot.selections != null && candidate.actions != snapshot.selections) return false
         } else if (!replay.all { candidate.select(it) }) return false
+        if (snapshot.rulesVersion == 3) candidate.log = candidate.log.filter { it.kind != ActionKind.REVEAL }
+        if (!preserveTemporary) candidate.hideMystery()
         current = candidate.current.toList()
         history = candidate.history.toList()
         selected = null
@@ -132,11 +184,13 @@ class Game(definition: List<Tile>) {
     }
     /** Accepted individual selections only; replay validates the entire shorter history before commit. */
     val canUndo: Boolean get() = actions.isNotEmpty() && status != Status.WON
+    @Synchronized
     fun undo(): Boolean {
         if (!canUndo) return false
-        val cut = log.indexOfLast { it.kind == ActionKind.COLLECT }
-        return restore(GameSnapshot(emptyList(), null, actions.dropLast(1), 3, log.take(cut)))
+        val cut = log.indexOfLast { it.kind == ActionKind.COLLECT || it.kind == ActionKind.LEGACY_COLLECT }
+        return restore(GameSnapshot(emptyList(), null, actions.dropLast(1), 4, log.take(cut)))
     }
+    @Synchronized
     fun restart() { current = initial.toList(); history = emptyList(); actions = emptyList(); log = emptyList(); held = emptyList(); selected = null }
 }
 

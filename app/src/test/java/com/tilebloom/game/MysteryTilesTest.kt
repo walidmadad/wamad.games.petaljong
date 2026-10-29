@@ -35,11 +35,11 @@ class MysteryTilesTest {
     @Test fun savesReplayOrderedRevealsAndUndoRestoresBeforeLastCollection() {
         val g = Game(tiles()); assertTrue(g.reveal(0)); val revealed = g.snapshot()
         assertTrue(g.select(0)); assertTrue(g.select(2)); assertTrue(g.undo()); assertTrue(g.undo())
-        assertEquals(revealed,g.snapshot()); assertTrue(g.tiles.first().revealed)
+        assertEquals(revealed.selections,g.snapshot().selections); assertTrue(g.tiles.first().concealed)
         val restored = Game(tiles()); assertTrue(restored.restore(g.snapshot())); assertEquals(g.tiles,restored.tiles)
         g.restart(); assertTrue(g.tiles.first().concealed); assertTrue(g.snapshot().actionLog!!.isEmpty())
         val invalid = revealed.copy(actionLog = revealed.actionLog!! + GameAction(ActionKind.REVEAL,0))
-        assertFalse(restored.restore(invalid)); assertEquals(revealed,restored.snapshot())
+        val prior = restored.snapshot(); assertFalse(restored.restore(invalid)); assertEquals(prior,restored.snapshot())
     }
     @Test fun rapidTapGuardIsIndependentOfAnimationAndLifecycle() {
         val f = MysteryRevealFeedback(); f.revealed(0,1000)
@@ -54,7 +54,8 @@ class MysteryTilesTest {
         assertTrue(g.reveal(target.id))
         val saved = PlayerProgress(active=SessionSnapshot(l.id,l.seed,l.version,g.snapshot()),highestCompleted=11,undoCredits=2,hintCredits=1)
         val restored=ProgressController(ProgressCodec.decode(ProgressCodec.encode(saved)))
-        assertFalse(restored.recovered); assertEquals(g.snapshot(),restored.session.game.snapshot())
+        assertFalse(restored.recovered); assertEquals(g.snapshot().selections,restored.session.game.snapshot().selections)
+        assertNull(restored.session.game.activeMysteryId)
         assertEquals(2,restored.wallet.balance); assertEquals(1,restored.hintCredits)
         assertFalse(restored.undo()); assertEquals(2,restored.wallet.balance)
         val old = VersionNineGenerator.generate(12); val oldGame=Game(old.tiles)

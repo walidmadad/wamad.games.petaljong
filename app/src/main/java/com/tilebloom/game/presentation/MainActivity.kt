@@ -385,7 +385,7 @@ class MainActivity : Activity() {
             setOnClickListener {
                 if (online && game.status != Status.WON && !GameStore.transitioning) {
                     hintRequest++; hintPending = false; board.clearFeedback(); tray.clearFeedback()
-                    navigation.home(session.level.id); update()
+                    session.game.hideMystery(); navigation.home(session.level.id); update()
                 }
             }
         }
@@ -741,6 +741,7 @@ class MainActivity : Activity() {
     }
 
     private fun returnHomeFromBack() {
+        session.game.hideMystery()
         if (!online) return
         navigation.back(session.level.id, game.status == Status.WON, GameStore.transitioning)
         if (::board.isInitialized) { hintRequest++; hintPending = false; board.clearFeedback(); tray.clearFeedback() }
@@ -796,7 +797,11 @@ class MainActivity : Activity() {
     }
     override fun onStop() {
         online = false
-        if (::board.isInitialized) board.isEnabled = false
+        if (::board.isInitialized) {
+            board.isEnabled = false
+            game.hideMystery()
+            GameStore.persist(this)
+        }
         connectivity.stop()
         super.onStop()
         ProgressRepository.awaitWrites()

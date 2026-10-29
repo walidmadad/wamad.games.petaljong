@@ -2,11 +2,11 @@ package com.tilebloom.game.domain
 
 import java.util.Random
 
-/** v10 adds deterministic mystery presentation, family co-occurrence and evolving Expert targets.
+/** v11 verifies Option C mystery interactions with one temporary reveal.
  * Construction uses individual legal selections and a bounded three-unmatched symbol schedule.
  * A witness certifies solvability; it is never supplied to simulated players. */
 object EndlessGenerator {
-    const val VERSION = 10
+    const val VERSION = 11
     const val RECENT_WINDOW = 10
     const val CANDIDATES = 24
     fun seed(id: Long) = LegacyEndlessGenerator.seed(id) xor 4L xor VERSION.toLong()

@@ -1,0 +1,15 @@
+app/src/main/java/com/tilebloom/game/domain/Game.kt:155:73: warning: name shadowed: t
+                            candidate.current = candidate.current.map { t -> if (t.id == it.tileId) t.copy(revealed = true) else t }
+                                                                        ^
+app/src/test/java/com/tilebloom/game/BotanicalExpansionTest.kt:20:51: warning: name shadowed: id
+                level.winningSelections.forEach { id ->
+                                                  ^
+app/src/test/java/com/tilebloom/game/ProgressTest.kt:29:60: warning: unnecessary non-null assertion (!!) on a non-null receiver of type SessionSnapshot
+        for(bad in listOf(p.active!!.copy(id=999L),p.active!!.copy(seed=-55))) {
+                                                           ^
+Isolated classes: /tmp/tilebloom36-tests-kva1to47
+JUnit version 4.13.2
+.
+Time: 17.058
+
+OK (1 test)

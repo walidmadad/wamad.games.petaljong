@@ -152,7 +152,7 @@ object PuzzleAnalyzer {
 }
 
 /** Bounded collection-continuation analysis. Free legal revelations precede each hypothetical
- * collection through Game.reveal. The memo collapses information-only differences intentionally;
+ * collection through Game.reveal. Memo keys retain the active mystery selection;
  * this is omniscient solvability analysis, not a hidden-information player or hint instruction.
  * immediateLosses counts reveal-then-collect losses, never losses from revelation alone.
  * UNKNOWN never terminates a live attempt. */
@@ -162,13 +162,13 @@ object TrayAnalyzer {
         val safeContinuations: Int, val losingContinuations: Int, val unknownContinuations: Int)
     fun analyze(tiles: List<Tile>, snapshot: GameSnapshot, budget: Int = 2000): Analysis {
         require(budget >= 0)
-        val start = Game(tiles); require(start.restore(snapshot))
+        val start = Game(tiles); require(start.restore(snapshot, preserveTemporary = true))
         var nodes = 0
-        val memo = mutableMapOf<Pair<Set<Int>, List<Int>>, Solvability>()
+        val memo = mutableMapOf<Triple<Set<Int>, List<Int>, Int?>, Solvability>()
         fun visit(g: Game): Solvability {
             if (g.status == Status.WON) return Solvability.SOLVABLE
             if (g.status == Status.LOST) return Solvability.UNSOLVABLE
-            val key = g.remaining.map { it.id }.toSet() to g.tray.map { it.symbol.stableId }.sorted()
+            val key = Triple(g.remaining.map { it.id }.toSet(), g.tray.map { it.symbol.stableId }.sorted(), g.activeMysteryId)
             memo[key]?.let { return it }
             if (nodes >= budget) return Solvability.UNKNOWN_BUDGET_EXCEEDED
             if (nodes and 255 == 0) PreparationMetrics.checkBudget()
@@ -192,12 +192,12 @@ object TrayAnalyzer {
         val free = start.remaining.filter { start.isAvailable(it.id) }
         val losses = free.count { tile -> start.tray.size == 3 && start.tray.none { it.symbol == tile.symbol } }
         val reveals = free.count { tile ->
-            val next = Game(tiles); check(next.restore(snapshot)); if (tile.concealed) check(next.reveal(tile.id)); check(next.select(tile.id))
+            val next = Game(tiles); check(next.restore(snapshot, preserveTemporary = true)); if (tile.concealed) check(next.reveal(tile.id)); check(next.select(tile.id))
             next.remaining.any { next.isAvailable(it.id) && !start.isAvailable(it.id) && next.tray.any { held -> held.symbol == it.symbol } }
         }
         var safe = 0; var losing = 0; var unknown = 0
         for (tile in free) {
-            val next = Game(tiles); check(next.restore(snapshot)); if (tile.concealed) check(next.reveal(tile.id)); check(next.select(tile.id))
+            val next = Game(tiles); check(next.restore(snapshot, preserveTemporary = true)); if (tile.concealed) check(next.reveal(tile.id)); check(next.select(tile.id))
             when (visit(next)) {
                 Solvability.SOLVABLE -> safe++
                 Solvability.UNSOLVABLE -> losing++

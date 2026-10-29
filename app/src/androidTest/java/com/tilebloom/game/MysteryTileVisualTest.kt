@@ -44,6 +44,41 @@ class MysteryTileVisualTest : InstrumentationTestCase() {
             prepare(tray,960,220); capture(tray,"tray-symbol-readability")
         }
     }
+    fun testOptionCSwitchMismatchDirectMatchTrayMatchAndUndoTouches() {
+        instrumentation.runOnMainSync {
+            val game=Game(listOf(
+                Tile(0,Symbol.LEAF,0.0,0.0,0,mystery=true),
+                Tile(1,Symbol.LEAF,2.0,0.0,0,mystery=true),
+                Tile(2,Symbol.LEAF,4.0,0.0,0), Tile(3,Symbol.LEAF,6.0,0.0,0),
+                Tile(4,Symbol.FLOWER,0.0,2.0,0), Tile(5,Symbol.FLOWER,2.0,2.0,0)))
+            val view=MahjongBoardView(instrumentation.targetContext,game) {}
+            prepare(view,960,1280)
+            var time=SystemClock.uptimeMillis()
+            fun tap(id:Int) {
+                time+=600
+                val p=view.tileCenter(id)!!
+                for (action in listOf(MotionEvent.ACTION_DOWN,MotionEvent.ACTION_UP)) {
+                    val e=MotionEvent.obtain(time,time,action,p.x,p.y,0)
+                    try { assertTrue(view.onTouchEvent(e)) } finally { e.recycle() }
+                }
+            }
+            tap(0); tap(1)
+            assertEquals(1,game.activeMysteryId); assertEquals(6,game.remaining.size)
+            assertTrue(game.tray.isEmpty()); assertTrue(game.tiles.first().concealed)
+            tap(4); assertNull(game.activeMysteryId); assertEquals(4,game.tray.single().id)
+            tap(0); tap(2)
+            assertEquals(PairMove(0,2),game.snapshot().moves.single())
+            assertEquals(4,game.tray.single().id)
+            assertTrue(game.undo()); view.clearFeedback()
+            assertTrue(game.isAvailable(0)); assertTrue(game.isAvailable(2))
+            tap(2); tap(0); tap(0)
+            assertEquals(PairMove(2,0),game.snapshot().moves.single())
+            assertEquals(4,game.tray.single().id)
+            tap(1); tap(1); assertEquals(listOf(4,1),game.tray.map { it.id })
+            tap(3); assertEquals(4,game.tray.single().id)
+            tap(5); assertEquals(Status.WON,game.status)
+        }
+    }
     fun testHiddenSymbolsHaveIdenticalPixelsAndCaptureDifficultyBoards() {
         instrumentation.runOnMainSync {
             val context=instrumentation.targetContext

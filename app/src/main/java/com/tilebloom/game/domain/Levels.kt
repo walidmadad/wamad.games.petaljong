@@ -60,7 +60,7 @@ object LevelValidator {
             if (action.kind == ActionKind.REVEAL) {
                 val before = game.snapshot(); val tray = game.tray; val count = game.remaining.size
                 game.reveal(action.tileId) && game.tray == tray && game.remaining.size == count && game.snapshot().moves == before.moves
-            } else game.select(action.tileId)
+            } else game.interact(action.tileId)
         })
         if (level.selectionWitness == null) require(game.snapshot().moves == level.witness)
         require(game.status == Status.WON && game.remaining.isEmpty())
@@ -206,7 +206,7 @@ class GardenSession {
     fun restore(saved: SessionSnapshot): Boolean {
         // Restoration may resume this board or a later one, never an earlier board.
         if (saved.id < level.id) return false
-        val candidate = try { if (saved.id >= 6 && saved.version == 4) LegacyEndlessGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 5) VersionFiveGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 6) VersionSixGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 7) VersionSevenGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 8) VersionEightGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 9) VersionNineGenerator.generate(saved.id) else Levels.get(saved.id) } catch (_: Exception) { return false }
+        val candidate = try { if (saved.id >= 6 && saved.version == 4) LegacyEndlessGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 5) VersionFiveGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 6) VersionSixGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 7) VersionSevenGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 8) VersionEightGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 9) VersionNineGenerator.generate(saved.id) else if (saved.id >= 6 && saved.version == 10) VersionTenGenerator.generate(saved.id) else Levels.get(saved.id) } catch (_: Exception) { return false }
         if (candidate.seed != saved.seed || candidate.version != saved.version) return false
         val restored = Game(candidate.tiles)
         if (!restored.restore(saved.game)) return false

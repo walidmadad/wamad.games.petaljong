@@ -1,0 +1,2 @@
+4802baa3415def5573d6e34a0b457df0f02fb89f75e7a024b932c6b2bcac63e7  app/build/outputs/apk/debug/app-debug.apk
+2026-10-29 10:30:54.515780947 +0100 7567883 app/build/outputs/apk/debug/app-debug.apk

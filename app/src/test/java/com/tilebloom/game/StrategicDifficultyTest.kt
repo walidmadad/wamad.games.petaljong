@@ -65,7 +65,10 @@ class StrategicDifficultyTest {
             val before=g.snapshot(); val tiles=g.tiles; val tray=g.tray
             val branch=g.fork(); assertTrue(branch.collectRevealed(id)); assertEquals(before,g.snapshot())
             assertTrue(g.collectRevealed(id)); assertEquals(branch.snapshot(),g.snapshot())
-            assertTrue(g.undo()); assertEquals(before,g.snapshot()); assertEquals(tiles,g.tiles); assertEquals(tray,g.tray)
+            assertTrue(g.undo())
+            assertEquals(before.moves,g.snapshot().moves); assertEquals(before.selections,g.snapshot().selections)
+            assertEquals(tiles.map { if (it.mystery) it.copy(revealed=false) else it },g.tiles)
+            assertEquals(tray,g.tray); assertNull(g.activeMysteryId)
             assertTrue(g.collectRevealed(id))
         }
     }

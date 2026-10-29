@@ -9,9 +9,9 @@ object SimulatedPlayer {
     enum class Strategy { GREEDY, SIMPLE, LOOKAHEAD }
     data class Result(val won: Boolean, val actions: List<Int>, val nodes: Int, val peakTray: Int,
         val pressureStates: Int, val exhausted: Boolean)
-    fun play(level: LevelDefinition, strategy: Strategy, budget: Int = 1800, depth: Int = 6, tieBreak: Int = 0): Result {
+    fun play(level: LevelDefinition, strategy: Strategy, budget: Int = 1800, depth: Int = 6, tieBreak: Int = 0, legacyMysteries: Boolean = false): Result {
         require(budget >= 0 && depth in 1..10)
-        val game = Game(level.tiles)
+        val game = Game(level.tiles, legacyMysteries)
         var nodes = 0; var peak = 0; var pressure = 0
         fun next(g: Game, id: Int): Game = g.fork().also { check(it.select(id)) }
         fun ordered(g: Game, known: Set<Int>? = null): List<Tile> {
@@ -94,12 +94,13 @@ data class StrategicAnalysis(val initialLegal: Int, val immediatePairs: Int,
         minOf(120, coverRelationships) / 10 - immediatePairs * 15 - lookahead.nodes / 200
 }
 object StrategicAnalyzer {
-    fun analyze(level: LevelDefinition, budget: Int = 1800, adaptive: Boolean = false): StrategicAnalysis {
-        val game = Game(level.tiles)
+    fun analyze(level: LevelDefinition, budget: Int = 1800, adaptive: Boolean = false, legacyMysteries: Boolean = false): StrategicAnalysis {
+        val game = Game(level.tiles, legacyMysteries)
         val initialLegal = game.remaining.count { game.isAvailable(it.id) }
         // Safe, free information must not earn a difficulty score by hiding immediate matches.
         game.remaining.filter { it.concealed && game.isAvailable(it.id) }.forEach { check(game.reveal(it.id)) }
         val pairs = game.matchingPairs().size
+        if (!legacyMysteries) game.hideMystery()
         var pressure = 0; var peak = 0; var delayed = 0; var longest = 0
         val opened = mutableMapOf<Symbol, Int>()
         val heldCounts = IntArray(4)
@@ -126,12 +127,12 @@ object StrategicAnalyzer {
             remaining = remaining.filter { it.id !in free }
             blockingDepth++
         }
-        val greedy = SimulatedPlayer.play(level, SimulatedPlayer.Strategy.GREEDY)
-        val simple = SimulatedPlayer.play(level, SimulatedPlayer.Strategy.SIMPLE)
+        val greedy = SimulatedPlayer.play(level, SimulatedPlayer.Strategy.GREEDY, legacyMysteries = legacyMysteries)
+        val simple = SimulatedPlayer.play(level, SimulatedPlayer.Strategy.SIMPLE, legacyMysteries = legacyMysteries)
         val greedyWins = (if (greedy.won) 1 else 0) + (1..2).count {
-            SimulatedPlayer.play(level, SimulatedPlayer.Strategy.GREEDY, tieBreak = it).won }
+            SimulatedPlayer.play(level, SimulatedPlayer.Strategy.GREEDY, tieBreak = it, legacyMysteries = legacyMysteries).won }
         val simpleWins = (if (simple.won) 1 else 0) + (1..2).count {
-            SimulatedPlayer.play(level, SimulatedPlayer.Strategy.SIMPLE, tieBreak = it).won }
+            SimulatedPlayer.play(level, SimulatedPlayer.Strategy.SIMPLE, tieBreak = it, legacyMysteries = legacyMysteries).won }
         // Spend full lookahead work on candidates that can meet the shallow-player target.
         // Rejected candidates still get a real, explicitly bounded 100-node simulation.
         val tier = DifficultyPolicy.difficulty(level.id)
@@ -145,6 +146,6 @@ object StrategicAnalyzer {
         return StrategicAnalysis(initialLegal, pairs, level.tiles.size - initialLegal,
             GeometryMetrics.measure(level.tiles).overlapRelationships, pressure, peak, delayed, longest,
             greedy, simple,
-            SimulatedPlayer.play(level, SimulatedPlayer.Strategy.LOOKAHEAD, simulationBudget), blockingDepth, greedyWins, simpleWins, 3, heldCounts[1], heldCounts[2], heldCounts[3])
+            SimulatedPlayer.play(level, SimulatedPlayer.Strategy.LOOKAHEAD, simulationBudget, legacyMysteries = legacyMysteries), blockingDepth, greedyWins, simpleWins, 3, heldCounts[1], heldCounts[2], heldCounts[3])
     }
 }

@@ -59,7 +59,7 @@ class AdvancedMahjongTest {
             val before = game.snapshot(); val free = game.remaining.filter { game.isAvailable(it.id) }.map { it.id }.toSet()
             assertTrue(game.collectRevealed(id))
             if(game.remaining.any { it.id !in free && game.isAvailable(it.id) }) unlocked = true
-            if(game.canUndo) { val after = game.snapshot(); assertTrue(game.undo()); assertEquals(before,game.snapshot()); assertTrue(game.collectRevealed(id)); assertEquals(after,game.snapshot()) }
+            if(game.canUndo) { val after = game.snapshot(); assertTrue(game.undo()); assertEquals(before.moves,game.snapshot().moves); assertEquals(before.selections,game.snapshot().selections); assertNull(game.activeMysteryId); assertTrue(game.collectRevealed(id)); assertEquals(after,game.snapshot()) }
         }
         assertTrue(unlocked)
     }
