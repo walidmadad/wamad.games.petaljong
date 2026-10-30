@@ -361,16 +361,28 @@ internal object BotanicalSymbols {
         Symbol.VEINED_LEAF -> R.string.symbol_veined_leaf
         Symbol.DOUBLE_LEAF -> R.string.symbol_double_leaf
         Symbol.YELLOW_DAISY -> R.string.symbol_yellow_daisy
+        Symbol.PINK_PEONY -> R.string.symbol_pink_peony
+        Symbol.PINK_CAMELLIA -> R.string.symbol_pink_camellia
+        Symbol.PURPLE_CROCUS -> R.string.symbol_purple_crocus
+        Symbol.PURPLE_BELLFLOWER -> R.string.symbol_purple_bellflower
+        Symbol.YELLOW_MARIGOLD -> R.string.symbol_yellow_marigold
+        Symbol.GOLDEN_CHRYSANTHEMUM -> R.string.symbol_golden_chrysanthemum
+        Symbol.MONSTERA_LEAF -> R.string.symbol_monstera_leaf
+        Symbol.EUCALYPTUS_LEAF -> R.string.symbol_eucalyptus_leaf
+        Symbol.RED_JAPANESE_MAPLE -> R.string.symbol_red_japanese_maple
+        Symbol.ORANGE_SUGAR_MAPLE -> R.string.symbol_orange_sugar_maple
+        Symbol.OLIVE_BRANCH -> R.string.symbol_olive_branch
+        Symbol.ROSEMARY_BRANCH -> R.string.symbol_rosemary_branch
     })
-    // Bounded process cache: 23 x 256 x 256 ARGB pixels = at most 5.75 MiB.
+    // Bounded process cache: 35 x 256 x 256 ARGB pixels = at most 8.75 MiB.
     // Android resources are local; no Context or Activity is retained.
-    private val artwork = arrayOfNulls<Bitmap>(23)
-    private val sources = arrayOfNulls<Rect>(23)
-    private val destinations = arrayOfNulls<RectF>(23)
+    private val artwork = arrayOfNulls<Bitmap>(Symbol.entries.size)
+    private val sources = arrayOfNulls<Rect>(Symbol.entries.size)
+    private val destinations = arrayOfNulls<RectF>(Symbol.entries.size)
     // Maximum ink extents in shared symbol coordinates: board uses .34 × tile width.
     // Tall sprigs get portrait space; round flowers stay balanced; wings favor width.
     private fun opticalSize(symbol: Symbol): Pair<Float, Float> = when (symbol) {
-        Symbol.LAVENDER, Symbol.FERN, Symbol.BAMBOO -> 2.30f to 2.94f
+        Symbol.LAVENDER, Symbol.FERN, Symbol.BAMBOO, Symbol.OLIVE_BRANCH, Symbol.ROSEMARY_BRANCH, Symbol.PURPLE_BELLFLOWER -> 2.30f to 2.94f
         Symbol.IRIS, Symbol.CACTUS, Symbol.PINECONE -> 2.28f to 2.78f
         Symbol.LEAF, Symbol.VEINED_LEAF, Symbol.DOUBLE_LEAF -> 2.30f to 2.70f
         Symbol.BUTTERFLY, Symbol.DRAGONFLY -> 2.38f to 2.58f
@@ -387,7 +399,19 @@ internal object BotanicalSymbols {
         R.drawable.botanical_iris, R.drawable.botanical_ginkgo_leaf, R.drawable.botanical_cherry_blossom,
         R.drawable.botanical_dragonfly, R.drawable.botanical_cactus, R.drawable.botanical_lavender,
         R.drawable.botanical_ladybug, R.drawable.botanical_snail, R.drawable.botanical_veined_leaf,
-        R.drawable.botanical_double_leaf, R.drawable.botanical_yellow_daisy
+        R.drawable.botanical_double_leaf, R.drawable.botanical_yellow_daisy,
+        R.drawable.botanical_pink_peony,
+        R.drawable.botanical_pink_camellia,
+        R.drawable.botanical_purple_crocus,
+        R.drawable.botanical_purple_bellflower,
+        R.drawable.botanical_yellow_marigold,
+        R.drawable.botanical_golden_chrysanthemum,
+        R.drawable.botanical_monstera_leaf,
+        R.drawable.botanical_eucalyptus_leaf,
+        R.drawable.botanical_red_japanese_maple,
+        R.drawable.botanical_orange_sugar_maple,
+        R.drawable.botanical_olive_branch,
+        R.drawable.botanical_rosemary_branch
     )
     // Warm once at view creation, before layout/drawing and animated interactions.
     fun prepare(context: Context) {

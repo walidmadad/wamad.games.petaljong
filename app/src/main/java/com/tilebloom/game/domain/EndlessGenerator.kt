@@ -2,11 +2,11 @@ package com.tilebloom.game.domain
 
 import java.util.Random
 
-/** v11 verifies Option C mystery interactions with one temporary reveal.
+/** v12 reduces interchangeable partners and evaluates observed-information planning.
  * Construction uses individual legal selections and a bounded three-unmatched symbol schedule.
  * A witness certifies solvability; it is never supplied to simulated players. */
 object EndlessGenerator {
-    const val VERSION = 11
+    const val VERSION = 12
     const val RECENT_WINDOW = 10
     const val CANDIDATES = 24
     fun seed(id: Long) = LegacyEndlessGenerator.seed(id) xor 4L xor VERSION.toLong()
@@ -39,10 +39,7 @@ object EndlessGenerator {
                 order.add(tile.id)
                 remaining = remaining.filter { it.id != tile.id }
             }
-            val catalog = DifficultyPolicy.symbols(id)
-            val active = (SymbolFamilies.required(id) + catalog.filter { it.introducedAt == id } + catalog.filter { it.stableId >= 16 } +
-                catalog.drop((id % catalog.size).toInt()) + catalog).distinct()
-                .take(DifficultyPolicy.profile(id).activeSymbols)
+            val active = BotanicalPalette.active(id, order.size / 2)
             val held = mutableListOf<Symbol>()
             val assignments = mutableMapOf<Int, Symbol>()
             var opened = 0
@@ -50,7 +47,7 @@ object EndlessGenerator {
                 val left = order.size - index
                 val unused = active.filter { it !in held }
                 val close = held.isNotEmpty() && (held.size == 3 || left == held.size ||
-                    unused.isEmpty() || random.nextInt(100) < 30)
+                    unused.isEmpty() || random.nextInt(100) < (if (id <= 15) 22 else if (id <= 50) 10 else 4))
                 val symbol = if (close) held.removeAt(random.nextInt(held.size)) else {
                     val next = (0 until active.size).map { active[(opened + it) % active.size] }.first { it !in held }
                     opened++; held.add(next); next
@@ -58,17 +55,18 @@ object EndlessGenerator {
                 assignments[tile] = symbol
             }
             check(held.isEmpty())
-            val candidate = MysteryPlacement.apply(LevelDefinition(id, seed(id), VERSION, layout,
+            val candidate = StrategicMysteryPlacement.apply(LevelDefinition(id, seed(id), VERSION, layout,
                 layout.slots.map { Tile(it.id, assignments.getValue(it.id), it.x, it.y, it.layer) },
                 emptyList(), attempt + 1, selectionWitness = order))
             LevelValidator.validate(candidate)
             val analysis = PreparationMetrics.phase("strategicAnalysis") { StrategicAnalyzer.analyze(candidate, adaptive = true) }
             val met = analysis.meets(tier) && ExpertProgression.targets(id).accepts(analysis)
-            qualities.add(CandidateQuality(attempt, 0, 0, analysis.lookahead.nodes,
+            qualities.add(CandidateQuality(attempt, 0, 0, analysis.lookahead.nodes + (analysis.shortLookahead?.nodes ?: 0),
                 0, met, analysis.coverRelationships, analysis.witnessThreeHeld, analysis.probes - analysis.greedyProbeWins, analysis))
             val score = analysis.score(tier) + ExpertProgression.targets(id).score(analysis)
             if (score > bestScore) { best = candidate; bestScore = score }
-            if (attempt >= 1 && met) break
+            // Compare at least two, then stop once the retained winner qualifies.
+            if (attempt >= 1 && qualities[checkNotNull(best).attempts - 1].targetMet) break
         }
         val result = checkNotNull(best)
         return result.copy(qualityTargetMet = qualities[result.attempts - 1].targetMet,

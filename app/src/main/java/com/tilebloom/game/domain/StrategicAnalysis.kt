@@ -8,9 +8,10 @@ import com.tilebloom.game.presentation.board.TileVisibility
 object SimulatedPlayer {
     enum class Strategy { GREEDY, SIMPLE, LOOKAHEAD }
     data class Result(val won: Boolean, val actions: List<Int>, val nodes: Int, val peakTray: Int,
-        val pressureStates: Int, val exhausted: Boolean)
+        val pressureStates: Int, val exhausted: Boolean, val snapshot: GameSnapshot? = null)
     fun play(level: LevelDefinition, strategy: Strategy, budget: Int = 1800, depth: Int = 6, tieBreak: Int = 0, legacyMysteries: Boolean = false): Result {
         require(budget >= 0 && depth in 1..10)
+        if (level.version >= 12 && !legacyMysteries) return PlanningPlayer.play(level, strategy, budget, depth, tieBreak)
         val game = Game(level.tiles, legacyMysteries)
         var nodes = 0; var peak = 0; var pressure = 0
         fun next(g: Game, id: Int): Game = g.fork().also { check(it.select(id)) }
@@ -78,7 +79,10 @@ data class StrategicAnalysis(val initialLegal: Int, val immediatePairs: Int,
     val delayedMatches: Int, val longestPartnerDelay: Int,
     val greedy: SimulatedPlayer.Result, val simple: SimulatedPlayer.Result, val lookahead: SimulatedPlayer.Result,
     val blockingDepth: Int = 0, val greedyProbeWins: Int = 0, val simpleProbeWins: Int = 0, val probes: Int = 3,
-    val witnessOneHeld: Int = 0, val witnessTwoHeld: Int = 0, val witnessThreeHeld: Int = 0) {
+    val witnessOneHeld: Int = 0, val witnessTwoHeld: Int = 0, val witnessThreeHeld: Int = 0,
+    val consequentialTrayChoices: Int = 0, val provenImmediateTraps: Int = 0,
+    val pairOnlyOutcome: Solvability = Solvability.UNKNOWN_BUDGET_EXCEEDED,
+    val shortLookahead: SimulatedPlayer.Result? = null) {
     fun meets(tier: Difficulty) = when (tier) {
         Difficulty.NORMAL -> true
         Difficulty.HARD -> !greedy.won && greedyProbeWins <= 1 && witnessPressure > 0
@@ -91,7 +95,10 @@ data class StrategicAnalysis(val initialLegal: Int, val immediatePairs: Int,
         (if (!greedy.won) 500 else 0) + (if (!simple.won) 500 else 0) +
         (if (lookahead.won) 2000 else 0) - simpleProbeWins * 300 - greedyProbeWins * 150 + minOf(30, witnessPressure) * 5 +
         minOf(20, delayedMatches) * 8 + minOf(10, blockingDepth) * 3 +
-        minOf(120, coverRelationships) / 10 - immediatePairs * 15 - lookahead.nodes / 200
+        minOf(120, coverRelationships) / 10 - immediatePairs * 15 - lookahead.nodes / 200 +
+        minOf(20, consequentialTrayChoices) * 12 + minOf(80, provenImmediateTraps) * 2 -
+        (if (pairOnlyOutcome == Solvability.SOLVABLE) 500 else 0) +
+        (if (shortLookahead?.won == false && lookahead.won) 12000 else 0)
 }
 object StrategicAnalyzer {
     fun analyze(level: LevelDefinition, budget: Int = 1800, adaptive: Boolean = false, legacyMysteries: Boolean = false): StrategicAnalysis {
@@ -99,12 +106,29 @@ object StrategicAnalyzer {
         val initialLegal = game.remaining.count { game.isAvailable(it.id) }
         // Safe, free information must not earn a difficulty score by hiding immediate matches.
         game.remaining.filter { it.concealed && game.isAvailable(it.id) }.forEach { check(game.reveal(it.id)) }
-        val pairs = game.matchingPairs().size
+        val pairs = if (level.version >= 12) game.remaining.filter { game.isAvailable(it.id) }
+            .groupingBy { it.symbol }.eachCount().values.sumOf { it * (it - 1) / 2 }
+            else game.matchingPairs().size
         if (!legacyMysteries) game.hideMystery()
         var pressure = 0; var peak = 0; var delayed = 0; var longest = 0
+        var consequential = 0; var traps = 0
         val opened = mutableMapOf<Symbol, Int>()
         val heldCounts = IntArray(4)
         level.winningSelections.forEachIndexed { index, id ->
+            if (level.version >= 12 && game.tray.size == 3) {
+                check(game.activeMysteryId == null)
+                val held = game.tray.map { it.symbol }.toSet()
+                val losingTiles = game.remaining.filter { game.isAvailable(it.id) && it.symbol !in held }
+                // Exact four-distinct rule, not a search-loss estimate. Check a production
+                // transition per state instead of rebuilding every symbol-equivalent loss.
+                losingTiles.firstOrNull()?.let { tile ->
+                    val branch=game.fork()
+                    if(tile.concealed) check(branch.reveal(tile.id))
+                    check(branch.select(tile.id)); check(branch.status==Status.LOST)
+                }
+                val losing=losingTiles.size
+                if (losing > 0) { consequential++; traps += losing }
+            }
             val symbol = game.remaining.first { it.id == id }.symbol
             opened.remove(symbol)?.let { delay ->
                 val gap = index - delay
@@ -142,10 +166,14 @@ object StrategicAnalyzer {
             Difficulty.VERY_HARD -> !greedy.won && !simple.won && greedyWins <= 2 && simpleWins <= 2
             Difficulty.EXPERT -> !greedy.won && !simple.won && greedyWins <= 1 && simpleWins <= 1
         }
-        val simulationBudget = if (adaptive && !shallowTarget) minOf(100, budget) else budget
+        val strongBudget = if (level.version >= 12) maxOf(0, budget - minOf(600, budget)) else budget
+        val simulationBudget = if (adaptive && !shallowTarget) minOf(100, strongBudget) else strongBudget
+        val shortBudget = if (adaptive && !shallowTarget) minOf(100, budget) else minOf(600, budget)
         return StrategicAnalysis(initialLegal, pairs, level.tiles.size - initialLegal,
             GeometryMetrics.measure(level.tiles).overlapRelationships, pressure, peak, delayed, longest,
             greedy, simple,
-            SimulatedPlayer.play(level, SimulatedPlayer.Strategy.LOOKAHEAD, simulationBudget, legacyMysteries = legacyMysteries), blockingDepth, greedyWins, simpleWins, 3, heldCounts[1], heldCounts[2], heldCounts[3])
+            SimulatedPlayer.play(level, SimulatedPlayer.Strategy.LOOKAHEAD, simulationBudget, legacyMysteries = legacyMysteries), blockingDepth, greedyWins, simpleWins, 3, heldCounts[1], heldCounts[2], heldCounts[3], consequential, traps,
+            if (level.version >= 12) PuzzleSolver.solve(level.tiles.map { it.copy(mystery = false) }, 64).outcome else Solvability.UNKNOWN_BUDGET_EXCEEDED,
+            if (level.version >= 12) PlanningPlayer.play(level, SimulatedPlayer.Strategy.LOOKAHEAD, shortBudget, 3) else null)
     }
 }

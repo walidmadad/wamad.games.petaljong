@@ -165,6 +165,24 @@ object TrayAnalyzer {
         val start = Game(tiles); require(start.restore(snapshot, preserveTemporary = true))
         var nodes = 0
         val memo = mutableMapOf<Triple<Set<Int>, List<Int>, Int?>, Solvability>()
+        // Normalize reveal-only interactions into finite collection macros. This includes
+        // revealing a mystery and then tapping a matching NORMAL tile directly: collecting
+        // the mystery first could overflow a three-symbol tray even when this macro is safe.
+        fun continuations(g: Game, tile: Tile): List<Game> {
+            val normal = g.fork()
+            if (tile.concealed) check(normal.reveal(tile.id))
+            check(normal.select(tile.id))
+            val branches = mutableListOf(normal)
+            if (tile.concealed) for (partner in g.remaining.filter {
+                !it.mystery && (it.symbol == tile.symbol || g.activeMysteryId != null) && g.isAvailable(it.id)
+            }) {
+                // Switching away from an active mystery can also turn its former
+                // direct match into an ordinary tray collection of a normal tile.
+                val direct = g.fork(); check(direct.reveal(tile.id)); check(direct.select(partner.id))
+                branches.add(direct)
+            }
+            return branches
+        }
         fun visit(g: Game): Solvability {
             if (g.status == Status.WON) return Solvability.SOLVABLE
             if (g.status == Status.LOST) return Solvability.UNSOLVABLE
@@ -175,8 +193,7 @@ object TrayAnalyzer {
             nodes++
             var unknown = false
             for (tile in g.remaining.filter { g.isAvailable(it.id) }) {
-                val next = g.fork(); if (tile.concealed) check(next.reveal(tile.id)); check(next.select(tile.id))
-                when (visit(next)) {
+                for (next in continuations(g, tile)) when (visit(next)) {
                     Solvability.SOLVABLE -> { memo[key] = Solvability.SOLVABLE; return Solvability.SOLVABLE }
                     Solvability.UNKNOWN_BUDGET_EXCEEDED -> unknown = true
                     else -> Unit
@@ -190,15 +207,20 @@ object TrayAnalyzer {
             SearchResult(if (start.status == Status.WON) Solvability.SOLVABLE else Solvability.UNSOLVABLE, 0),
             0, start.tray.size, 0, 0, 0, 0, 0)
         val free = start.remaining.filter { start.isAvailable(it.id) }
-        val losses = free.count { tile -> start.tray.size == 3 && start.tray.none { it.symbol == tile.symbol } }
+        val losses = free.count { tile -> continuations(start, tile).first().status == Status.LOST }
         val reveals = free.count { tile ->
             val next = Game(tiles); check(next.restore(snapshot, preserveTemporary = true)); if (tile.concealed) check(next.reveal(tile.id)); check(next.select(tile.id))
             next.remaining.any { next.isAvailable(it.id) && !start.isAvailable(it.id) && next.tray.any { held -> held.symbol == it.symbol } }
         }
         var safe = 0; var losing = 0; var unknown = 0
         for (tile in free) {
-            val next = Game(tiles); check(next.restore(snapshot, preserveTemporary = true)); if (tile.concealed) check(next.reveal(tile.id)); check(next.select(tile.id))
-            when (visit(next)) {
+            var outcome = Solvability.UNSOLVABLE
+            for (next in continuations(start, tile)) {
+                val branch = visit(next)
+                if (branch == Solvability.SOLVABLE) { outcome = branch; break }
+                if (branch == Solvability.UNKNOWN_BUDGET_EXCEEDED) outcome = branch
+            }
+            when (outcome) {
                 Solvability.SOLVABLE -> safe++
                 Solvability.UNSOLVABLE -> losing++
                 Solvability.UNKNOWN_BUDGET_EXCEEDED -> unknown++

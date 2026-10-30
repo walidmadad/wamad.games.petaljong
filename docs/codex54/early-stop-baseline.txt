@@ -1,0 +1,1 @@
+attempt=1 candidates=24 target=true qualities=[true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]

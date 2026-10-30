@@ -141,4 +141,16 @@
     <string name="tutorial_continue">Weiter</string>
     <string name="tutorial_exit">Übung verlassen</string>
     <string name="how_to_play">Spielanleitung</string>
+    <string name="symbol_pink_peony">Rosa Pfingstrose</string>
+    <string name="symbol_pink_camellia">Rosa Kamelie</string>
+    <string name="symbol_purple_crocus">Violetter Krokus</string>
+    <string name="symbol_purple_bellflower">Violette Glockenblume</string>
+    <string name="symbol_yellow_marigold">Gelbe Tagetes</string>
+    <string name="symbol_golden_chrysanthemum">Goldene Chrysantheme</string>
+    <string name="symbol_monstera_leaf">Monsterablatt</string>
+    <string name="symbol_eucalyptus_leaf">Eukalyptusblatt</string>
+    <string name="symbol_red_japanese_maple">Roter Fächerahorn</string>
+    <string name="symbol_orange_sugar_maple">Oranger Zuckerahorn</string>
+    <string name="symbol_olive_branch">Olivenzweig</string>
+    <string name="symbol_rosemary_branch">Rosmarinzweig</string>
 </resources>

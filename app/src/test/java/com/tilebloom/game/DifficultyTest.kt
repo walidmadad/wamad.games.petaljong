@@ -14,11 +14,11 @@ class DifficultyTest {
         expected.forEach { (id, tier) -> assertEquals(tier,DifficultyPolicy.difficulty(id)) }
         milestones.forEach { id -> val p = DifficultyPolicy.profile(id)
             assertEquals(DifficultyPolicy.difficulty(id).ordinal.toLong(),p.tierIndex)
-            assertTrue(id in p.firstLevel..p.lastLevel); assertTrue(p.activeSymbols <= 16)
+            assertTrue(id in p.firstLevel..p.lastLevel); assertTrue(p.activeSymbols <= 30)
         }
     }
     @Test fun stableCatalogAndMilestones() {
-        assertEquals((0..22).toList(),Symbol.entries.map { it.stableId })
+        assertEquals((0..34).toList(),Symbol.entries.map { it.stableId })
         assertEquals(listOf(Symbol.LEAF,Symbol.LOTUS,Symbol.FERN,Symbol.FLOWER,Symbol.BERRIES,Symbol.SUNFLOWER),Symbol.entries.take(6))
         (1L..5).forEach { assertEquals(Symbol.entries.take(6),DifficultyPolicy.symbols(it)) }
         listOf(21L,41,61,81,101).forEachIndexed { i,id ->

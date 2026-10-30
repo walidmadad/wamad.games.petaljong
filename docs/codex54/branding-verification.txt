@@ -1,0 +1,1 @@
+PASS: no TileBloom text in player-facing XML resources; Petaljong app name retained. Technical applicationId remains com.tilebloom.game.

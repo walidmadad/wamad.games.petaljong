@@ -141,4 +141,16 @@
     <string name="tutorial_continue">続ける</string>
     <string name="tutorial_exit">練習を終了</string>
     <string name="how_to_play">遊び方</string>
+    <string name="symbol_pink_peony">ピンクのシャクヤク</string>
+    <string name="symbol_pink_camellia">ピンクのツバキ</string>
+    <string name="symbol_purple_crocus">紫のクロッカス</string>
+    <string name="symbol_purple_bellflower">紫のツリガネソウ</string>
+    <string name="symbol_yellow_marigold">黄色のマリーゴールド</string>
+    <string name="symbol_golden_chrysanthemum">金色のキク</string>
+    <string name="symbol_monstera_leaf">モンステラの葉</string>
+    <string name="symbol_eucalyptus_leaf">ユーカリの葉</string>
+    <string name="symbol_red_japanese_maple">赤いイロハモミジ</string>
+    <string name="symbol_orange_sugar_maple">オレンジのサトウカエデ</string>
+    <string name="symbol_olive_branch">オリーブの枝</string>
+    <string name="symbol_rosemary_branch">ローズマリーの枝</string>
 </resources>

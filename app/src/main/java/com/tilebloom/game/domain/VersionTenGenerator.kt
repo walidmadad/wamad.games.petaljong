@@ -14,10 +14,10 @@ object VersionTenGenerator {
     fun geometryFingerprint(layout: BoardLayout) = AdvancedLayouts.fingerprint(layout)
     fun generate(id: Long, forceFallback: Boolean = false): LevelDefinition {
         require(id >= 6)
-        if (DifficultyPolicy.difficulty(id) == Difficulty.NORMAL || forceFallback) {
+        if (VersionElevenDifficultyPolicy.difficulty(id) == Difficulty.NORMAL || forceFallback) {
             return MysteryPlacement.apply(VersionEightGenerator.generate(id, forceFallback).copy(seed = seed(id), version = VERSION))
         }
-        val tier = DifficultyPolicy.difficulty(id)
+        val tier = VersionElevenDifficultyPolicy.difficulty(id)
         var best: LevelDefinition? = null
         var bestScore = Int.MIN_VALUE
         val qualities = mutableListOf<CandidateQuality>()
@@ -39,10 +39,10 @@ object VersionTenGenerator {
                 order.add(tile.id)
                 remaining = remaining.filter { it.id != tile.id }
             }
-            val catalog = DifficultyPolicy.symbols(id)
+            val catalog = VersionElevenDifficultyPolicy.symbols(id)
             val active = (SymbolFamilies.required(id) + catalog.filter { it.introducedAt == id } + catalog.filter { it.stableId >= 16 } +
                 catalog.drop((id % catalog.size).toInt()) + catalog).distinct()
-                .take(DifficultyPolicy.profile(id).activeSymbols)
+                .take(VersionElevenDifficultyPolicy.profile(id).activeSymbols)
             val held = mutableListOf<Symbol>()
             val assignments = mutableMapOf<Int, Symbol>()
             var opened = 0

@@ -141,4 +141,16 @@
     <string name="tutorial_continue">Continuar</string>
     <string name="tutorial_exit">Salir de la práctica</string>
     <string name="how_to_play">Cómo jugar</string>
+    <string name="symbol_pink_peony">Peonía rosa</string>
+    <string name="symbol_pink_camellia">Camelia rosa</string>
+    <string name="symbol_purple_crocus">Crocus morado</string>
+    <string name="symbol_purple_bellflower">Campanilla morada</string>
+    <string name="symbol_yellow_marigold">Clavel de Indias amarillo</string>
+    <string name="symbol_golden_chrysanthemum">Crisantemo dorado</string>
+    <string name="symbol_monstera_leaf">Hoja de monstera</string>
+    <string name="symbol_eucalyptus_leaf">Hoja de eucalipto</string>
+    <string name="symbol_red_japanese_maple">Arce japonés rojo</string>
+    <string name="symbol_orange_sugar_maple">Arce azucarero naranja</string>
+    <string name="symbol_olive_branch">Rama de olivo</string>
+    <string name="symbol_rosemary_branch">Rama de romero</string>
 </resources>

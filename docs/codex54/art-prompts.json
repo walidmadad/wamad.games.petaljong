@@ -1,0 +1,68 @@
+{
+  "tool": "built-in image_gen",
+  "shared": "Premium stylized botanical Mahjong: gentle illustrated shading, soft gradients, fine gold accents, readable silhouette at 32px, transparent background, no tile or text, no photorealism or emoji.",
+  "subjects": [
+    [
+      "pink_peony",
+      "Round lush many-petal ruffled pink peony, gold heart, two glossy jade leaves."
+    ],
+    [
+      "pink_camellia",
+      "Pink Camellia: round flat blossom with concentric orderly rings of smooth broad pink petals forming a geometric rosette, small gold center, two dark jade leaves. Distinct from ruffled peony."
+    ],
+    [
+      "purple_crocus",
+      "Purple Crocus: three upright cup-shaped violet petals and three outer petals with bright orange-gold stamens, two slim blade leaves. No iris."
+    ],
+    [
+      "purple_bellflower",
+      "Purple Bellflower: short arching green stem with three hanging violet five-pointed bell-shaped blossoms, compact triangular cluster."
+    ],
+    [
+      "yellow_marigold",
+      "Yellow Marigold: round dense ruffled golden yellow pompom blossom, scalloped broad petals in layered tiers, two small serrated green leaves. No dark disk."
+    ],
+    [
+      "golden_chrysanthemum",
+      "Golden Chrysanthemum: starburst flower of many long slender golden yellow petals with curled tips radiating around small amber center, two green leaves. Distinct spiky silhouette."
+    ],
+    [
+      "monstera_leaf",
+      "Monstera Leaf: single broad heart-shaped emerald leaf with deep fingerlike splits and three large natural fenestration holes, short curved stem."
+    ],
+    [
+      "eucalyptus_leaf",
+      "Eucalyptus Leaf: short curved stem with five round overlapping blue sage green coin-shaped leaves arranged in opposite pairs, pale gold central veins."
+    ],
+    [
+      "red_japanese_maple",
+      "Red Japanese Maple Leaf: single crimson leaf with seven exceptionally narrow deeply divided pointed serrated lobes in elegant star silhouette, fine gold veins, long slender stem. Distinct from broad maple."
+    ],
+    [
+      "orange_sugar_maple",
+      "Orange Sugar Maple Leaf: one broad amber orange leaf with five wide lobes, shallow rounded sinuses, three prominent tips, short curved stem, golden veins. Distinct from narrow seven-lobe red maple."
+    ],
+    [
+      "olive_branch",
+      "Olive Branch: diagonally rising elegant branch with six smooth slender silver green pointed oval leaves and two deep purple olives, compact balanced silhouette."
+    ],
+    [
+      "rosemary_branch",
+      "Rosemary Branch: single gently curved woody sprig with dense short narrow green needle leaves and two tiny lilac blossoms, compact upright silhouette."
+    ]
+  ],
+  "prompts": {
+    "pink_peony": "Use case: stylized-concept. Create one Pink Peony botanical tile illustration for Petaljong premium Mahjong. One lush round peony blossom with many broad overlapping curled pink petals forming a ruffled full silhouette, small golden heart, two glossy jade leaves below. Premium stylized botanical game art, polished gentle illustrated shading, soft luminous gradients, refined fine gold highlights, bold readable silhouette at 32px. Centered isolated plant occupying 85% square. Transparent background. No tile, no text, no border, no photorealism, no emoji, no fine texture. Style reference in conversation: approved pink five-petal blossom; match its polished pink gradients and glossy green leaves, but draw an original many-petal peony.",
+    "pink_camellia": "Use case: stylized-concept. Asset: one original botanical tile illustration for Petaljong premium Mahjong. Subject: Pink Camellia: round flat blossom with concentric orderly rings of smooth broad pink petals forming a geometric rosette, small gold center, two dark jade leaves. Distinct from ruffled peony. Style: polished premium stylized botanical game illustration matching approved glossy pink blossom and jade leaves, gentle illustrated shading, soft gradients, refined fine gold accents. Strong recognizable silhouette readable at 32px. Centered isolated subject occupies 85% square. Actual transparent background. No tile, no text, no border, no photorealism, no emoji, no excessive fine texture.",
+    "purple_crocus": "Use case: stylized-concept. Asset: one original botanical tile illustration for Petaljong premium Mahjong. Subject: Purple Crocus: three upright cup-shaped violet petals and three outer petals with bright orange-gold stamens, two slim blade leaves. No iris. Style: polished premium stylized botanical game illustration matching approved glossy pink blossom and jade leaves, gentle illustrated shading, soft gradients, refined fine gold accents. Strong recognizable silhouette readable at 32px. Centered isolated subject occupies 85% square. Actual transparent background. No tile, no text, no border, no photorealism, no emoji, no excessive fine texture.",
+    "purple_bellflower": "Use case: stylized-concept. Asset: one original botanical tile illustration for Petaljong premium Mahjong. Subject: Purple Bellflower: short arching green stem with three hanging violet five-pointed bell-shaped blossoms, compact triangular cluster. Style: polished premium stylized botanical game illustration matching approved glossy pink blossom and jade leaves, gentle illustrated shading, soft gradients, refined fine gold accents. Strong recognizable silhouette readable at 32px. Centered isolated subject occupies 85% square. Actual transparent background. No tile, no text, no border, no photorealism, no emoji, no excessive fine texture.",
+    "yellow_marigold": "Use case: stylized-concept. Asset: one original botanical tile illustration for Petaljong premium Mahjong. Subject: Yellow Marigold: round dense ruffled golden yellow pompom blossom, scalloped broad petals in layered tiers, two small serrated green leaves. No dark disk. Style: polished premium stylized botanical game illustration matching approved glossy pink blossom and jade leaves, gentle illustrated shading, soft gradients, refined fine gold accents. Strong recognizable silhouette readable at 32px. Centered isolated subject occupies 85% square. Actual transparent background. No tile, no text, no border, no photorealism, no emoji, no excessive fine texture.",
+    "golden_chrysanthemum": "Use case: stylized-concept. Asset: one original botanical tile illustration for Petaljong premium Mahjong. Subject: Golden Chrysanthemum: starburst flower of many long slender golden yellow petals with curled tips radiating around small amber center, two green leaves. Distinct spiky silhouette. Style: polished premium stylized botanical game illustration matching approved glossy pink blossom and jade leaves, gentle illustrated shading, soft gradients, refined fine gold accents. Strong recognizable silhouette readable at 32px. Centered isolated subject occupies 85% square. Actual transparent background. No tile, no text, no border, no photorealism, no emoji, no excessive fine texture.",
+    "monstera_leaf": "Use case: stylized-concept. Asset: one original botanical tile illustration for Petaljong premium Mahjong. Subject: Monstera Leaf: single broad heart-shaped emerald leaf with deep fingerlike splits and three large natural fenestration holes, short curved stem. Style: polished premium stylized botanical game illustration matching approved glossy pink blossom and jade leaves, gentle illustrated shading, soft gradients, refined fine gold accents. Strong recognizable silhouette readable at 32px. Centered isolated subject occupies 85% square. Actual transparent background. No tile, no text, no border, no photorealism, no emoji, no excessive fine texture.",
+    "eucalyptus_leaf": "Use case: stylized-concept. Asset: one original botanical tile illustration for Petaljong premium Mahjong. Subject: Eucalyptus Leaf: short curved stem with five round overlapping blue sage green coin-shaped leaves arranged in opposite pairs, pale gold central veins. Style: polished premium stylized botanical game illustration matching approved glossy pink blossom and jade leaves, gentle illustrated shading, soft gradients, refined fine gold accents. Strong recognizable silhouette readable at 32px. Centered isolated subject occupies 85% square. Actual transparent background. No tile, no text, no border, no photorealism, no emoji, no excessive fine texture.",
+    "red_japanese_maple": "Use case: stylized-concept. Asset: one original botanical tile illustration for Petaljong premium Mahjong. Subject: Red Japanese Maple Leaf: single crimson leaf with seven exceptionally narrow deeply divided pointed serrated lobes in elegant star silhouette, fine gold veins, long slender stem. Distinct from broad maple. Style: polished premium stylized botanical game illustration matching approved glossy pink blossom and jade leaves, gentle illustrated shading, soft gradients, refined fine gold accents. Strong recognizable silhouette readable at 32px. Centered isolated subject occupies 85% square. Actual transparent background. No tile, no text, no border, no photorealism, no emoji, no excessive fine texture.",
+    "orange_sugar_maple": "Use case: stylized-concept. Asset: one original botanical tile illustration for Petaljong premium Mahjong. Subject: Orange Sugar Maple Leaf: one broad amber orange leaf with five wide lobes, shallow rounded sinuses, three prominent tips, short curved stem, golden veins. Distinct from narrow seven-lobe red maple. Style: polished premium stylized botanical game illustration matching approved glossy pink blossom and jade leaves, gentle illustrated shading, soft gradients, refined fine gold accents. Strong recognizable silhouette readable at 32px. Centered isolated subject occupies 85% square. Actual transparent background. No tile, no text, no border, no photorealism, no emoji, no excessive fine texture.",
+    "olive_branch": "Use case: stylized-concept. Asset: one original botanical tile illustration for Petaljong premium Mahjong. Subject: Olive Branch: diagonally rising elegant branch with six smooth slender silver green pointed oval leaves and two deep purple olives, compact balanced silhouette. Style: polished premium stylized botanical game illustration matching approved glossy pink blossom and jade leaves, gentle illustrated shading, soft gradients, refined fine gold accents. Strong recognizable silhouette readable at 32px. Centered isolated subject occupies 85% square. Actual transparent background. No tile, no text, no border, no photorealism, no emoji, no excessive fine texture.",
+    "rosemary_branch": "Use case: stylized-concept. Asset: one original botanical tile illustration for Petaljong premium Mahjong. Subject: Rosemary Branch: single gently curved woody sprig with dense short narrow green needle leaves and two tiny lilac blossoms, compact upright silhouette. Style: polished premium stylized botanical game illustration matching approved glossy pink blossom and jade leaves, gentle illustrated shading, soft gradients, refined fine gold accents. Strong recognizable silhouette readable at 32px. Centered isolated subject occupies 85% square. Actual transparent background. No tile, no text, no border, no photorealism, no emoji, no excessive fine texture."
+  }
+}

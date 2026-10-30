@@ -141,4 +141,16 @@
     <string name="tutorial_continue">आगे बढ़ें</string>
     <string name="tutorial_exit">अभ्यास से बाहर निकलें</string>
     <string name="how_to_play">कैसे खेलें</string>
+    <string name="symbol_pink_peony">गुलाबी पियोनी</string>
+    <string name="symbol_pink_camellia">गुलाबी कैमेलिया</string>
+    <string name="symbol_purple_crocus">बैंगनी क्रोकस</string>
+    <string name="symbol_purple_bellflower">बैंगनी बेलफ्लावर</string>
+    <string name="symbol_yellow_marigold">पीला गेंदा</string>
+    <string name="symbol_golden_chrysanthemum">सुनहरा गुलदाउदी</string>
+    <string name="symbol_monstera_leaf">मॉन्स्टेरा पत्ता</string>
+    <string name="symbol_eucalyptus_leaf">नीलगिरी पत्ता</string>
+    <string name="symbol_red_japanese_maple">लाल जापानी मेपल</string>
+    <string name="symbol_orange_sugar_maple">नारंगी शुगर मेपल</string>
+    <string name="symbol_olive_branch">जैतून की शाखा</string>
+    <string name="symbol_rosemary_branch">रोज़मेरी की शाखा</string>
 </resources>

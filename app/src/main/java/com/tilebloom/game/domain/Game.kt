@@ -9,7 +9,11 @@ enum class Symbol(val stableId: Int, val introducedAt: Long) {
     MAPLE_LEAF(10, 61), PINECONE(11, 61), IRIS(12, 81), GINKGO_LEAF(13, 81),
     CHERRY_BLOSSOM(14, 101), DRAGONFLY(15, 101),
     CACTUS(16, 6), LAVENDER(17, 11), LADYBUG(18, 21), SNAIL(19, 41),
-    VEINED_LEAF(20, 8), DOUBLE_LEAF(21, 8), YELLOW_DAISY(22, 16)
+    VEINED_LEAF(20, 8), DOUBLE_LEAF(21, 8), YELLOW_DAISY(22, 16),
+    PINK_PEONY(23, 8), PINK_CAMELLIA(24, 8), PURPLE_CROCUS(25, 16), PURPLE_BELLFLOWER(26, 16),
+    YELLOW_MARIGOLD(27, 16), GOLDEN_CHRYSANTHEMUM(28, 16), MONSTERA_LEAF(29, 8),
+    EUCALYPTUS_LEAF(30, 8), RED_JAPANESE_MAPLE(31, 31), ORANGE_SUGAR_MAPLE(32, 31),
+    OLIVE_BRANCH(33, 31), ROSEMARY_BRANCH(34, 31)
 }
 enum class Status { PLAYING, WON, LOST, NO_MOVES }
 data class Tile(val id: Int, val symbol: Symbol, val x: Double, val y: Double, val layer: Int, val removed: Boolean = false, val mystery: Boolean = false, val revealed: Boolean = false) {
@@ -41,7 +45,10 @@ object Rules {
     }
 }
 
-class Game(definition: List<Tile>, private val legacyMysteries: Boolean = false) {
+class Game private constructor(definition: List<Tile>, private val legacyMysteries: Boolean,
+    private val availability: AvailabilityIndex) {
+    constructor(definition: List<Tile>, legacyMysteries: Boolean = false) :
+        this(definition, legacyMysteries, AvailabilityIndex(definition))
     private val initial = definition.map { it.copy(removed = false, revealed = false) }
     init {
         require(initial.map { it.id }.distinct().size == initial.size)
@@ -52,6 +59,19 @@ class Game(definition: List<Tile>, private val legacyMysteries: Boolean = false)
     private var actions = emptyList<Int>()
     private var log = emptyList<GameAction>()
     private var held = emptyList<Tile>()
+    private var availabilityState: List<Tile>? = null
+    private var cachedAvailable = emptyList<Tile>()
+    private var cachedAvailableIds = emptySet<Int>()
+    /** Current is immutable: reference changes invalidate all derived availability, including
+     * reveal/undo/restore. Search forks safely share the read-only cache until their next action. */
+    internal fun availableTiles(): List<Tile> {
+        if (availabilityState !== current) {
+            cachedAvailable = availability.free(current)
+            cachedAvailableIds = cachedAvailable.map { it.id }.toSet()
+            availabilityState = current
+        }
+        return cachedAvailable
+    }
     val tray: List<Tile> get() = held.toList()
     val clearedTiles: List<Tile> get() {
         val ids = history.flatMap { listOf(it.first, it.second) }.toSet()
@@ -63,15 +83,15 @@ class Game(definition: List<Tile>, private val legacyMysteries: Boolean = false)
     var selected: Int? = null
         private set
     val remainingPairs: Int get() = (remaining.size + held.size) / 2
-    fun isAvailable(id: Int) = current.find { it.id == id }?.let { Rules.available(it, current) } ?: false
+    fun isAvailable(id: Int): Boolean { availableTiles(); return id in cachedAvailableIds }
     fun matchingPairs(): List<PairMove> {
-        val free = current.filter { !it.concealed && Rules.available(it, current) }
+        val free = availableTiles().filter { !it.concealed }
         return free.flatMapIndexed { i, a -> free.drop(i + 1).filter { !it.concealed && it.symbol == a.symbol }.map { PairMove(a.id, it.id) } }
     }
     val status: Status get() = when {
         held.size == 4 -> Status.LOST
         remaining.isEmpty() -> if (held.isEmpty()) Status.WON else Status.LOST
-        remaining.none { Rules.available(it, current) } -> Status.LOST
+        availableTiles().isEmpty() -> Status.LOST
         else -> Status.PLAYING
     }
     fun match(a: Int, b: Int): Boolean {
@@ -122,9 +142,11 @@ class Game(definition: List<Tile>, private val legacyMysteries: Boolean = false)
         return true
     }
     /** Immutable lists make a search branch cheap; selections still use the same controller. */
-    internal fun fork(): Game = Game(initial, legacyMysteries).also {
+    internal fun fork(): Game = Game(initial, legacyMysteries, availability).also {
         it.current = current; it.history = history; it.actions = actions; it.held = held
         it.selected = selected; it.log = log
+        it.availabilityState = availabilityState; it.cachedAvailable = cachedAvailable
+        it.cachedAvailableIds = cachedAvailableIds
     }
     /** Temporary information stays in the controller. Only revelations needed to replay a
      * permanent collection are retained; switching cannot grow the durable log without bound. */
@@ -142,7 +164,7 @@ class Game(definition: List<Tile>, private val legacyMysteries: Boolean = false)
     // Validate on a candidate first so corrupt state never partially changes this game.
     @Synchronized
     fun restore(snapshot: GameSnapshot, preserveTemporary: Boolean = false): Boolean {
-        val candidate = Game(initial)
+        val candidate = Game(initial, false, availability)
         if (snapshot.rulesVersion !in 2..4) return false
         val replay = snapshot.selections ?: snapshot.moves.flatMap { listOf(it.first, it.second) }
         if (snapshot.actionLog != null) {

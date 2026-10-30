@@ -1,14 +1,15 @@
 package com.tilebloom.game.domain
 
 /** Explicit recognition families; equality/matching always uses the full stable symbol ID. */
-enum class SymbolFamily { LEAVES, FLOWERS, YELLOW_FLOWERS, GREENERY, PURPLE_FLOWERS, OTHER }
+enum class SymbolFamily { LEAVES, FLOWERS, YELLOW_FLOWERS, GREENERY, PURPLE_FLOWERS, BRANCHES, OTHER }
 object SymbolFamilies {
     fun family(symbol: Symbol): SymbolFamily = when (symbol) {
-        Symbol.LEAF, Symbol.VEINED_LEAF, Symbol.DOUBLE_LEAF, Symbol.MAPLE_LEAF, Symbol.GINKGO_LEAF -> SymbolFamily.LEAVES
-        Symbol.FLOWER, Symbol.CHERRY_BLOSSOM -> SymbolFamily.FLOWERS
-        Symbol.SUNFLOWER, Symbol.YELLOW_DAISY -> SymbolFamily.YELLOW_FLOWERS
+        Symbol.LEAF, Symbol.VEINED_LEAF, Symbol.DOUBLE_LEAF, Symbol.MAPLE_LEAF, Symbol.GINKGO_LEAF, Symbol.MONSTERA_LEAF, Symbol.EUCALYPTUS_LEAF, Symbol.RED_JAPANESE_MAPLE, Symbol.ORANGE_SUGAR_MAPLE -> SymbolFamily.LEAVES
+        Symbol.FLOWER, Symbol.CHERRY_BLOSSOM, Symbol.PINK_PEONY, Symbol.PINK_CAMELLIA -> SymbolFamily.FLOWERS
+        Symbol.SUNFLOWER, Symbol.YELLOW_DAISY, Symbol.YELLOW_MARIGOLD, Symbol.GOLDEN_CHRYSANTHEMUM -> SymbolFamily.YELLOW_FLOWERS
         Symbol.FERN, Symbol.BAMBOO, Symbol.CACTUS -> SymbolFamily.GREENERY
-        Symbol.LOTUS, Symbol.LAVENDER, Symbol.IRIS -> SymbolFamily.PURPLE_FLOWERS
+        Symbol.LOTUS, Symbol.LAVENDER, Symbol.IRIS, Symbol.PURPLE_CROCUS, Symbol.PURPLE_BELLFLOWER -> SymbolFamily.PURPLE_FLOWERS
+        Symbol.OLIVE_BRANCH, Symbol.ROSEMARY_BRANCH -> SymbolFamily.BRANCHES
         else -> SymbolFamily.OTHER
     }
     fun required(level: Long): List<Symbol> = when (DifficultyPolicy.difficulty(level)) {

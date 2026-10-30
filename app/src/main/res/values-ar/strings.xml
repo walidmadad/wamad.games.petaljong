@@ -145,4 +145,16 @@
     <string name="tutorial_continue">متابعة</string>
     <string name="tutorial_exit">إنهاء التدريب</string>
     <string name="how_to_play">كيفية اللعب</string>
+    <string name="symbol_pink_peony">فاوانيا وردية</string>
+    <string name="symbol_pink_camellia">كاميليا وردية</string>
+    <string name="symbol_purple_crocus">زعفران بنفسجي</string>
+    <string name="symbol_purple_bellflower">زهرة الجرس البنفسجية</string>
+    <string name="symbol_yellow_marigold">قطيفة صفراء</string>
+    <string name="symbol_golden_chrysanthemum">أقحوان ذهبي</string>
+    <string name="symbol_monstera_leaf">ورقة مونستيرا</string>
+    <string name="symbol_eucalyptus_leaf">ورقة كينا</string>
+    <string name="symbol_red_japanese_maple">قيقب ياباني أحمر</string>
+    <string name="symbol_orange_sugar_maple">قيقب سكري برتقالي</string>
+    <string name="symbol_olive_branch">غصن زيتون</string>
+    <string name="symbol_rosemary_branch">غصن إكليل الجبل</string>
 </resources>

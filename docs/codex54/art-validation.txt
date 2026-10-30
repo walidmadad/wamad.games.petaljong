@@ -1,0 +1,7 @@
+pink_peony vs pink_camellia: different silhouette in 9.9% of 32px square pixels
+yellow_marigold vs golden_chrysanthemum: different silhouette in 14.6% of 32px square pixels
+monstera_leaf vs eucalyptus_leaf: different silhouette in 21.7% of 32px square pixels
+red_japanese_maple vs orange_sugar_maple: different silhouette in 17.8% of 32px square pixels
+purple_crocus vs purple_bellflower: different silhouette in 23.0% of 32px square pixels
+olive_branch vs rosemary_branch: different silhouette in 26.0% of 32px square pixels
+PASS: 12 unique nonempty transparent production assets, six distinct silhouette pairs, 23 existing assets byte-identical.

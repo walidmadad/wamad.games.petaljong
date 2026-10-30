@@ -147,4 +147,16 @@
     <string name="tutorial_continue">Continue</string>
     <string name="tutorial_exit">Exit practice</string>
     <string name="how_to_play">How to Play</string>
+    <string name="symbol_pink_peony">Pink Peony</string>
+    <string name="symbol_pink_camellia">Pink Camellia</string>
+    <string name="symbol_purple_crocus">Purple Crocus</string>
+    <string name="symbol_purple_bellflower">Purple Bellflower</string>
+    <string name="symbol_yellow_marigold">Yellow Marigold</string>
+    <string name="symbol_golden_chrysanthemum">Golden Chrysanthemum</string>
+    <string name="symbol_monstera_leaf">Monstera Leaf</string>
+    <string name="symbol_eucalyptus_leaf">Eucalyptus Leaf</string>
+    <string name="symbol_red_japanese_maple">Red Japanese Maple</string>
+    <string name="symbol_orange_sugar_maple">Orange Sugar Maple</string>
+    <string name="symbol_olive_branch">Olive Branch</string>
+    <string name="symbol_rosemary_branch">Rosemary Branch</string>
 </resources>

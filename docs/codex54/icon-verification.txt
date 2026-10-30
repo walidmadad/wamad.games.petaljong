@@ -1,0 +1,1 @@
+PASS: all 19 approved icon files remain byte-identical to the pre-rebrand manifest.

@@ -1,0 +1,1 @@
+PASS: eight original v11 seeds, stable symbol identities, positions, mysteries and complete witnesses match the pinned baseline exactly.

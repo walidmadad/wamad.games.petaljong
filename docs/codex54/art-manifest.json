@@ -1,0 +1,122 @@
+[
+  {
+    "stableId": 23,
+    "symbol": "PINK_PEONY",
+    "resource": "botanical_pink_peony.webp",
+    "sha256": "a14b210d3c427a15b71bdcafcc6f4a74f97208e7bb96b63917c93cd8442e5a40",
+    "sourceSha256": "bb019b988089ecfa0cd45ef532211fbc45d3eeb34d96743413e782f185dddf36",
+    "width": 256,
+    "height": 256,
+    "bytes": 68100
+  },
+  {
+    "stableId": 24,
+    "symbol": "PINK_CAMELLIA",
+    "resource": "botanical_pink_camellia.webp",
+    "sha256": "8493b016261a8a986f7386fec1f9b513a84b3c230d442af7a15c8cb5fa15c3b7",
+    "sourceSha256": "66d2bb78781c0e553597114ca03e94c8ac1027d3b154ffb5711eabbdedd0eb52",
+    "width": 256,
+    "height": 256,
+    "bytes": 58900
+  },
+  {
+    "stableId": 25,
+    "symbol": "PURPLE_CROCUS",
+    "resource": "botanical_purple_crocus.webp",
+    "sha256": "40623a30ae18c462d0ff77d4aa73eb790a843ea502773e47b351c09c13c7b95b",
+    "sourceSha256": "360b3ba3d76d316c9fd8980e19f0feffb41bfc111beb36ec1efc3f8bf47e42d1",
+    "width": 256,
+    "height": 256,
+    "bytes": 51762
+  },
+  {
+    "stableId": 26,
+    "symbol": "PURPLE_BELLFLOWER",
+    "resource": "botanical_purple_bellflower.webp",
+    "sha256": "def42c4958a615cf52ab05a93f43d0149cdd4686e3db4ccbd198175609a975a5",
+    "sourceSha256": "636da71b55522c0197c78271db1dbc89bbaeada251db8a32f5ec9d9c9575d02e",
+    "width": 256,
+    "height": 256,
+    "bytes": 57432
+  },
+  {
+    "stableId": 27,
+    "symbol": "YELLOW_MARIGOLD",
+    "resource": "botanical_yellow_marigold.webp",
+    "sha256": "1f318369bbcfc1aee53dce00e1ceb299c4170548d2d6402515a861d8fbf69c63",
+    "sourceSha256": "7655eebd8fcb7245659b4681d0e4b0810ba6ff2a02004ea6d9be069f83f711f5",
+    "width": 256,
+    "height": 256,
+    "bytes": 75666
+  },
+  {
+    "stableId": 28,
+    "symbol": "GOLDEN_CHRYSANTHEMUM",
+    "resource": "botanical_golden_chrysanthemum.webp",
+    "sha256": "bf40202a6f1594244644e61522d4b884bbc91e22e36a5f06d1ba9c64b8b36bca",
+    "sourceSha256": "78abb7b45696834036007bbb79958d30a0b8fae8f425ac779ce33d589a9710c6",
+    "width": 256,
+    "height": 256,
+    "bytes": 80464
+  },
+  {
+    "stableId": 29,
+    "symbol": "MONSTERA_LEAF",
+    "resource": "botanical_monstera_leaf.webp",
+    "sha256": "76953d211328dd3b9b86f3b07dc28963e21428c4387ab22469b34efea9c942d1",
+    "sourceSha256": "9e5e8fbe9b0ae31021bc614d6c20083b6c0d3f12105f1f24f9908c2af440e89a",
+    "width": 256,
+    "height": 256,
+    "bytes": 73200
+  },
+  {
+    "stableId": 30,
+    "symbol": "EUCALYPTUS_LEAF",
+    "resource": "botanical_eucalyptus_leaf.webp",
+    "sha256": "3060003d3799cfeee3b7481adb8092f0e311c4fbcdde9d45a4852d2900e98653",
+    "sourceSha256": "18c1f61b4becf9b18943d5c0ecb08462790a4c1c8e4ba4f637711b85ef6cd878",
+    "width": 256,
+    "height": 256,
+    "bytes": 53960
+  },
+  {
+    "stableId": 31,
+    "symbol": "RED_JAPANESE_MAPLE",
+    "resource": "botanical_red_japanese_maple.webp",
+    "sha256": "c8cf70af264039989b6fbf8ffbeaa12d10d76c83cf9803403fea7da232fb988f",
+    "sourceSha256": "c14036831e3cc9d407e46c5b599d302037eb067fca3e3005923c9bc91fae3dcc",
+    "width": 256,
+    "height": 256,
+    "bytes": 43176
+  },
+  {
+    "stableId": 32,
+    "symbol": "ORANGE_SUGAR_MAPLE",
+    "resource": "botanical_orange_sugar_maple.webp",
+    "sha256": "93b5f74f8164c4329f69d662a3d9766726396be0e0bf113be4dcaedf0ffaec7b",
+    "sourceSha256": "619a5e1d5d8a0ebde7944d6867292eef8b6149623a037bb5bc792f01d619afbf",
+    "width": 256,
+    "height": 256,
+    "bytes": 50308
+  },
+  {
+    "stableId": 33,
+    "symbol": "OLIVE_BRANCH",
+    "resource": "botanical_olive_branch.webp",
+    "sha256": "fc4eb3fddecb6cc3c33085e79dc9a8c1824abb3ae5c4f157fee90ae939bbb6d6",
+    "sourceSha256": "9e9a0cb4813b277f3754d9148d03380719a840fbe96ae92304a56b49a09afb6f",
+    "width": 256,
+    "height": 256,
+    "bytes": 47902
+  },
+  {
+    "stableId": 34,
+    "symbol": "ROSEMARY_BRANCH",
+    "resource": "botanical_rosemary_branch.webp",
+    "sha256": "20b08df8ccb46ab4f5fa893a468720e2b79f094355ccb9055b136191897e7693",
+    "sourceSha256": "2b0fa24c9eb79181388d30dd41a4ed6ecffaecca4338231a41a11901ec3945b6",
+    "width": 256,
+    "height": 256,
+    "bytes": 54192
+  }
+]

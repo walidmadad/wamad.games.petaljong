@@ -23,7 +23,7 @@ object DifficultyPolicy {
         val last = listOf(7L,15L,30L,Long.MAX_VALUE)[stage]
         return DifficultyProfile(stage.toLong(), first, last,
             listOf(20..34,32..46,38..52,46..60)[stage],
-            minOf(symbols(level).size, listOf(6,8,10,16)[stage]),
+            if (level >= 8) BotanicalPalette.active(level, AdvancedLayouts.layout(level).slots.size / 2).size else minOf(symbols(level).size, 6),
             AdvancedLayouts.families, 0..(stage + 1).coerceAtMost(3),
             listOf(12,22,30,34)[stage], listOf(2,4,6,8)[stage],
             6, 6, 4000 + stage * 1000, ((level - 1) % 8).toInt(), .5, stage)
