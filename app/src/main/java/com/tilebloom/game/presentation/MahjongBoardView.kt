@@ -27,7 +27,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         intArrayOf(0xff409a65.toInt(), 0xff2f8b57.toInt(), 0xff2f8b57.toInt(), 0xff267347.toInt()),
         floatArrayOf(0f, .18f, .78f, 1f), Shader.TileMode.CLAMP)
     private val gardenBlocked = LinearGradient(0f, 0f, 1f, 1f,
-        intArrayOf(0xff378456.toInt(), 0xff2b7d4f.toInt(), 0xff2b7d4f.toInt(), 0xff266e45.toInt()),
+        intArrayOf(0xff328151.toInt(), 0xff28784b.toInt(), 0xff28784b.toInt(), 0xff246c43.toInt()),
         floatArrayOf(0f, .18f, .78f, 1f), Shader.TileMode.CLAMP)
     private val flowerGold = LinearGradient(0f, -1f, .4f, .2f,
         0xfffff3d5.toInt(), 0xffe6c875.toInt(), Shader.TileMode.CLAMP)
@@ -42,7 +42,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         intArrayOf(0xffd8c596.toInt(), 0xffb79b66.toInt(), 0xffdecca0.toInt(), 0xffa18a5e.toInt()),
         floatArrayOf(0f, .4f, .65f, 1f), Shader.TileMode.CLAMP)
     private val mysteryGoldTrim = LinearGradient(0f, 0f, 1f, 1f,
-        intArrayOf(0xfffff3d5.toInt(), 0xffe6c875.toInt(), 0xfff5dfa2.toInt(), 0xffc6a252.toInt()),
+        intArrayOf(0xffe3c981.toInt(), 0xffd9bd70.toInt(), 0xffd9bd70.toInt(), 0xffc6a252.toInt()),
         floatArrayOf(0f, .4f, .65f, 1f), Shader.TileMode.CLAMP)
     private val wall = LinearGradient(0f, 0f, 1f, 1f,
         intArrayOf(0xffeee6d7.toInt(), 0xffc8baa0.toInt(), 0xffac9979.toInt()),
@@ -155,26 +155,29 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             paint.shader = null
             paint.color = if (back) 0xff409a65.toInt() else 0xffe2d7c2.toInt()
             canvas.drawRoundRect(layout.edge(tile).android(), layout.radius, layout.radius, paint)
-            surface(if (available) ceramicLight else ceramicMuted, face)
-            canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
-            if (available) {
-                surface(glaze, face)
+            if (!back) {
+                surface(if (available) ceramicLight else ceramicMuted, face)
                 canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
+                if (available) {
+                    surface(glaze, face)
+                    canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
+                }
+                paint.shader = null
+                // One fine warm rim; the highlight follows only the upper edge.
+                paint.style = Paint.Style.STROKE
+                paint.strokeWidth = scale * .011f
+                paint.color = if (available) 0xffbda373.toInt() else 0xffb6a78b.toInt()
+                if (available) surface(goldTrim, face)
+                canvas.drawRoundRect(face.inset(paint.strokeWidth / 2).android(), layout.radius, layout.radius, paint)
+                paint.shader = null
+                // A single upper-edge glint suggests a raised face without concentric outlines.
+                paint.strokeWidth = scale * .014f
+                paint.color = if (available) 0xcffffef7.toInt() else 0x55fffef7
+                canvas.drawLine(face.left + layout.radius, face.top + scale * .022f,
+                    face.right - layout.radius, face.top + scale * .022f, paint)
             }
-            paint.shader = null
-            // One fine warm rim; the highlight follows only the upper edge.
-            paint.style = Paint.Style.STROKE
-            paint.strokeWidth = scale * .011f
-            paint.color = if (available) 0xffbda373.toInt() else 0xffb6a78b.toInt()
-            if (available) surface(goldTrim, face)
-            canvas.drawRoundRect(face.inset(paint.strokeWidth / 2).android(), layout.radius, layout.radius, paint)
-            paint.shader = null
-            // A single upper-edge glint suggests a raised face without concentric outlines.
-            paint.strokeWidth = scale * .014f
-            paint.color = if (available) 0xcffffef7.toInt() else 0x55fffef7
-            canvas.drawLine(face.left + layout.radius, face.top + scale * .022f,
-                face.right - layout.radius, face.top + scale * .022f, paint)
             if (selected || blockedTileId == tile.id) {
+                paint.style = Paint.Style.STROKE
                 paint.strokeWidth = scale * .035f
                 paint.color = if (selected) theme.palette.primaryAccent else theme.palette.secondaryAccent
                 canvas.drawRoundRect(face.inset(paint.strokeWidth / 2).android(), layout.radius, layout.radius, paint)
@@ -204,6 +207,9 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
     private fun drawMystery(c: Canvas, face: RectF, radius: Float, scale: Float, available: Boolean) {
         val bounds = BoardRect(face.left, face.top, face.right, face.bottom)
         paint.style = Paint.Style.FILL
+        // Shader colors still multiply by Paint alpha. Never inherit the ceramic
+        // glint's translucent paint (especially its 0x55 blocked alpha).
+        paint.color = Color.WHITE
         surface(if (available) gardenGreen else gardenBlocked, bounds)
         c.drawRoundRect(face, radius, radius, paint)
         if (available) {
@@ -234,6 +240,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             c.save(); c.scale(side, 1f)
             paint.color = 0x33105c3a
             c.translate(0f, .045f); c.drawPath(gardenLeaf, paint); c.translate(0f, -.045f)
+            paint.alpha = 255
             paint.shader = leafIvory; c.drawPath(gardenLeaf, paint); paint.shader = null
             paint.style = Paint.Style.STROKE; paint.strokeWidth = .026f
             paint.color = 0xff539e6b.toInt()
@@ -247,6 +254,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             c.save(); c.rotate(i * 60f)
             paint.color = 0x44156c48
             c.drawOval(-.205f, -.65f, .245f, -.03f, paint)
+            paint.alpha = 255
             paint.shader = flowerGold
             c.drawOval(-.225f, -.69f, .225f, -.07f, paint)
             paint.shader = null

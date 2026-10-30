@@ -123,6 +123,24 @@ class MysteryTileVisualTest : InstrumentationTestCase() {
                 assertTrue(game.isAvailable(0))
                 assertFalse(game.isAvailable(1))
                 assertFalse(game.isAvailable(5))
+                // Sample clear face areas away from emblem, bevel, and upper tile.
+                // A shader inheriting the blocked ceramic glint alpha fails this:
+                // green over ivory becomes roughly #A0B69B instead of #28784B.
+                val pixels = Bitmap.createBitmap(1080, 1440, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(pixels)
+                canvas.drawColor(theme.background)
+                view.draw(canvas)
+                for ((id, xFraction) in listOf(0 to .15f, 1 to .85f, 5 to .15f)) {
+                    val face = view.tutorialBounds(id)
+                    val color = pixels.getPixel((face.left + face.width() * xFraction).toInt(),
+                        (face.top + face.height() * .82f).toInt())
+                    assertEquals("Opaque hidden face $id", 255, android.graphics.Color.alpha(color))
+                    assertTrue("Natural green face $id: ${Integer.toHexString(color)}",
+                        android.graphics.Color.red(color) in 30..70 &&
+                        android.graphics.Color.green(color) in 100..155 &&
+                        android.graphics.Color.blue(color) in 55..105)
+                }
+                pixels.recycle()
                 capture(view, "natural-green-${theme.id}-backs", theme.background)
                 val center = view.tileCenter(0)!!
                 val now = SystemClock.uptimeMillis()
@@ -143,7 +161,7 @@ class MysteryTileVisualTest : InstrumentationTestCase() {
         view.layout(0,0,w,h)
     }
     private fun capture(view:View,name:String,background:Int=android.graphics.Color.rgb(25,48,40)) {
-        val directory=File(instrumentation.targetContext.filesDir,"codex56-visual").apply { mkdirs() }
+        val directory=File(instrumentation.targetContext.filesDir,"codex59-visual").apply { mkdirs() }
         val bitmap=Bitmap.createBitmap(view.width,view.height,Bitmap.Config.ARGB_8888)
         val canvas=Canvas(bitmap); canvas.drawColor(background); view.draw(canvas)
         File(directory,"$name.png").outputStream().use { assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG,100,it)) }

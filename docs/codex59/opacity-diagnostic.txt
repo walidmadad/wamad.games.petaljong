@@ -1,0 +1,4 @@
+Analytical source-over diagnostic, not Android pixels:
+available old inherited alpha 207 example ivory blend #55A074
+blocked old inherited alpha 85 example ivory blend #A3B99E
+New main face ARGB: available FF2F8B57; blocked FF28784B. Ivory undercoat skipped.
