@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Exact HomeTheme.palette.backgroundTop; independent of system night mode. -->
+    <color name="startup_green">#173F35</color>
+    <style name="AppTheme.Running" parent="AppTheme">
+        <item name="android:windowBackground">@color/startup_green</item>
+        <item name="android:statusBarColor">@color/startup_green</item>
+        <item name="android:navigationBarColor">@color/startup_green</item>
+    </style>
+    <style name="AppTheme.Starting" parent="AppTheme.Running">
+        <item name="android:windowBackground">@drawable/startup_background</item>
+    </style>
+</resources>

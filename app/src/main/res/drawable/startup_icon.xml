@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Official foreground, unchanged. Its artwork occupies about 66% of the bitmap.
+     A 232dp bitmap on a 288dp canvas keeps the complete gold frame and leaves
+     the central leaf inside Android's 192dp circular safe area. No extra frame. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:width="288dp" android:height="288dp">
+        <shape><solid android:color="@android:color/transparent"/></shape>
+    </item>
+    <item android:width="232dp" android:height="232dp" android:gravity="center">
+        <bitmap android:src="@mipmap/ic_launcher_foreground" android:gravity="fill" android:filter="true"/>
+    </item>
+</layer-list>

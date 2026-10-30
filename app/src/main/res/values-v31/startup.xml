@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Framework SplashScreen API: no AndroidX dependency or second splash Activity. -->
+    <style name="AppTheme.Starting" parent="AppTheme.Running">
+        <item name="android:windowBackground">@color/startup_green</item>
+        <item name="android:windowSplashScreenBackground">@color/startup_green</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/startup_icon</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/startup_green</item>
+    </style>
+</resources>

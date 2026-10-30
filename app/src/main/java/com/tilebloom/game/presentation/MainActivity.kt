@@ -142,6 +142,9 @@ class MainActivity : Activity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Native splash uses the manifest theme; switch before Activity/content creation.
+        // No splash hold: connectivity owns its separate, bounded CHECKING state.
+        setTheme(R.style.AppTheme_Running)
         super.onCreate(savedInstanceState)
         volumeControlStream = android.media.AudioManager.STREAM_MUSIC
         audio = com.tilebloom.game.audio.GameAudioManager(applicationContext)

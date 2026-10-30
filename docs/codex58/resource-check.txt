@@ -1,0 +1,10 @@
+XML parsed: app/src/main/res/values/startup.xml
+XML parsed: app/src/main/res/values-v31/startup.xml
+XML parsed: app/src/main/res/drawable/startup_icon.xml
+XML parsed: app/src/main/res/drawable/startup_background.xml
+Splash matches Home top: #173F35. Canvas 288dp; foreground bitmap 232dp.
+mipmap-hdpi all nontransparent pixels radius 93.3 dp < 96dp safe radius
+mipmap-mdpi all nontransparent pixels radius 93.1 dp < 96dp safe radius
+mipmap-xhdpi all nontransparent pixels radius 93.47 dp < 96dp safe radius
+mipmap-xxhdpi all nontransparent pixels radius 92.8 dp < 96dp safe radius
+mipmap-xxxhdpi all nontransparent pixels radius 92.75 dp < 96dp safe radius

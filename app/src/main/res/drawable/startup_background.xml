@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 8–11 starting window; removed by the first Activity draw. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/startup_green"/>
+    <item android:drawable="@drawable/startup_icon" android:width="288dp" android:height="288dp" android:gravity="center"/>
+</layer-list>
