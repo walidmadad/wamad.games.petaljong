@@ -113,6 +113,7 @@ class MainActivity : Activity() {
             if (!isDestroyed) update()
         }, 350L)
     }
+    private var connectionStatus = com.tilebloom.game.domain.ConnectivityStatus.CHECKING
     private var online = false
     private var showConnection = false
     private lateinit var connectivity: NetworkObserver
@@ -122,8 +123,10 @@ class MainActivity : Activity() {
     private lateinit var connection: LinearLayout
     private lateinit var connectionShade: FrameLayout
     private lateinit var privacy: Button
-    private fun connectivityChanged(available: Boolean, panel: Boolean) {
-        online = available; showConnection = panel
+    private fun connectivityChanged(status: com.tilebloom.game.domain.ConnectivityStatus) {
+        connectionStatus = status
+        val available = status == com.tilebloom.game.domain.ConnectivityStatus.ONLINE
+        online = available; showConnection = status == com.tilebloom.game.domain.ConnectivityStatus.OFFLINE
         if (!available) {
             pendingVictory = null
             hintRequest++; hintPending = false
@@ -521,7 +524,7 @@ class MainActivity : Activity() {
     }
 
     fun refreshPrivacyOptions() {
-        privacy.visibility = if (!online && AdvertisingService.provider.privacyRequired) View.VISIBLE else View.GONE
+        privacy.visibility = if (showConnection && AdvertisingService.provider.privacyRequired) View.VISIBLE else View.GONE
         privacy.isEnabled = AdvertisingService.provider.privacyRequired
     }
 
@@ -533,7 +536,7 @@ class MainActivity : Activity() {
             InterstitialService.provider.prepare(this)
         }
         levelCard.isEnabled = online && !pendingPlay && !GameStore.transitioning
-        privacy.visibility = if (!online && AdvertisingService.provider.privacyRequired) View.VISIBLE else View.GONE
+        privacy.visibility = if (showConnection && AdvertisingService.provider.privacyRequired) View.VISIBLE else View.GONE
         privacy.isEnabled = AdvertisingService.provider.privacyRequired
         levelCard.visibility = if (showConnection) View.GONE else View.VISIBLE
         levelCard.contentDescription = getString(R.string.continue_level_description, if (::navigation.isInitialized) session.level.id else previewLevel)
@@ -544,7 +547,7 @@ class MainActivity : Activity() {
         offlineScroll.visibility = if (offlineAtHome) View.VISIBLE else View.GONE
         startScreen.visibility = if (online && !showingPuzzle) View.VISIBLE else View.GONE
         homeSettings.visibility = startScreen.visibility
-        connection.visibility = if (offlineAtHome || showConnection && showingPuzzle) View.VISIBLE else View.GONE
+        connection.visibility = if (showConnection) View.VISIBLE else View.GONE
         val connectionParent = if (showingPuzzle) connectionShade else offlineHome
         if ((if (showingPuzzle) (connection.parent as? View)?.parent else connection.parent) !== connectionParent) {
             (connection.parent as? android.view.ViewGroup)?.removeView(connection)
@@ -585,7 +588,7 @@ class MainActivity : Activity() {
         levelCard.isEnabled = online && !pendingPlay && !GameStore.transitioning
         startScreen.visibility = if (showingGame || !online) View.GONE else View.VISIBLE
         if (showingGame) createGameplay()
-        gameplay?.visibility = if (showingGame) View.VISIBLE else View.GONE
+        gameplay?.visibility = if (showingGame && !showConnection) View.VISIBLE else View.GONE
         gameplay?.importantForAccessibility = if (showConnection) View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS else View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
         if (!showingGame) {
             tutorialOverlay?.let { root.removeView(it) }; tutorialOverlay = null
@@ -811,6 +814,8 @@ class MainActivity : Activity() {
     }
     override fun onStop() {
         online = false
+        connectionStatus = com.tilebloom.game.domain.ConnectivityStatus.CHECKING
+        showConnection = false
         if (::board.isInitialized) {
             board.isEnabled = false
             if (!isChangingConfigurations && !practiceInFront) game.hideMystery()

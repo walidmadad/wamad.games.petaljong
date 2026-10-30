@@ -20,7 +20,7 @@ class InterstitialInteractionTest : ActivityInstrumentationTestCase2<MainActivit
     private val originalAds = AdvertisingService.provider
     private val originalInterstitial = InterstitialService.provider
     private val originalNetwork = ConnectivityService.factory
-    private var networkChanged: ((Boolean, Boolean) -> Unit)? = null
+    private var networkChanged: ((com.tilebloom.game.domain.ConnectivityStatus) -> Unit)? = null
     private var online = true
     private var attempts = 0
     private var available = true
@@ -69,9 +69,9 @@ class InterstitialInteractionTest : ActivityInstrumentationTestCase2<MainActivit
             ConnectivityService.factory = { _, callback ->
                 networkChanged = callback
                 object : NetworkObserver {
-                    override fun start() { callback(online, !online) }
+                    override fun start() { callback(if (online) ConnectivityStatus.ONLINE else ConnectivityStatus.OFFLINE) }
                     override fun stop() {}
-                    override fun retry() { callback(online, !online) }
+                    override fun retry() { callback(if (online) ConnectivityStatus.ONLINE else ConnectivityStatus.OFFLINE) }
                     override fun destroy() {}
                 }
             }
@@ -152,12 +152,12 @@ class InterstitialInteractionTest : ActivityInstrumentationTestCase2<MainActivit
     }
     fun testReconnectionDoesNotPresentAndOfflineTimeStops() {
         val screen = enter()
-        ui { AdExposure.policy.displayed(); online = false; networkChanged!!(false,true) }
+        ui { AdExposure.policy.displayed(); online = false; networkChanged!!(ConnectivityStatus.OFFLINE) }
         var before = 0L; ui { before = AdExposure.policy.duration(SystemClock.elapsedRealtime()) }
         SystemClock.sleep(100)
         ui {
             assertEquals(before,AdExposure.policy.duration(SystemClock.elapsedRealtime()))
-            online = true; networkChanged!!(true,false)
+            online = true; networkChanged!!(ConnectivityStatus.ONLINE)
             assertTrue(screen.findViewById<View>(R.id.board).isShown)
         }
         assertEquals(0,attempts)

@@ -32,10 +32,10 @@ class LanguageSwitchInteractionTest : ActivityInstrumentationTestCase2<MainActiv
         File(context.filesDir, storage).writeText(ProgressCodec.encode(PlayerProgress(tutorial = com.tilebloom.game.domain.TutorialStep.SKIPPED, undoCredits = 2, hintCredits = 1)))
         File(context.filesDir, "$storage.bak").delete()
         ConnectivityService.factory = { _, changed -> object : NetworkObserver {
-            override fun start() { changed(true, false) }
+            override fun start() { changed(com.tilebloom.game.domain.ConnectivityStatus.ONLINE) }
             override fun stop() {}
             override fun destroy() {}
-            override fun retry() { changed(true, false) }
+            override fun retry() { changed(com.tilebloom.game.domain.ConnectivityStatus.ONLINE) }
         } }
         AdvertisingService.provider = object : Advertising {
             override val state = RewardedAdManager.State.IDLE

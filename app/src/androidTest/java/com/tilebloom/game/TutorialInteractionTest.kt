@@ -36,9 +36,9 @@ class TutorialInteractionTest : ActivityInstrumentationTestCase2<MainActivity>(M
         ProgressRepository.awaitWrites(); ProgressRepository.useTestStorage(storage)
         File(context.filesDir, storage).delete(); File(context.filesDir, "$storage.bak").delete()
         ConnectivityService.factory = { _, changed -> object : NetworkObserver {
-            override fun start() { changed(true, false) }
+            override fun start() { changed(com.tilebloom.game.domain.ConnectivityStatus.ONLINE) }
             override fun stop() {}
-            override fun retry() { changed(true, false) }
+            override fun retry() { changed(com.tilebloom.game.domain.ConnectivityStatus.ONLINE) }
             override fun destroy() {}
         } }
         AdvertisingService.provider = object : Advertising {

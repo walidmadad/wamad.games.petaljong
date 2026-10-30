@@ -20,13 +20,13 @@ class ConnectivityInteractionTest : ActivityInstrumentationTestCase2<MainActivit
     private var privacyRequired = true
     private val originalFactory = ConnectivityService.factory
     private val originalAds = AdvertisingService.provider
-    private inner class Source(val changed: (Boolean, Boolean) -> Unit) : NetworkObserver {
+    private inner class Source(val changed: (com.tilebloom.game.domain.ConnectivityStatus) -> Unit) : NetworkObserver {
         var started = false
         override fun start() { started = true; emit() }
         override fun stop() { started = false }
         override fun destroy() { stop() }
         override fun retry() { retries++; emit() }
-        fun emit() { if (started) changed(connected, !connected) }
+        fun emit() { if (started) changed(if (connected) ConnectivityStatus.ONLINE else ConnectivityStatus.OFFLINE) }
     }
     private fun ui(block: () -> Unit) = instrumentation.runOnMainSync(block)
     override fun setUp() {
@@ -64,6 +64,19 @@ class ConnectivityInteractionTest : ActivityInstrumentationTestCase2<MainActivit
         fail("Puzzle did not restore")
     }
     private fun network(value: Boolean) { ui { connected = value; source.emit() } }
+    fun testCheckingNeverShowsOfflineActionsAndOnlineOpensHome() {
+        val screen = activity; ready(screen)
+        ui {
+            source.changed(ConnectivityStatus.CHECKING)
+            assertFalse(screen.findViewById<View>(R.id.connection_panel).isShown)
+            assertFalse(screen.findViewById<View>(R.id.connection_retry).isShown)
+            assertFalse(screen.findViewById<View>(R.id.network_settings).isShown)
+            assertFalse(screen.findViewById<View>(R.id.continue_level).isShown)
+            source.changed(ConnectivityStatus.ONLINE)
+            assertFalse(screen.findViewById<View>(R.id.connection_panel).isShown)
+            assertTrue(screen.findViewById<View>(R.id.continue_level).isShown)
+        }
+    }
     fun testOfflineHomeAndLossPreserveExactStateAndCredits() {
         val screen = activity; ready(screen)
         ui {
@@ -91,6 +104,8 @@ class ConnectivityInteractionTest : ActivityInstrumentationTestCase2<MainActivit
         network(false)
         ui {
             assertTrue(screen.findViewById<View>(R.id.connection_overlay).isShown)
+            assertFalse(screen.findViewById<View>(R.id.board).isShown)
+            assertFalse(screen.findViewById<View>(R.id.gameplay).isShown)
             for (id in listOf(R.id.hint, R.id.undo, R.id.restart, R.id.home)) {
                 assertFalse(screen.findViewById<View>(id).isEnabled)
                 screen.findViewById<View>(id).performClick() // also exercise listener guards
