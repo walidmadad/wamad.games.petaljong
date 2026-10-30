@@ -91,7 +91,7 @@ class MysteryTileVisualTest : InstrumentationTestCase() {
             assertTrue(a.sameAs(b)); a.recycle(); b.recycle()
         }
         // Generation stays off the Android main thread.
-        for(id in listOf(12L,23,40,88,151)) {
+        for(id in listOf(12L,23,40,45,88,151)) {
             val level=Levels.get(id)
             instrumentation.runOnMainSync {
                 val view=MahjongBoardView(instrumentation.targetContext,Game(level.tiles)) {}
@@ -106,7 +106,7 @@ class MysteryTileVisualTest : InstrumentationTestCase() {
         }
     }
     /** Production Canvas fixture; includes top/lateral blocking and physical overlap. */
-    fun testHappyGardenAllThemesAndReveal() {
+    fun testNaturalGreenAllThemesAndReveal() {
         instrumentation.runOnMainSync {
             for (theme in GardenTheme.all) {
                 val game = Game(listOf(
@@ -123,7 +123,7 @@ class MysteryTileVisualTest : InstrumentationTestCase() {
                 assertTrue(game.isAvailable(0))
                 assertFalse(game.isAvailable(1))
                 assertFalse(game.isAvailable(5))
-                capture(view, "happy-garden-${theme.id}-backs", theme.background)
+                capture(view, "natural-green-${theme.id}-backs", theme.background)
                 val center = view.tileCenter(0)!!
                 val now = SystemClock.uptimeMillis()
                 for (action in listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP)) {
@@ -134,7 +134,7 @@ class MysteryTileVisualTest : InstrumentationTestCase() {
                 assertTrue(game.tiles.first().revealed)
                 assertEquals(Symbol.LEAF, game.tiles.first().symbol)
                 assertEquals(7, game.remaining.size)
-                capture(view, "happy-garden-${theme.id}-revealed", theme.background)
+                capture(view, "natural-green-${theme.id}-revealed", theme.background)
             }
         }
     }
@@ -143,7 +143,7 @@ class MysteryTileVisualTest : InstrumentationTestCase() {
         view.layout(0,0,w,h)
     }
     private fun capture(view:View,name:String,background:Int=android.graphics.Color.rgb(25,48,40)) {
-        val directory=File(instrumentation.targetContext.filesDir,"codex55-visual").apply { mkdirs() }
+        val directory=File(instrumentation.targetContext.filesDir,"codex56-visual").apply { mkdirs() }
         val bitmap=Bitmap.createBitmap(view.width,view.height,Bitmap.Config.ARGB_8888)
         val canvas=Canvas(bitmap); canvas.drawColor(background); view.draw(canvas)
         File(directory,"$name.png").outputStream().use { assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG,100,it)) }

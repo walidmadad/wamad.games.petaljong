@@ -24,22 +24,25 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
     private val ceramicMuted = LinearGradient(0f, 0f, 0f, 1f,
         0xffe8e2d4.toInt(), 0xffd6cbb7.toInt(), Shader.TileMode.CLAMP)
     private val gardenGreen = LinearGradient(0f, 0f, 1f, 1f,
-        intArrayOf(0xff62d99b.toInt(), 0xff28b879.toInt(), 0xff168a62.toInt()),
-        floatArrayOf(0f, .48f, 1f), Shader.TileMode.CLAMP)
+        intArrayOf(0xff409a65.toInt(), 0xff2f8b57.toInt(), 0xff2f8b57.toInt(), 0xff267347.toInt()),
+        floatArrayOf(0f, .18f, .78f, 1f), Shader.TileMode.CLAMP)
     private val gardenBlocked = LinearGradient(0f, 0f, 1f, 1f,
-        intArrayOf(0xff75b997.toInt(), 0xff489776.toInt(), 0xff337b60.toInt()),
-        floatArrayOf(0f, .48f, 1f), Shader.TileMode.CLAMP)
+        intArrayOf(0xff378456.toInt(), 0xff2b7d4f.toInt(), 0xff2b7d4f.toInt(), 0xff266e45.toInt()),
+        floatArrayOf(0f, .18f, .78f, 1f), Shader.TileMode.CLAMP)
     private val flowerGold = LinearGradient(0f, -1f, .4f, .2f,
-        0xfffff3d5.toInt(), 0xffe7c66f.toInt(), Shader.TileMode.CLAMP)
+        0xfffff3d5.toInt(), 0xffe6c875.toInt(), Shader.TileMode.CLAMP)
     private val leafIvory = LinearGradient(0f, -.2f, 0f, .8f,
         0xfffff3d5.toInt(), 0xffa8e6ad.toInt(), Shader.TileMode.CLAMP)
     private val glaze = RadialGradient(.2f, .08f, .85f,
         0x66ffffff, 0x00ffffff, Shader.TileMode.CLAMP)
+    // A restrained green glaze preserves the medium-green face instead of whitening it.
+    private val mysteryGlaze = RadialGradient(.2f, .08f, .65f,
+        0x10409a65, 0x00409a65, Shader.TileMode.CLAMP)
     private val goldTrim = LinearGradient(0f, 0f, 1f, 1f,
         intArrayOf(0xffd8c596.toInt(), 0xffb79b66.toInt(), 0xffdecca0.toInt(), 0xffa18a5e.toInt()),
         floatArrayOf(0f, .4f, .65f, 1f), Shader.TileMode.CLAMP)
     private val mysteryGoldTrim = LinearGradient(0f, 0f, 1f, 1f,
-        intArrayOf(0xfffff3d5.toInt(), 0xffe7c66f.toInt(), 0xfff5dfa2.toInt(), 0xffc6a252.toInt()),
+        intArrayOf(0xfffff3d5.toInt(), 0xffe6c875.toInt(), 0xfff5dfa2.toInt(), 0xffc6a252.toInt()),
         floatArrayOf(0f, .4f, .65f, 1f), Shader.TileMode.CLAMP)
     private val wall = LinearGradient(0f, 0f, 1f, 1f,
         intArrayOf(0xffeee6d7.toInt(), 0xffc8baa0.toInt(), 0xffac9979.toInt()),
@@ -146,11 +149,11 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             canvas.drawRoundRect(layout.shadow(tile).offset(scale * .045f).android().apply { offset(scale * .035f, 0f) }, layout.radius * 1.2f, layout.radius * 1.2f, paint)
             paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (tile.layer > 0) 80 else 60) shl 24)
             canvas.drawRoundRect(layout.shadow(tile).android().apply { offset(scale * .015f, 0f) }, layout.radius, layout.radius, paint)
-            paint.color = if (back) 0xff16724f.toInt() else 0xffa39478.toInt()
+            paint.color = if (back) 0xff267347.toInt() else 0xffa39478.toInt()
             if (!back) surface(wall, face)
             canvas.drawRoundRect(layout.body(tile).android(), layout.radius, layout.radius, paint)
             paint.shader = null
-            paint.color = if (back) 0xff8bdcb0.toInt() else 0xffe2d7c2.toInt()
+            paint.color = if (back) 0xff409a65.toInt() else 0xffe2d7c2.toInt()
             canvas.drawRoundRect(layout.edge(tile).android(), layout.radius, layout.radius, paint)
             surface(if (available) ceramicLight else ceramicMuted, face)
             canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
@@ -186,8 +189,8 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
                 canvas.scale(scale * .34f, scale * .34f)
                 if (!back) BotanicalSymbols.drawTile(canvas, paint, tile.symbol, context)
                 canvas.restore()
-                if (!available) {
-                    paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (back) 22 else 12) shl 24)
+                if (!available && !back) {
+                    paint.color = (theme.palette.tileShadow and 0x00ffffff) or (12 shl 24)
                     canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
                 }
             }
@@ -204,7 +207,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         surface(if (available) gardenGreen else gardenBlocked, bounds)
         c.drawRoundRect(face, radius, radius, paint)
         if (available) {
-            surface(glaze, bounds)
+            surface(mysteryGlaze, bounds)
             c.drawRoundRect(face, radius, radius, paint)
         }
         paint.shader = null
@@ -218,7 +221,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         paint.color = if (available) 0x99fff3d5.toInt() else 0x55fff3d5
         c.drawRoundRect(face.left + scale * .043f, face.top + scale * .043f,
             face.right - scale * .043f, face.bottom - scale * .043f, radius * .72f, radius * .72f, paint)
-        // Upper-left glaze and pale bevel separate green ceramic from green gardens.
+        // Fine warm glint preserves ceramic depth without whitening the green face.
         paint.strokeWidth = scale * .018f
         paint.color = if (available) 0xcffff3d5.toInt() else 0x66fff3d5
         c.drawLine(face.left + radius, face.top + scale * .025f,
