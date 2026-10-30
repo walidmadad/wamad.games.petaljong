@@ -105,14 +105,47 @@ class MysteryTileVisualTest : InstrumentationTestCase() {
             }
         }
     }
+    /** Production Canvas fixture; includes top/lateral blocking and physical overlap. */
+    fun testHappyGardenAllThemesAndReveal() {
+        instrumentation.runOnMainSync {
+            for (theme in GardenTheme.all) {
+                val game = Game(listOf(
+                    Tile(0, Symbol.LEAF, 0.0, 0.0, 0, mystery=true),
+                    Tile(1, Symbol.FLOWER, 2.0, 0.0, 0, mystery=true),
+                    Tile(2, Symbol.LEAF, 1.5, .4, 1),
+                    Tile(3, Symbol.FLOWER, 4.0, 0.0, 0),
+                    Tile(4, Symbol.SUNFLOWER, 0.0, 2.0, 0, mystery=true),
+                    Tile(5, Symbol.LEAF, 1.0, 2.0, 0, mystery=true),
+                    Tile(6, Symbol.FLOWER, 2.0, 2.0, 0, mystery=true)))
+                val view = MahjongBoardView(instrumentation.targetContext, game) {}
+                view.theme = theme
+                prepare(view, 1080, 1440)
+                assertTrue(game.isAvailable(0))
+                assertFalse(game.isAvailable(1))
+                assertFalse(game.isAvailable(5))
+                capture(view, "happy-garden-${theme.id}-backs", theme.background)
+                val center = view.tileCenter(0)!!
+                val now = SystemClock.uptimeMillis()
+                for (action in listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP)) {
+                    val event = MotionEvent.obtain(now, now, action, center.x, center.y, 0)
+                    try { view.onTouchEvent(event) } finally { event.recycle() }
+                }
+                view.clearFeedback()
+                assertTrue(game.tiles.first().revealed)
+                assertEquals(Symbol.LEAF, game.tiles.first().symbol)
+                assertEquals(7, game.remaining.size)
+                capture(view, "happy-garden-${theme.id}-revealed", theme.background)
+            }
+        }
+    }
     private fun prepare(view:View,w:Int,h:Int) {
         view.measure(View.MeasureSpec.makeMeasureSpec(w,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(h,View.MeasureSpec.EXACTLY))
         view.layout(0,0,w,h)
     }
-    private fun capture(view:View,name:String) {
-        val directory=File(instrumentation.targetContext.filesDir,"codex35-visual").apply { mkdirs() }
+    private fun capture(view:View,name:String,background:Int=android.graphics.Color.rgb(25,48,40)) {
+        val directory=File(instrumentation.targetContext.filesDir,"codex55-visual").apply { mkdirs() }
         val bitmap=Bitmap.createBitmap(view.width,view.height,Bitmap.Config.ARGB_8888)
-        val canvas=Canvas(bitmap); canvas.drawColor(android.graphics.Color.rgb(25,48,40)); view.draw(canvas)
+        val canvas=Canvas(bitmap); canvas.drawColor(background); view.draw(canvas)
         File(directory,"$name.png").outputStream().use { assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG,100,it)) }
         bitmap.recycle()
     }

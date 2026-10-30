@@ -23,30 +23,34 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         floatArrayOf(0f, .24f, .84f, 1f), Shader.TileMode.CLAMP)
     private val ceramicMuted = LinearGradient(0f, 0f, 0f, 1f,
         0xffe8e2d4.toInt(), 0xffd6cbb7.toInt(), Shader.TileMode.CLAMP)
-    private val jade = LinearGradient(0f, 0f, 1f, 1f,
-        intArrayOf(0xff50967b.toInt(), 0xff185c48.toInt(), 0xff103d32.toInt()),
-        floatArrayOf(0f, .4f, 1f), Shader.TileMode.CLAMP)
+    private val gardenGreen = LinearGradient(0f, 0f, 1f, 1f,
+        intArrayOf(0xff62d99b.toInt(), 0xff28b879.toInt(), 0xff168a62.toInt()),
+        floatArrayOf(0f, .48f, 1f), Shader.TileMode.CLAMP)
+    private val gardenBlocked = LinearGradient(0f, 0f, 1f, 1f,
+        intArrayOf(0xff75b997.toInt(), 0xff489776.toInt(), 0xff337b60.toInt()),
+        floatArrayOf(0f, .48f, 1f), Shader.TileMode.CLAMP)
+    private val flowerGold = LinearGradient(0f, -1f, .4f, .2f,
+        0xfffff3d5.toInt(), 0xffe7c66f.toInt(), Shader.TileMode.CLAMP)
+    private val leafIvory = LinearGradient(0f, -.2f, 0f, .8f,
+        0xfffff3d5.toInt(), 0xffa8e6ad.toInt(), Shader.TileMode.CLAMP)
     private val glaze = RadialGradient(.2f, .08f, .85f,
         0x66ffffff, 0x00ffffff, Shader.TileMode.CLAMP)
     private val goldTrim = LinearGradient(0f, 0f, 1f, 1f,
         intArrayOf(0xffd8c596.toInt(), 0xffb79b66.toInt(), 0xffdecca0.toInt(), 0xffa18a5e.toInt()),
         floatArrayOf(0f, .4f, .65f, 1f), Shader.TileMode.CLAMP)
     private val mysteryGoldTrim = LinearGradient(0f, 0f, 1f, 1f,
-        intArrayOf(0xffdfc78b.toInt(), 0xffae8543.toInt(), 0xffead7a2.toInt(), 0xff99783f.toInt()),
+        intArrayOf(0xfffff3d5.toInt(), 0xffe7c66f.toInt(), 0xfff5dfa2.toInt(), 0xffc6a252.toInt()),
         floatArrayOf(0f, .4f, .65f, 1f), Shader.TileMode.CLAMP)
     private val wall = LinearGradient(0f, 0f, 1f, 1f,
         intArrayOf(0xffeee6d7.toInt(), 0xffc8baa0.toInt(), 0xffac9979.toInt()),
         floatArrayOf(0f, .65f, 1f), Shader.TileMode.CLAMP)
     private val surfaceMatrix = Matrix()
-    // Concealed backs use an identity-independent engraved laurel, never the assigned art.
-    private val sealLeaf = Path().apply {
-        moveTo(0f, .08f)
-        cubicTo(.02f, -.2f, .24f, -.32f, .39f, -.3f)
-        cubicTo(.39f, -.1f, .2f, .1f, 0f, .08f)
+    // Cached unit-space artwork is independent of the concealed symbol.
+    private val gardenLeaf = Path().apply {
+        moveTo(.04f, .65f)
+        cubicTo(.12f, .12f, .64f, .08f, .88f, .16f)
+        cubicTo(.86f, .62f, .48f, .9f, .04f, .65f)
         close()
-    }
-    private val sealStem = Path().apply {
-        moveTo(.04f, .75f); cubicTo(.58f, .45f, .67f, -.14f, .28f, -.72f)
     }
     private val emblemSides = floatArrayOf(-1f, 1f)
     private fun surface(shader: Shader, face: BoardRect) {
@@ -142,11 +146,11 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             canvas.drawRoundRect(layout.shadow(tile).offset(scale * .045f).android().apply { offset(scale * .035f, 0f) }, layout.radius * 1.2f, layout.radius * 1.2f, paint)
             paint.color = (theme.palette.tileShadow and 0x00ffffff) or ((if (tile.layer > 0) 80 else 60) shl 24)
             canvas.drawRoundRect(layout.shadow(tile).android().apply { offset(scale * .015f, 0f) }, layout.radius, layout.radius, paint)
-            paint.color = if (back) 0xff123e32.toInt() else 0xffa39478.toInt()
+            paint.color = if (back) 0xff16724f.toInt() else 0xffa39478.toInt()
             if (!back) surface(wall, face)
             canvas.drawRoundRect(layout.body(tile).android(), layout.radius, layout.radius, paint)
             paint.shader = null
-            paint.color = if (back) 0xff3a7259.toInt() else 0xffe2d7c2.toInt()
+            paint.color = if (back) 0xff8bdcb0.toInt() else 0xffe2d7c2.toInt()
             canvas.drawRoundRect(layout.edge(tile).android(), layout.radius, layout.radius, paint)
             surface(if (available) ceramicLight else ceramicMuted, face)
             canvas.drawRoundRect(face.android(), layout.radius, layout.radius, paint)
@@ -175,7 +179,7 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
             paint.style = Paint.Style.FILL
             // Draw the whole lower face first. Opaque upper bodies/faces in the same
             // depth order physically occlude it, including partially covered artwork.
-            if (back) drawMystery(canvas, face.android(), layout.radius, scale)
+            if (back) drawMystery(canvas, face.android(), layout.radius, scale, available)
             if (!tile.removed) {
                 canvas.save()
                 canvas.translate(r.centerX(), r.centerY())
@@ -194,48 +198,62 @@ class MahjongBoardView(context: Context, private var game: Game, private val cha
         hintEffect.face(game, layout)?.let { face -> drawHint(canvas, layout, face, now) }
         if (reveals.active(now, ValueAnimator.areAnimatorsEnabled()) || effects.active.isNotEmpty() || (hintedTileId != null && ValueAnimator.areAnimatorsEnabled())) postInvalidateOnAnimation()
     }
-    private fun drawMystery(c: Canvas, face: RectF, radius: Float, scale: Float) {
+    private fun drawMystery(c: Canvas, face: RectF, radius: Float, scale: Float, available: Boolean) {
+        val bounds = BoardRect(face.left, face.top, face.right, face.bottom)
         paint.style = Paint.Style.FILL
-        surface(jade, BoardRect(face.left, face.top, face.right, face.bottom))
+        surface(if (available) gardenGreen else gardenBlocked, bounds)
         c.drawRoundRect(face, radius, radius, paint)
-        surface(glaze, BoardRect(face.left, face.top, face.right, face.bottom))
-        c.drawRoundRect(face, radius, radius, paint); paint.shader = null
-        paint.style = Paint.Style.STROKE; paint.strokeWidth = scale * .016f
-        surface(mysteryGoldTrim, BoardRect(face.left, face.top, face.right, face.bottom))
-        c.drawRoundRect(face.left + scale * .008f, face.top + scale * .008f,
-            face.right - scale * .008f, face.bottom - scale * .008f, radius, radius, paint)
+        if (available) {
+            surface(glaze, bounds)
+            c.drawRoundRect(face, radius, radius, paint)
+        }
         paint.shader = null
+        paint.style = Paint.Style.STROKE
         paint.strokeWidth = scale * .014f
-        paint.color = Color.rgb(193, 174, 113)
-        val inset = RectF(face).apply { inset(scale * .055f, scale * .055f) }
-        c.drawRoundRect(inset, radius * .7f, radius * .7f, paint)
-        c.save(); c.translate(face.centerX(), face.centerY()); c.scale(scale * .25f, scale * .25f)
-        paint.color = Color.rgb(214, 197, 126); paint.strokeWidth = .045f
-        c.drawCircle(0f, 0f, 1f, paint)
-        // Raised central seed, framed by two engraved laurel branches.
-        paint.strokeWidth = .035f
+        surface(mysteryGoldTrim, bounds)
+        c.drawRoundRect(face.left + scale * .012f, face.top + scale * .012f,
+            face.right - scale * .012f, face.bottom - scale * .012f, radius, radius, paint)
+        paint.shader = null
+        paint.strokeWidth = scale * .008f
+        paint.color = if (available) 0x99fff3d5.toInt() else 0x55fff3d5
+        c.drawRoundRect(face.left + scale * .043f, face.top + scale * .043f,
+            face.right - scale * .043f, face.bottom - scale * .043f, radius * .72f, radius * .72f, paint)
+        // Upper-left glaze and pale bevel separate green ceramic from green gardens.
+        paint.strokeWidth = scale * .018f
+        paint.color = if (available) 0xcffff3d5.toInt() else 0x66fff3d5
+        c.drawLine(face.left + radius, face.top + scale * .025f,
+            face.right - radius, face.top + scale * .025f, paint)
+        c.save()
+        c.translate(face.centerX(), face.centerY() + scale * .025f)
+        c.scale(scale * .31f, scale * .31f)
+        paint.style = Paint.Style.FILL
         for (side in emblemSides) {
             c.save(); c.scale(side, 1f)
-            c.drawPath(sealStem, paint)
-            for (i in 0..3) {
-                c.save(); c.translate(.28f + .05f * i, .45f - .27f * i)
-                c.rotate(-25f - i * 17f)
-                paint.style = Paint.Style.FILL; paint.color = 0xffb69751.toInt()
-                c.drawPath(sealLeaf, paint)
-                paint.style = Paint.Style.STROKE; paint.color = 0xffefdda1.toInt()
-                paint.strokeWidth = .018f
-                c.drawPath(sealLeaf, paint)
-                c.drawLine(.025f, .05f, .32f, -.24f, paint)
-                c.restore()
-            }
+            paint.color = 0x33105c3a
+            c.translate(0f, .045f); c.drawPath(gardenLeaf, paint); c.translate(0f, -.045f)
+            paint.shader = leafIvory; c.drawPath(gardenLeaf, paint); paint.shader = null
+            paint.style = Paint.Style.STROKE; paint.strokeWidth = .026f
+            paint.color = 0xff539e6b.toInt()
+            c.drawLine(.13f, .64f, .69f, .28f, paint)
+            paint.style = Paint.Style.FILL
             c.restore()
         }
-        paint.style = Paint.Style.FILL; paint.color = 0xffe6cb85.toInt()
-        c.drawOval(-.09f, -.36f, .09f, .18f, paint)
-        paint.style = Paint.Style.STROKE; paint.strokeWidth = .022f
-        c.drawLine(0f, .16f, 0f, .56f, paint)
-        c.restore()
-        paint.style = Paint.Style.FILL
+        // Six broad shaded petals read as a flower even at normal board size.
+        c.save(); c.translate(0f, -.3f)
+        for (i in 0 until 6) {
+            c.save(); c.rotate(i * 60f)
+            paint.color = 0x44156c48
+            c.drawOval(-.205f, -.65f, .245f, -.03f, paint)
+            paint.shader = flowerGold
+            c.drawOval(-.225f, -.69f, .225f, -.07f, paint)
+            paint.shader = null
+            c.restore()
+        }
+        paint.color = 0xffb88a36.toInt(); c.drawCircle(0f, 0f, .235f, paint)
+        paint.color = 0xffffe6a0.toInt(); c.drawCircle(0f, -.025f, .185f, paint)
+        paint.color = 0xfffff3d5.toInt(); c.drawCircle(-.045f, -.08f, .065f, paint)
+        c.restore(); c.restore()
+        paint.shader = null; paint.style = Paint.Style.FILL
     }
     private fun drawHint(canvas: Canvas, layout: BoardGeometry, face: BoardRect, now: Long) {
         val density = resources.displayMetrics.density
