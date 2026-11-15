@@ -37,8 +37,8 @@ def kotlin(sources, destination, cp):
 classes = OUT / 'classes'; classes.mkdir(exist_ok=True)
 testclasses = OUT / 'test-classes'; testclasses.mkdir(exist_ok=True)
 tests = sorted((ROOT/'app/src/test/java').rglob('*Test.kt'))
-kotlin(list((ROOT/'app/src/main/java/com/tilebloom/game/domain').glob('*.kt')) +
-       list((ROOT/'app/src/main/java/com/tilebloom/game/presentation/board').glob('*.kt')) + tests,
+kotlin(list((ROOT/'app/src/main/java/com/wamad/petaljong/domain').glob('*.kt')) +
+       list((ROOT/'app/src/main/java/com/wamad/petaljong/presentation/board').glob('*.kt')) + tests,
        testclasses, ':'.join([stdlib, annotations, junit, hamcrest]))
 run('java','-cp',':'.join([str(testclasses),stdlib,junit,hamcrest]),'org.junit.runner.JUnitCore',
     *['.'.join(p.relative_to(ROOT/'app/src/test/java').with_suffix('').parts) for p in tests])
@@ -47,7 +47,7 @@ if '--jvm-only' in sys.argv:
 res = OUT / 'resources.zip'
 run(bt/'aapt2','compile','--dir','app/src/main/res','-o',res)
 manifest = OUT / 'AndroidManifest.xml'
-manifest.write_text((ROOT/'app/src/main/AndroidManifest.xml').read_text().replace('<manifest ', '<manifest package="com.tilebloom.game" ').replace('<application ', '<application android:debuggable="true" '))
+manifest.write_text((ROOT/'app/src/main/AndroidManifest.xml').read_text().replace('<manifest ', '<manifest package="com.wamad.petaljong" ').replace('<application ', '<application android:debuggable="true" '))
 generated = OUT / 'generated'; generated.mkdir(exist_ok=True)
 unsigned = OUT / 'unsigned.apk'
 run(bt/'aapt2','link','-o',unsigned,'-I',android,'--manifest',manifest,'--java',generated,'--min-sdk-version','26',

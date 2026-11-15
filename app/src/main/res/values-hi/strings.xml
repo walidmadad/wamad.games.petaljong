@@ -17,7 +17,7 @@
     <string name="collection_board_description">बोर्ड पर %1$d टाइलें। ट्रे में %2$d। उपलब्ध टाइल पर टैप करें।</string>
     <string name="connect_continue">जारी रखने के लिए इंटरनेट से जुड़ें।</string>
     <string name="connection_retry">फिर कोशिश करें</string>
-    <string name="continue_garden">बगीचा जारी रखने के लिए टैप करें</string>
+    <string name="continue_garden">जारी रखने के लिए टैप करें</string>
     <string name="continue_level_description">स्तर %1$d जारी रखें</string>
     <string name="defeat_hint">वापस जाएँ या बगीचा फिर शुरू करें।</string>
     <string name="generation_error">बगीचा तैयार नहीं हुआ। पूरा स्तर सुरक्षित है। फिर कोशिश करने के लिए अगला स्तर चुनें।</string>
@@ -122,7 +122,7 @@
     <string name="language_current">%1$s\n%2$s</string>
 
     <!-- Interactive tutorial; stable resource keys across all supported locales. -->
-    <string name="tutorial_welcome">TileBloom में आपका स्वागत है!</string>
+    <string name="tutorial_welcome">Petaljong में आपका स्वागत है!</string>
     <string name="tutorial_intro">कुछ आसान चरणों में खेलना सीखें।</string>
     <string name="tutorial_start">शुरू करें</string>
     <string name="tutorial_skip">छोड़ें</string>

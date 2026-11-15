@@ -6,7 +6,7 @@ prefix=Path('tools/benchmark32.py').read_text().split("out=Path(")[0]
 exec(prefix)
 out=Path(tempfile.mkdtemp(prefix='tilebloom34-benchmark-'))
 source=out/'Benchmark.kt'
-source.write_text('''import com.tilebloom.game.domain.*
+source.write_text('''import com.wamad.petaljong.domain.*
 fun variant(l: LevelDefinition, salt: Int): LevelDefinition {
  val ids=l.tiles.map { it.id }.toMutableList()
  java.util.Collections.shuffle(ids,java.util.Random(34000L+salt))
@@ -47,7 +47,7 @@ fun main() {
  }
 }
 ''')
-sources=list((ROOT/'app/src/main/java/com/tilebloom/game/domain').glob('*.kt'))
-sources += list((ROOT/'app/src/main/java/com/tilebloom/game/presentation/board').glob('*.kt'))
+sources=list((ROOT/'app/src/main/java/com/wamad/petaljong/domain').glob('*.kt'))
+sources += list((ROOT/'app/src/main/java/com/wamad/petaljong/presentation/board').glob('*.kt'))
 kotlin(sources+[source],out,':'.join([stdlib,annotations]))
 run('java','-XX:-UsePerfData','-Xmx512m','-cp',f'{out}:{stdlib}','BenchmarkKt')

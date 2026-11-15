@@ -12,7 +12,7 @@ from pathlib import Path
 from PIL import Image
 
 root = Path(__file__).resolve().parents[1]
-source = (root / 'app/src/main/java/com/tilebloom/game/presentation/MahjongBoardView.kt').read_text()
+source = (root / 'app/src/main/java/com/wamad/petaljong/presentation/MahjongBoardView.kt').read_text()
 section = source.split('private fun opticalSize')[1].split('private val artworkPaint')[0]
 limits = {}
 for line in section.splitlines():

@@ -17,7 +17,7 @@ for folder,words in labels.items():
  if 'name="symbol_pink_peony"' not in s:
   s=s.replace('</resources>',''.join(f'    <string name="symbol_{name}">{word}</string>\n' for name,word in zip(names,words))+'</resources>')
   p.write_text(s)
-p=Path('app/src/main/java/com/tilebloom/game/presentation/MahjongBoardView.kt');s=p.read_text()
+p=Path('app/src/main/java/com/wamad/petaljong/presentation/MahjongBoardView.kt');s=p.read_text()
 if 'Symbol.PINK_PEONY -> R.string' not in s:
  s=s.replace('        Symbol.YELLOW_DAISY -> R.string.symbol_yellow_daisy','        Symbol.YELLOW_DAISY -> R.string.symbol_yellow_daisy\n'+ '\n'.join(f'        Symbol.{n.upper()} -> R.string.symbol_{n}' for n in names))
  s=s.replace('// Bounded process cache: 23 x 256 x 256 ARGB pixels = at most 5.75 MiB.','// Bounded process cache: 35 x 256 x 256 ARGB pixels = at most 8.75 MiB.')

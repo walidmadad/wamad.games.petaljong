@@ -44,7 +44,7 @@ python3 tools/test_host_verify.py
 adb devices
 ./gradlew :app:connectedDebugAndroidTest
 adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb shell am start -n com.tilebloom.game/.presentation.MainActivity
+adb shell am start -n com.wamad.petaljong/.presentation.MainActivity
 ```
 
 Instrumentation uses private test-smoke-progress storage and cleans it before/after each test; the storage-failure test uses test-blocked. Production progression is not loaded or deleted by tests. Tests include a fresh activity launch without Bundle and real AtomicFile reload after dropping the process cache; these are not fresh-process tests.
@@ -52,10 +52,10 @@ Instrumentation uses private test-smoke-progress storage and cleans it before/af
 Manual fresh-process check (developer/playtest data only): play several pairs, note level/seed identity and counter, press Home, then:
 
 ```sh
-adb shell am force-stop com.tilebloom.game
-adb shell am start -n com.tilebloom.game/.presentation.MainActivity
+adb shell am force-stop com.wamad.petaljong
+adb shell am start -n com.wamad.petaljong/.presentation.MainActivity
 adb logcat -d -s TileBloomSave AndroidRuntime
-adb shell run-as com.tilebloom.game cat files/player-progress-v1
+adb shell run-as com.wamad.petaljong cat files/player-progress-v1
 ```
 
 Check exact removed tiles, remaining pairs and absence of old effects. Repeat after Level 2 victory before Next, after Level 5 victory, and during a deadlock. Verify replay/restart keep completions and reproduce the same definition. Install an update with matching signature using adb install -r and repeat. Do not clear application data. Different debug signing identities require special care; do not uninstall a real player installation to bypass a signature mismatch.
@@ -140,11 +140,11 @@ cat "$device_evidence/install.log"
 Continue only after installation prints `Success` and exits 0:
 
 ```sh
-adb shell am start -W -n com.tilebloom.game/.presentation.MainActivity > "$device_evidence/launch.log" 2>&1
+adb shell am start -W -n com.wamad.petaljong/.presentation.MainActivity > "$device_evidence/launch.log" 2>&1
 launch_code=$?
 printf 'launch exit code: %s\n' "$launch_code" | tee "$device_evidence/launch-exit.txt"
 cat "$device_evidence/launch.log"
-adb shell pidof com.tilebloom.game
+adb shell pidof com.wamad.petaljong
 adb exec-out screencap -p > "$device_evidence/initial.png"
 ```
 
@@ -160,7 +160,7 @@ adb logcat -d -s AndroidRuntime > "$device_evidence/runtime.txt"
 
 Collect crash logs even when launch/tests fail. Do not interpret command exit 0 alone as nine passing tests; inspect Gradle output and connected test XML for executed/pass/failure/skipped counts. Preserve `app/build/outputs/androidTest-results/connected` and `app/build/reports/androidTests/connected` with these device logs if generated. If installation or launch fails, record its exit code/log and do not mark subsequent steps as executed.
 
-Installation must print `Success`. Launch should report `Status: ok`, show the game and leave its process running; inspect the screen and crash logs too. A successful am start alone does not prove gameplay. Do not clear existing logs before collecting a failure. If `INSTALL_FAILED_UPDATE_INCOMPATIBLE` occurs, fallback and Gradle debug keys differ. Keep the same key, or intentionally uninstall with `adb uninstall com.tilebloom.game` and install again; uninstall loses task state.
+Installation must print `Success`. Launch should report `Status: ok`, show the game and leave its process running; inspect the screen and crash logs too. A successful am start alone does not prove gameplay. Do not clear existing logs before collecting a failure. If `INSTALL_FAILED_UPDATE_INCOMPATIBLE` occurs, fallback and Gradle debug keys differ. Keep the same key, or intentionally uninstall with `adb uninstall com.wamad.petaljong` and install again; uninstall loses task state.
 
 Reports: JVM `app/build/reports/tests/testDebugUnitTest/index.html`, Lint `app/build/reports/lint-results-debug.html`, Android `app/build/reports/androidTests/connected/debug/index.html`. Read XML/results for actual executed, passed, failed and ignored counts.
 
@@ -174,7 +174,7 @@ For a reproducible deadlock from Restart, match IDs (12,15), (14,23), (16,20), (
 
 Check recreation on a fresh board, after several moves, with selection, victory and deadlock. The automated recreation test covers one move plus selection. For other states, use the developer option Don't keep activities, leave and return, then restore the previous option setting. Check exact board, selection, counts, terminal status and working Restart.
 
-For process recreation: make a match and select a tile, press Home, run `adb shell am kill com.tilebloom.game`, then return through Recents. Do not force-stop. Recovery depends on Android retaining saved task state. Force-stop, task dismissal, reboot and fresh launch have no durable-save guarantee. No persistent progression exists.
+For process recreation: make a match and select a tile, press Home, run `adb shell am kill com.wamad.petaljong`, then return through Recents. Do not force-stop. Recovery depends on Android retaining saved task state. Force-stop, task dismissal, reboot and fresh launch have no durable-save guarantee. No persistent progression exists.
 
 Individual screen-reader tile actions are not implemented; assess TalkBack announcements separately. Save actual failures and screenshots in VALIDATION.md. Do not claim full Android validation from an APK, source review or a compiled test suite.
 

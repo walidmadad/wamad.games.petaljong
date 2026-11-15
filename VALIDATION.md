@@ -52,7 +52,7 @@ This section supersedes all historical artifact/count claims below.
 
 New debug APK: `/home/walid/Documents/projects/androidGames/TileBloom/app/build/outputs/apk/debug/app-debug.apk`, **745,875 bytes**, built from current source using `tools/verify_offline.py` with Java 17 / cached Kotlin 1.9.24 / SDK 36 / Build Tools 35.0.0. This is a diagnostic build, not Gradle. Size coincides with the previous artifact but SHA-256 differs: **32747acd23b102a57b22afe42b5fda73cd341187e759e4c6573d2f79a403eb6b**. New DEX includes `winding`, `INTRODUCTORY_VERSION` and `newlyAvailable`; stale artifact not reused.
 
-`zipalign -c 4`: PASS. `apksigner verify --verbose`: PASS, one signer, v2/v3 signatures. aapt2 badging: package `com.tilebloom.game`, debug enabled, versionCode 1 / versionName 0.1, min SDK 26 / target SDK 36. Actual Android runtime: **NOT EXECUTED**.
+`zipalign -c 4`: PASS. `apksigner verify --verbose`: PASS, one signer, v2/v3 signatures. aapt2 badging: package `com.wamad.petaljong`, debug enabled, versionCode 1 / versionName 0.1, min SDK 26 / target SDK 36. Actual Android runtime: **NOT EXECUTED**.
 
 Logs: `/tmp/tilebloom10-build.log`, `/tmp/tilebloom10-tests.log`, `/tmp/tilebloom10-host-tests.log`. Tracked reproducible evidence: [candidate CSV](docs/codex10-candidates.csv), [selected-board analysis](docs/codex10-analysis.txt), [report and acceptance table](CODEX_10_REPORT.md). On an authorized host use the exact commands in report section L and HOST_VERIFICATION.md; complete the CODEX 10 checklist in PLAYTEST_01.md without clearing application data.
 
@@ -71,7 +71,7 @@ This section supersedes earlier iteration counts and artifact evidence below.
 - ADB: cannot start listener (Operation not permitted). Installation, connected instrumentation, UI screenshots, current CODEX 08 victory fix, new selector, runtime restoration and latency **NOT VERIFIED**.
 - No human five-level playtest results supplied. PLAYTEST_01.md is a blank structured worksheet.
 
-Updated debug APK: `app/build/outputs/apk/debug/app-debug.apk` — **745,875 bytes**. Build: `python3 tools/verify_offline.py`, cached Kotlin 1.9.24 diagnostic compiler, SDK 36 / Build Tools 35.0.0; not a standard Gradle build. Package: `com.tilebloom.game`, versionCode 1 / versionName 0.1, min SDK 26 / target 36 (aapt2 badging verified). zipalign 4-byte check PASS; apksigner verification PASS, one signer, v2 and v3 signatures. SHA-256: `4e112e3896c5844f7aac2b0afb48f32782aba94d3dffb4eb448ecf84468b29a7`. No installation or runtime verification performed.
+Updated debug APK: `app/build/outputs/apk/debug/app-debug.apk` — **745,875 bytes**. Build: `python3 tools/verify_offline.py`, cached Kotlin 1.9.24 diagnostic compiler, SDK 36 / Build Tools 35.0.0; not a standard Gradle build. Package: `com.wamad.petaljong`, versionCode 1 / versionName 0.1, min SDK 26 / target 36 (aapt2 badging verified). zipalign 4-byte check PASS; apksigner verification PASS, one signer, v2 and v3 signatures. SHA-256: `4e112e3896c5844f7aac2b0afb48f32782aba94d3dffb4eb448ecf84468b29a7`. No installation or runtime verification performed.
 
 Logs for this iteration: /tmp/tilebloom09-verified.log, /tmp/tilebloom09-workflow.log, /tmp/tilebloom09-host.log. Standard preflight evidence: app/build/host-verification/run-20261027T210731Z-6PK65F/. These generated logs/artifacts are not committed. The complete 28-criterion evaluation and A–S development report are in CODEX_09_REPORT.md.
 
@@ -131,7 +131,7 @@ Standard Gradle/Kotlin 2.2.10 tasks, Lint and connected tests were not retried i
 - SHA-256: `d91c182931af7297bf3a2dc4e39ea2a71c595d97101f010e7b663971d8353ea9`.
 - Method: `python3 tools/verify_offline.py`, cached Kotlin **1.9.24**, Java 17, SDK 36 / Build Tools 35.0.0, AAPT2, javac, D8, zipalign and local debug signing. This does not verify configured Gradle/Kotlin 2.2.10.
 - `zipalign -c 4`: passed. `apksigner verify --verbose`: passed, v2/v3, one signer.
-- AAPT2 metadata checked: `com.tilebloom.game`, version 0.1/code 1, min API 26, target 36, debuggable, portrait and expected MainActivity.
+- AAPT2 metadata checked: `com.wamad.petaljong`, version 0.1/code 1, min API 26, target 36, debuggable, portrait and expected MainActivity.
 - Final log: `app/build/offline/verification.log` (ignored build artifact).
 
 This is a fresh diagnostic build of CODEX 06 sources, not an old APK and not standard Gradle output. New-APK installation, launch, crash inspection, UI victory/deadlock, animation smoothness and real lifecycle restoration are **NOT VERIFIED**.
@@ -228,7 +228,7 @@ Rebuilt through `python3 tools/verify_offline.py`, **not standard Gradle**:
 - Path: `/home/walid/Documents/projects/androidGames/TileBloom/app/build/outputs/apk/debug/app-debug.apk`
 - Size: **709011 bytes**.
 - SHA-256: `444188ca459614fc8a8a6fd86a395f5780eaf9e63f05fea6d909747ef0751a87`.
-- AAPT2 metadata confirms `com.tilebloom.game`, code 1/version 0.1, minimum API 26, target API 36, debuggable, expected launch activity and portrait requirement.
+- AAPT2 metadata confirms `com.wamad.petaljong`, code 1/version 0.1, minimum API 26, target API 36, debuggable, expected launch activity and portrait requirement.
 - `zipalign -c 4` passed; `apksigner verify --verbose` passed with v2 and v3 signatures, one signer.
 - Actual fallback log retained at `app/build/offline/verification.log` (ignored build output).
 
@@ -343,7 +343,7 @@ Final debug APK:
 - **709011 bytes**, fallback build (not Gradle).
 - SHA-256 `5df5cbb551d37d48956570d7c44f72991cb03a5f2710b95357f17f69eecc64d2`.
 - `zipalign -c 4` passed; `apksigner verify --verbose` passed v2/v3, one signer. v1/v4 absent; minimum API 26 supports v2.
-- AAPT2 badging confirms package `com.tilebloom.game`, version code 1/name 0.1, minimum 26, target 36, debuggable, portrait, launch activity `com.tilebloom.game.presentation.MainActivity`, no requested permissions.
+- AAPT2 badging confirms package `com.wamad.petaljong`, version code 1/name 0.1, minimum 26, target 36, debuggable, portrait, launch activity `com.wamad.petaljong.presentation.MainActivity`, no requested permissions.
 
 ## CODEX 03 acceptance criteria
 
@@ -478,7 +478,7 @@ Use [HOST_VERIFICATION.md](HOST_VERIFICATION.md) for exact unrestricted-host Gra
 - SHA-256: `092fffca8784a13bc6e05a653fb1168662b177e7b96e8d59ee250ee33654d3ec`.
 - Method: cached Kotlin 1.9.24 / javac 17, AAPT2, D8, zipalign, apksigner via `tools/verify_offline.py`.
 - ZIP alignment passed; APK v2 and v3 signatures verified.
-- AAPT metadata: `com.tilebloom.game`, version 0.1/code 1, minimum API 26, target 36, debuggable, expected launch activity, no requested permissions.
+- AAPT metadata: `com.wamad.petaljong`, version 0.1/code 1, minimum API 26, target 36, debuggable, expected launch activity, no requested permissions.
 
 This valid APK is a fallback artifact, **not evidence of a passing Gradle build or successful Android launch**. The fallback now clears stale compiled output, discovers all current JVM test classes, and keeps its debug signing identity in ignored build output.
 
@@ -532,7 +532,7 @@ The following is retained as the original iteration's historical report; its APK
 - AAPT2 linked actual English resources and Android manifest; javac/Kotlin compiled the actual application; D8 produced executable DEX; zipalign passed; apksigner verified v2 and v3 signatures.
 - Final debug APK: `app/build/outputs/apk/debug/app-debug.apk`, **700819 bytes**.
 - SHA-256: `00f4f056530b2c697e5c9c2ec809bf3ca08a62fafd967f937d9f33977eddd7f8`.
-- AAPT metadata: package `com.tilebloom.game`, version 0.1/code 1, minimum 26, target 36, launch activity `com.tilebloom.game.presentation.MainActivity`, debuggable, portrait, no requested permissions.
+- AAPT metadata: package `com.wamad.petaljong`, version 0.1/code 1, minimum 26, target 36, launch activity `com.wamad.petaljong.presentation.MainActivity`, debuggable, portrait, no requested permissions.
 
 The APK was generated by the documented standalone fallback, **not by a successful Gradle task**. It is debug signed and intended for local testing only. Build outputs and the debug key are ignored by Git.
 
@@ -562,7 +562,7 @@ The environment denies socket operations. No Gradle task completed, and Android 
 
 ## Device attempts — unavailable under current restrictions
 
-SDK emulator and AVD definitions exist (Medium_Phone and others), but `/dev/kvm` is absent. More decisively, `adb devices`, `adb install -r ...`, and `adb shell am start -n com.tilebloom.game/.presentation.MainActivity` all fail because the ADB server cannot bind its socket: `could not install *smartsocket* listener: Operation not permitted`.
+SDK emulator and AVD definitions exist (Medium_Phone and others), but `/dev/kvm` is absent. More decisively, `adb devices`, `adb install -r ...`, and `adb shell am start -n com.wamad.petaljong/.presentation.MainActivity` all fail because the ADB server cannot bind its socket: `could not install *smartsocket* listener: Operation not permitted`.
 
 Instrumentation: **0 executed**; 1 smoke test defined and compiled, no passing runtime result claimed. Installation, launch, crash/logcat inspection, actual touches, screenshot/layout review, and lifecycle restoration were **not verified**. No human playtesting occurred.
 
@@ -675,7 +675,7 @@ Standard Gradle JVM tests, assemble and Lint: **NOT EXECUTED**. The known sandbo
 - Size: **737,683 bytes**.
 - SHA-256: `6cb49ea56e63fbf3a41310a4608e9a9334d6200df2b327eaa6cd8aaca3fda37b`.
 - Alignment: PASS (`zipalign -c 4`). Signatures: PASS, v2/v3, one debug signer. v1/v3.1/v4 and SourceStamp absent.
-- Metadata: `com.tilebloom.game`, debug enabled, min API 26, target/compile API 36, launch activity `.presentation.MainActivity`.
+- Metadata: `com.wamad.petaljong`, debug enabled, min API 26, target/compile API 36, launch activity `.presentation.MainActivity`.
 - Installation, launch, instrumentation execution and updated visual playtest: NOT EXECUTED.
 
 Live seeds/version: L1 0/v2, L2 202/v2, L3 303/v2, L4 404/v2, L5 511/v2. Incompatible saved histories are rejected atomically; activity falls back to a fresh Level 1. New coordinate deadlock path: `(16,20), (0,4), (8,12), (17,21), (1,5), (9,13), (15,18), (19,23)` leaves eight tiles/four pairs. Historical fixture tests remain on `LevelOne`.
@@ -724,7 +724,7 @@ status/footer height to make room for the tray.
 
 Final CODEX 15 results: **180 JVM tests PASS** (52.162 s); instrumentation sources
 compile successfully, NOT EXECUTED. Fresh APK: 774,547 bytes, 2026-10-28 19:27:57 +01:00,
-package `com.tilebloom.game`, aligned and verified with signatures v2/v3.
+package `com.wamad.petaljong`, aligned and verified with signatures v2/v3.
 SHA-256: `d8aebcc2ac8ef94f32c1f0c4aca1721b697224334187045819ae1d5e9df73527`.
 APK DEX contains the new tray renderer, analyzer and selection-history methods. Evidence:
 `docs/codex15/offline-verification.txt`, `apk-verification.txt`, `gradle.txt` and
@@ -753,7 +753,7 @@ verification log and `CODEX_16_REPORT.md` for the exact build and APK results.
 
 Final CODEX 16 verification: **186 JVM tests PASS**, 30.672 seconds. All Android
 instrumentation sources compile (39 test methods), **NOT EXECUTED**. APK generated at
-2026-10-28 19:44:01 +01:00: 783,092 bytes, package `com.tilebloom.game`, aligned, valid
+2026-10-28 19:44:01 +01:00: 783,092 bytes, package `com.wamad.petaljong`, aligned, valid
 APK v2/v3 signatures, same local debug certificate as CODEX 15.
 SHA-256: `7c261fc59eb9496417d7b3c96f7acc097b76823490429accde62acb5eebd0104`.
 DEX startup/navigation/control classes and all five compiled vector resources verified.

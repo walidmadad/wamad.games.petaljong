@@ -5,7 +5,7 @@ import tempfile, sys
 exec(compile(Path('tools/jvm54.py').read_text(), 'tools/jvm54.py', 'exec'), globals())
 out=Path(tempfile.mkdtemp(prefix='petaljong54-'))
 source=out/'Benchmark.kt'
-source.write_text('''import com.tilebloom.game.domain.*
+source.write_text('''import com.wamad.petaljong.domain.*
 fun main(args:Array<String>) {
  val modes=if(args.contains("--comparison")) listOf(true,false) else listOf(args.contains("--old"))
  Levels.get(1); VersionElevenGenerator.generate(8); EndlessGenerator.generate(8)
@@ -24,7 +24,7 @@ fun main(args:Array<String>) {
  }
 }
 ''')
-sources=list((ROOT/'app/src/main/java/com/tilebloom/game/domain').glob('*.kt'))+list((ROOT/'app/src/main/java/com/tilebloom/game/presentation/board').glob('*.kt'))
+sources=list((ROOT/'app/src/main/java/com/wamad/petaljong/domain').glob('*.kt'))+list((ROOT/'app/src/main/java/com/wamad/petaljong/presentation/board').glob('*.kt'))
 base=Path(sys.argv[sys.argv.index('--classes')+1]) if '--classes' in sys.argv else None
 kotlin([source] if base else sources+[source],out,':'.join([stdlib,annotations]+([str(base)] if base else [])))
 run('java','-XX:-UsePerfData','-Xmx512m','-cp',':'.join([str(out),stdlib]+([str(base)] if base else [])),'BenchmarkKt',*sys.argv[1:])

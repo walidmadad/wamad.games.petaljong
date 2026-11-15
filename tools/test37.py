@@ -10,8 +10,8 @@ exec(prefix)
 sys.argv.remove('--jvm-only')
 out=Path(tempfile.mkdtemp(prefix='tilebloom37-tests-'))
 tests=sorted((ROOT/'app/src/test/java').rglob('*Test.kt'))
-sources=list((ROOT/'app/src/main/java/com/tilebloom/game/domain').glob('*.kt'))
-sources+=list((ROOT/'app/src/main/java/com/tilebloom/game/presentation/board').glob('*.kt'))
+sources=list((ROOT/'app/src/main/java/com/wamad/petaljong/domain').glob('*.kt'))
+sources+=list((ROOT/'app/src/main/java/com/wamad/petaljong/presentation/board').glob('*.kt'))
 kotlin(sources+tests,out,':'.join([stdlib,annotations,junit,hamcrest]))
 runnable=[p for p in tests if p.stem != 'WitnessReplayTest']
 selected=runnable if '--focused' not in sys.argv else [p for p in tests if p.stem in ('MysteryTilesTest','StrategicDifficultyTest')]

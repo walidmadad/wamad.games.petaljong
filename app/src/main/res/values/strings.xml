@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">TileBloom</string>
+    <string name="app_name" translatable="false">Petaljong</string>
     <string name="subtitle">Mahjong Garden Puzzle</string>
     <string name="level_number">Level %1$d</string>
     <string name="generation_error">The next garden could not be saved or prepared. Your completed level is retained. Tap Next Level to retry.</string>
@@ -34,7 +34,6 @@
         <item name="android:fontFamily">sans</item>
         <item name="android:colorAccent">#CBB578</item>
         <item name="android:windowLightStatusBar">false</item>
-        <item name="android:windowLightNavigationBar">false</item>
         <item name="android:windowActionModeOverlay">true</item>
         <item name="android:windowBackground">#102F27</item>
     </style>
@@ -52,7 +51,7 @@
     <string name="load_retry">Your garden could not load. Tap to retry.</string>
     <string name="start_level">LEVEL %1$d</string>
     <string name="continue_level_description">Continue Level %1$d</string>
-    <string name="continue_garden">Tap to continue your garden</string>
+    <string name="continue_garden">Tap to continue</string>
     <string name="undo_description">Undo, %1$d credits remaining</string>
     <string name="restart_description">Restart current level</string>
     <string name="home_description">Return to level start</string>
@@ -128,7 +127,7 @@
     <string name="language_current">%1$s\n%2$s</string>
 
     <!-- Interactive tutorial; stable resource keys across all supported locales. -->
-    <string name="tutorial_welcome">Welcome to TileBloom!</string>
+    <string name="tutorial_welcome">Welcome to Petaljong!</string>
     <string name="tutorial_intro">Learn the basics in a few quick steps.</string>
     <string name="tutorial_start">Start</string>
     <string name="tutorial_skip">Skip</string>

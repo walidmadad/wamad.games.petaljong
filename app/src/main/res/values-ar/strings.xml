@@ -17,7 +17,7 @@
     <string name="collection_board_description">%1$d قطعة على اللوحة. %2$d في الحامل. انقر على قطعة متاحة لجمعها.</string>
     <string name="connect_continue">اتصل بالإنترنت للمتابعة.</string>
     <string name="connection_retry">إعادة المحاولة</string>
-    <string name="continue_garden">انقر لمتابعة حديقتك</string>
+    <string name="continue_garden">اضغط للمتابعة</string>
     <string name="continue_level_description">متابعة المستوى %1$d</string>
     <string name="defeat_hint">تراجع أو أعد هذه الحديقة.</string>
     <string name="generation_error">تعذر تحضير الحديقة. تم الاحتفاظ بالمستوى المكتمل. انقر على المستوى التالي للمحاولة.</string>
@@ -126,7 +126,7 @@
     <string name="language_current">%1$s\n%2$s</string>
 
     <!-- Interactive tutorial; stable resource keys across all supported locales. -->
-    <string name="tutorial_welcome">مرحبًا بك في TileBloom!</string>
+    <string name="tutorial_welcome">مرحبًا بك في Petaljong!</string>
     <string name="tutorial_intro">تعلّم الأساسيات في خطوات سريعة.</string>
     <string name="tutorial_start">ابدأ</string>
     <string name="tutorial_skip">تخطّ</string>

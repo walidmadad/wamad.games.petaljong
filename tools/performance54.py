@@ -16,11 +16,12 @@ for name in paths:
  if name.endswith('.kt') and '/main/' in name and ('/domain/' in name or '/presentation/board/' in name):
   target=old/Path(name).name
   text=subprocess.check_output(['git','--git-dir=.tilebloom-git','show',f'{revision}:{name}'],text=True)
-  target.write_text(text.replace('com.tilebloom.game','com.tilebloom.baseline'))
+  # Historical Git sources retain their original package; relocate only in temporary diagnostics.
+  target.write_text(text.replace('com.tilebloom.game','com.tilebloom.baseline').replace('com.wamad.petaljong','com.tilebloom.baseline'))
   original.append(target)
 source=out/'Performance.kt'
-source.write_text('''import com.tilebloom.game.domain.EndlessGenerator as NewGenerator
-import com.tilebloom.game.domain.LevelValidator as NewValidator
+source.write_text('''import com.wamad.petaljong.domain.EndlessGenerator as NewGenerator
+import com.wamad.petaljong.domain.LevelValidator as NewValidator
 import com.tilebloom.baseline.domain.EndlessGenerator as OldGenerator
 import com.tilebloom.baseline.domain.LevelValidator as OldValidator
 fun main(){
@@ -40,6 +41,6 @@ fun main(){
  }
 }''')
 sources=original+[source]
-if not base:sources+=list((ROOT/'app/src/main/java/com/tilebloom/game/domain').glob('*.kt'))+list((ROOT/'app/src/main/java/com/tilebloom/game/presentation/board').glob('*.kt'))
+if not base:sources+=list((ROOT/'app/src/main/java/com/wamad/petaljong/domain').glob('*.kt'))+list((ROOT/'app/src/main/java/com/wamad/petaljong/presentation/board').glob('*.kt'))
 kotlin(sources,out,':'.join([stdlib,annotations]+([str(base)] if base else [])))
 run('java','-cp',':'.join([str(out),stdlib]+([str(base)] if base else [])),'PerformanceKt')

@@ -75,11 +75,11 @@ All items below are pending. Record APK SHA-256 from current VALIDATION.md, devi
 ```sh
 ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest :app:connectedDebugAndroidTest
 adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb shell am start -W -n com.tilebloom.game/.presentation.MainActivity
+adb shell am start -W -n com.wamad.petaljong/.presentation.MainActivity
 # After several pairs and Home:
-adb shell am force-stop com.tilebloom.game
-adb shell am start -W -n com.tilebloom.game/.presentation.MainActivity
-adb shell run-as com.tilebloom.game cat files/player-progress-v1
+adb shell am force-stop com.wamad.petaljong
+adb shell am start -W -n com.wamad.petaljong/.presentation.MainActivity
+adb shell run-as com.wamad.petaljong cat files/player-progress-v1
 ```
 
 | Check | Device/build | Observed result | Screenshot/log |
@@ -290,7 +290,7 @@ Install without clearing application data:
 
 ```sh
 adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb shell am start -n com.tilebloom.game/.presentation.MainActivity
+adb shell am start -n com.wamad.petaljong/.presentation.MainActivity
 ```
 
 Check on 320 dp, 360 dp and tall portrait screens, including large fonts/system insets:
@@ -319,7 +319,7 @@ installation, then launch:
 
 ```sh
 adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb shell am start -n com.tilebloom.game/.presentation.MainActivity
+adb shell am start -n com.wamad.petaljong/.presentation.MainActivity
 ```
 
 On a host with normal Gradle/ADB access, execute the updated coordinate UI suite:

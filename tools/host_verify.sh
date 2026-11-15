@@ -118,7 +118,7 @@ if [[ $build_code -eq 0 ]]; then
         run apk-size stat -c '%s bytes' "$apk"
         run apk-sha256 sha256sum "$apk"
         run apk-metadata "$build_tools/aapt2" dump badging "$apk"
-        run apk-package grep -q "^package: name='com.tilebloom.game' " "$evidence/apk-metadata.log"
+        run apk-package grep -q "^package: name='com.wamad.petaljong' " "$evidence/apk-metadata.log"
         run apk-min-api grep -qx "minSdkVersion:'26'" "$evidence/apk-metadata.log"
         run apk-target-api grep -qx "targetSdkVersion:'36'" "$evidence/apk-metadata.log"
         run apk-alignment "$build_tools/zipalign" -c -v 4 "$apk"

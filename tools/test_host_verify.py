@@ -48,7 +48,7 @@ esac
         bt = self.sdk / 'build-tools/35.0.0'
         self.executable(bt / 'aapt2', '''cat <<'META'
 ca-app-pub-3940256099942544~3347511713
-package: name='com.tilebloom.game' versionCode='1'
+package: name='com.wamad.petaljong' versionCode='1'
 minSdkVersion:'26'
 targetSdkVersion:'36'
 META

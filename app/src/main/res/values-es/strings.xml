@@ -17,7 +17,7 @@
     <string name="collection_board_description">%1$d fichas en el tablero. %2$d en la bandeja. Toca una ficha disponible.</string>
     <string name="connect_continue">Conéctate para continuar.</string>
     <string name="connection_retry">Reintentar</string>
-    <string name="continue_garden">Toca para continuar tu jardín</string>
+    <string name="continue_garden">Toca para continuar</string>
     <string name="continue_level_description">Continuar nivel %1$d</string>
     <string name="defeat_hint">Deshaz o reinicia este jardín.</string>
     <string name="generation_error">No se pudo preparar el jardín. Se conserva el nivel completado. Toca Siguiente nivel para reintentar.</string>
@@ -122,7 +122,7 @@
     <string name="language_current">%1$s\n%2$s</string>
 
     <!-- Interactive tutorial; stable resource keys across all supported locales. -->
-    <string name="tutorial_welcome">¡Bienvenido a TileBloom!</string>
+    <string name="tutorial_welcome">¡Bienvenido a Petaljong!</string>
     <string name="tutorial_intro">Aprende lo básico en unos pasos.</string>
     <string name="tutorial_start">Empezar</string>
     <string name="tutorial_skip">Omitir</string>

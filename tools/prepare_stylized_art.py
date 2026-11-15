@@ -27,10 +27,10 @@ def main():
     sources = json.loads(Path(sys.argv[1]).read_text())
     assert set(sources) == set(CATALOG), 'Require all 23 generated originals'
     assert len(set(sources.values())) == 23
-    renderer = (ROOT / 'app/src/main/java/com/tilebloom/game/presentation/MahjongBoardView.kt').read_text()
+    renderer = (ROOT / 'app/src/main/java/com/wamad/petaljong/presentation/MahjongBoardView.kt').read_text()
     mapped = re.findall(r'R.drawable.botanical_(\w+)', renderer)
     assert mapped == CATALOG, 'Stable IDs must still match production resource order'
-    enum = (ROOT / 'app/src/main/java/com/tilebloom/game/domain/Game.kt').read_text().split('enum class Status')[0]
+    enum = (ROOT / 'app/src/main/java/com/wamad/petaljong/domain/Game.kt').read_text().split('enum class Status')[0]
     ids = {int(number): name.lower() for name, number in re.findall(r'([A-Z_]+)\((\d+), \d+\)', enum)}
     assert ids == dict(enumerate(CATALOG)), 'Do not change stable symbol IDs'
     resources = set((ROOT/'app/src').rglob('botanical_*'))

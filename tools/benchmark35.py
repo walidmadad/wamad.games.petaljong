@@ -6,7 +6,7 @@ prefix=Path('tools/benchmark32.py').read_text().split("out=Path(")[0]
 exec(prefix)
 out=Path(tempfile.mkdtemp(prefix='tilebloom35-benchmark-'))
 source=out/'Benchmark.kt'
-source.write_text('''import com.tilebloom.game.domain.*
+source.write_text('''import com.wamad.petaljong.domain.*
 fun main() {
  Levels.get(1); EndlessGenerator.generate(8)
  println("level,tier,layout,tiles,layers,legal,immediatePairs,blocked,overlaps,depth,pressure,delayed,mixedFamilies,mysteries,greedy,simple,lookahead,nodes,target,witness,candidates,generationMs,targetDelayed,targetPressure,targetDepth")
@@ -19,7 +19,7 @@ fun main() {
  }
 }
 ''')
-sources=list((ROOT/'app/src/main/java/com/tilebloom/game/domain').glob('*.kt'))
-sources+=list((ROOT/'app/src/main/java/com/tilebloom/game/presentation/board').glob('*.kt'))
+sources=list((ROOT/'app/src/main/java/com/wamad/petaljong/domain').glob('*.kt'))
+sources+=list((ROOT/'app/src/main/java/com/wamad/petaljong/presentation/board').glob('*.kt'))
 kotlin(sources+[source],out,':'.join([stdlib,annotations]))
 run('java','-XX:-UsePerfData','-Xmx512m','-cp',f'{out}:{stdlib}','BenchmarkKt')

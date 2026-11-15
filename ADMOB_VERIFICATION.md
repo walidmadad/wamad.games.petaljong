@@ -73,17 +73,55 @@ existing schema-5 zero balances remain zero and initial three credits stay intac
 
 ## Before monetization
 
-Debug IDs are hardcoded Google TEST identifiers, separate from release. Release
-builds intentionally fail at preReleaseBuild and have no production IDs. Before
-removing that guard, configure an AdMob account, register the production app and
-rewarded unit, set explicit release-only IDs, configure applicable UMP messages,
-provide a real privacy policy, complete Google Play Data safety/ads disclosures,
-review audience/age and advertising policies, test consent regions and revocation
-on real devices, and perform signed production build verification. Do not use
-production ads for development testing. No Firebase or mediation was added.
+Debug uses Google's official demo App ID, rewarded units (both Hint and Undo),
+and interstitial unit. Release reads ADMOB_APP_ID, ADMOB_REWARDED_HINT_ID,
+ADMOB_REWARDED_UNDO_ID and ADMOB_INTERSTITIAL_ID from the ignored root file
+`admob.local.properties`. There is no release fallback. `validateReleaseAdmob`
+rejects missing/malformed values and Google's demo publisher IDs before release
+tasks, including manifest and BuildConfig generation. Errors name keys only.
+The existing rewarded manager selects a purpose-specific unit when the reward
+dialog opens, invalidating stale loads when the purpose changes. UMP gating,
+one-shot rewards and the interstitial frequency policy are preserved.
+
+Run with Java 17 in a host terminal:
+
+```bash
+./gradlew :app:validateReleaseAdmob :app:verifyAdmobVariants :app:testDebugUnitTest :app:assembleDebug :app:lintDebug
+python3 tools/check_ads_apk.py app/build/outputs/apk/debug/app-debug.apk
+```
+
+`verifyAdmobVariants` generates both merged manifests and both BuildConfig files,
+then compares the App ID and all three units to their variant's expected values.
+It also checks `com.wamad.petaljong`, and prints no full production identifiers.
+It does not assemble or publish release. A successful debug build outputs
+`app/build/outputs/apk/debug/app-debug.apk` with demo ads.
+
+CODEX 60 validation status: static checks confirm the local keys have valid
+production ID syntax and are not Google's demo IDs. Gradle execution is blocked
+in this restricted environment: the default wrapper cache is read-only; direct
+Gradle with a writable temporary home fails to determine a usable wildcard IP.
+Consequently neither generated variant verification nor a fresh APK build or
+runtime test has completed for this change. Existing APKs are not evidence.
+No application installation, uninstallation, data clearing or publishing occurred.
+
+Configure applicable UMP messages, privacy policy and Play disclosures before
+monetization; real SDK delivery and consent still require the device checks above.
+No Firebase or mediation was added.
 
 Official references checked for this iteration:
 - https://developers.google.com/admob/android/rel-notes
 - https://developers.google.com/admob/android/migration
 - https://developers.google.com/admob/android/rewarded
 - https://developers.google.com/admob/android/privacy
+
+## CODEX 62 identity migration
+
+Official application ID and namespace: `com.wamad.petaljong`. Check the AdMob account's Android package association matches this ID before monetization; Gradle does not update the account. No production identifiers or property keys were changed. Use only the Debug test ads for runtime verification.
+
+The required command is:
+
+```sh
+./gradlew --no-daemon --console=plain :app:verifyAdmobVariants :app:testDebugUnitTest :app:assembleDebug :app:lintDebug :app:assembleRelease
+```
+
+The migration environment blocks Gradle startup (read-only wrapper cache; writable-home retry cannot determine a usable wildcard IP). Generated variants, fresh APKs and runtime ads therefore remain unverified. Previous APKs must not be used as migration evidence.

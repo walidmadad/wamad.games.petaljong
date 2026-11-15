@@ -10,23 +10,27 @@ exec(prefix)
 sys.argv.remove('--jvm-only')
 out=Path('/tmp/tilebloom32-original' if '--original' in sys.argv else '/tmp/tilebloom32-benchmark'); out.mkdir(exist_ok=True)
 source=out/'Baseline.kt'
-source.write_text('import com.tilebloom.game.domain.*\nfun main() { repeat(3) { run -> for(id in listOf(8L,16,30,31,51,101,501,1001)) {\n val (l,p)=PreparationMetrics.measure { EndlessGenerator.generate(id) }\n println("run=$run level=$id tier=${DifficultyPolicy.difficulty(id)} layout=${l.layout.id} attempts=${l.attempts} candidates=${l.candidatesEvaluated} nodes=${l.candidateQuality.sumOf { it.searchNodes }} fallback=${l.attempts==0} phasesMs=${p.mapValues { it.value/1000000.0 }}")\n} } }\n')
-sources = list((ROOT/'app/src/main/java/com/tilebloom/game/domain').glob('*.kt'))
+source.write_text('import com.wamad.petaljong.domain.*\nfun main() { repeat(3) { run -> for(id in listOf(8L,16,30,31,51,101,501,1001)) {\n val (l,p)=PreparationMetrics.measure { EndlessGenerator.generate(id) }\n println("run=$run level=$id tier=${DifficultyPolicy.difficulty(id)} layout=${l.layout.id} attempts=${l.attempts} candidates=${l.candidatesEvaluated} nodes=${l.candidateQuality.sumOf { it.searchNodes }} fallback=${l.attempts==0} phasesMs=${p.mapValues { it.value/1000000.0 }}")\n} } }\n')
+sources = list((ROOT/'app/src/main/java/com/wamad/petaljong/domain').glob('*.kt'))
 if '--original' in sys.argv:
     import subprocess
     original = out/'original'; original.mkdir(exist_ok=True)
     frozen = []
     tracked = set(subprocess.check_output(['git','--git-dir=.tilebloom-git','ls-tree','-r','--name-only','HEAD'], text=True).splitlines())
     for path in sources:
-        if str(path.relative_to(ROOT)) not in tracked:
+        name = str(path.relative_to(ROOT))
+        # Resolve historical Git paths without changing the pinned baseline.
+        if name not in tracked:
+            name = name.replace('com/wamad/petaljong', 'com/tilebloom/game')
+        if name not in tracked:
             continue
         target = original/path.name
         if path.name in ('PreparationMetrics.kt', 'LevelPreparation.kt'):
             target.write_text(path.read_text())
         else:
-            target.write_text(subprocess.check_output(['git','--git-dir=.tilebloom-git','--work-tree=.','show',f'HEAD:{path.relative_to(ROOT)}'], text=True))
+            target.write_text(subprocess.check_output(['git','--git-dir=.tilebloom-git','--work-tree=.','show',f'HEAD:{name}'], text=True).replace('com.tilebloom.game', 'com.wamad.petaljong'))
         frozen.append(target)
     sources = frozen
-sources += list((ROOT/'app/src/main/java/com/tilebloom/game/presentation/board').glob('*.kt'))
+sources += list((ROOT/'app/src/main/java/com/wamad/petaljong/presentation/board').glob('*.kt'))
 kotlin(sources+[source],out,':'.join([stdlib,annotations]))
 run('java','-cp',f'{out}:{stdlib}', 'BaselineKt', *sys.argv[1:])

@@ -17,7 +17,7 @@
     <string name="collection_board_description">盤面に%1$d牌、トレイに%2$d牌。取れる牌をタップしてください。</string>
     <string name="connect_continue">接続して続けましょう。</string>
     <string name="connection_retry">再試行</string>
-    <string name="continue_garden">タップして庭を続ける</string>
+    <string name="continue_garden">タップして続ける</string>
     <string name="continue_level_description">レベル%1$dを続ける</string>
     <string name="defeat_hint">戻すか、この庭をやり直しましょう。</string>
     <string name="generation_error">庭を準備できませんでした。クリア済みレベルは保存されています。次のレベルをタップして再試行してください。</string>
@@ -122,7 +122,7 @@
     <string name="language_current">%1$s\n%2$s</string>
 
     <!-- Interactive tutorial; stable resource keys across all supported locales. -->
-    <string name="tutorial_welcome">TileBloomへようこそ！</string>
+    <string name="tutorial_welcome">Petaljongへようこそ！</string>
     <string name="tutorial_intro">簡単な操作で遊び方を覚えましょう。</string>
     <string name="tutorial_start">始める</string>
     <string name="tutorial_skip">スキップ</string>

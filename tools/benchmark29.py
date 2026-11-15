@@ -10,8 +10,8 @@ exec(prefix)
 sys.argv.remove('--jvm-only')
 out=Path('/tmp/tilebloom29-benchmark'); out.mkdir(exist_ok=True)
 source=out/'Baseline.kt'
-source.write_text('''import com.tilebloom.game.domain.*
+source.write_text('''import com.wamad.petaljong.domain.*
 fun main(args: Array<String>) { for(id in listOf(1L,7,8,15,16,30,31,50,100,500,1000)) { val t=System.nanoTime(); val l=if(id < 6 || args.isEmpty()) Levels.get(id) else VersionSixGenerator.generate(id); val generationMs=(System.nanoTime()-t)/1000000; val at=System.nanoTime(); val a=PuzzleAnalyzer.analyze(l,2000); val analysisMs=(System.nanoTime()-at)/1000000; val overlaps=l.tiles.sumOf { x -> l.tiles.count { it.layer>x.layer && Rules.overlaps(x,it) } }; println("$id tiles=${a.tileCount} layers=${a.layers} overlap=$overlaps blocked=${a.initialBlocked} free=${a.initialFree} choices=${a.consequenceChoiceStates} risk=${a.riskyChoiceStates} unknown=${a.unknownAlternatives} generationMs=$generationMs analysisMs=$analysisMs ms=${(System.nanoTime()-t)/1000000}") } }
 ''')
-kotlin(list((ROOT/'app/src/main/java/com/tilebloom/game/domain').glob('*.kt'))+list((ROOT/'app/src/main/java/com/tilebloom/game/presentation/board').glob('*.kt'))+[source],out,':'.join([stdlib,annotations]))
+kotlin(list((ROOT/'app/src/main/java/com/wamad/petaljong/domain').glob('*.kt'))+list((ROOT/'app/src/main/java/com/wamad/petaljong/presentation/board').glob('*.kt'))+[source],out,':'.join([stdlib,annotations]))
 run('java','-cp',f'{out}:{stdlib}', 'BaselineKt', *sys.argv[1:])

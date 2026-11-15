@@ -7,7 +7,7 @@ OUT=Path(tempfile.mkdtemp(prefix='petaljong54-tests-')); OUT.mkdir(exist_ok=True
 classes=OUT/'classes'; classes.mkdir(exist_ok=True)
 record=ROOT/'docs/codex54/jvm-classes.txt'; record.unlink(missing_ok=True)
 sources=sorted((ROOT/'app/src/test/java').rglob('*.kt'))
-kotlin(list((ROOT/'app/src/main/java/com/tilebloom/game/domain').glob('*.kt'))+list((ROOT/'app/src/main/java/com/tilebloom/game/presentation/board').glob('*.kt'))+sources,classes,':'.join([stdlib,annotations,junit,hamcrest]))
+kotlin(list((ROOT/'app/src/main/java/com/wamad/petaljong/domain').glob('*.kt'))+list((ROOT/'app/src/main/java/com/wamad/petaljong/presentation/board').glob('*.kt'))+sources,classes,':'.join([stdlib,annotations,junit,hamcrest]))
 record.write_text(str(classes)+'\n')
 print(f'Compiled JVM classes: {classes}',flush=True)
 tests=[p for p in sources if p.name.endswith('Test.kt') and p.name != 'WitnessReplayTest.kt'] # helper object, not a JUnit test class

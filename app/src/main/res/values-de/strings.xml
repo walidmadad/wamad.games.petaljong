@@ -17,7 +17,7 @@
     <string name="collection_board_description">%1$d Steine auf dem Brett. %2$d in der Ablage. Tippe auf einen freien Stein.</string>
     <string name="connect_continue">Verbinde dich, um fortzufahren.</string>
     <string name="connection_retry">Erneut versuchen</string>
-    <string name="continue_garden">Tippe, um deinen Garten fortzusetzen</string>
+    <string name="continue_garden">Zum Fortfahren tippen</string>
     <string name="continue_level_description">Level %1$d fortsetzen</string>
     <string name="defeat_hint">Gehe zurück oder starte den Garten neu.</string>
     <string name="generation_error">Garten konnte nicht vorbereitet werden. Das abgeschlossene Level bleibt erhalten. Tippe zum Wiederholen auf Nächstes Level.</string>
@@ -122,7 +122,7 @@
     <string name="language_current">%1$s\n%2$s</string>
 
     <!-- Interactive tutorial; stable resource keys across all supported locales. -->
-    <string name="tutorial_welcome">Willkommen bei TileBloom!</string>
+    <string name="tutorial_welcome">Willkommen bei Petaljong!</string>
     <string name="tutorial_intro">Lerne die Grundlagen in wenigen Schritten.</string>
     <string name="tutorial_start">Starten</string>
     <string name="tutorial_skip">Überspringen</string>

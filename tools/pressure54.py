@@ -5,7 +5,7 @@ import tempfile,sys
 exec(compile(Path('tools/jvm54.py').read_text(),'tools/jvm54.py','exec'),globals())
 out=Path(tempfile.mkdtemp(prefix='petaljong54-pressure-'))
 source=out/'Pressure.kt'
-source.write_text('''import com.tilebloom.game.domain.*
+source.write_text('''import com.wamad.petaljong.domain.*
 fun main(){
  println("level,strategy,won,peakTray,pressureStates,nodes,controllerReplay")
  for(id in listOf(31L,40,50,51,75,100,101,150,200,201,501,1001)) {
@@ -19,7 +19,7 @@ fun main(){
 }''')
 base=None
 if '--classes' in sys.argv:base=Path(sys.argv[sys.argv.index('--classes')+1])
-sources=[source] if base else list((ROOT/'app/src/main/java/com/tilebloom/game/domain').glob('*.kt'))+list((ROOT/'app/src/main/java/com/tilebloom/game/presentation/board').glob('*.kt'))+[source]
+sources=[source] if base else list((ROOT/'app/src/main/java/com/wamad/petaljong/domain').glob('*.kt'))+list((ROOT/'app/src/main/java/com/wamad/petaljong/presentation/board').glob('*.kt'))+[source]
 cp=':'.join([stdlib,annotations]+([str(base)] if base else []))
 kotlin(sources,out,cp)
 run('java','-cp',':'.join([str(out),stdlib]+([str(base)] if base else [])),'PressureKt')
